@@ -1,9 +1,17 @@
-const loopInterval = 0.016
+// LOADER SCRIPT
+async function initGame(){
+    await initScript("js/loader.js")
+    await loadLibs()
 
-let canvas = document.getElementById("viewport");
+    console.log("Game started...")
+    let canvas = document.getElementById("viewport");
 
-var game = new Statement(canvas)
+    state = new Statement(canvas)
+    state.loop.interval = 0.016
+    await loadGame(state)
 
-game.loopInterval = loopInterval
-
-game.run()
+    state.run()
+}
+// start
+var state;
+initGame()

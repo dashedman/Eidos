@@ -1,4 +1,4 @@
-function Logic(  )
+function logic(  )
 {
-
+    
 }

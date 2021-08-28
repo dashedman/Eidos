@@ -11,9 +11,8 @@
 //
 // id - Identifier of the HTML canvas element to render to.
 
-function Renderer( state, canvas_el )
+function Renderer( canvas_el )
 {
-    this.state = state
     this.frameId = -1;
 
 	this.canvas = canvas_el;
@@ -34,12 +33,18 @@ function Renderer( state, canvas_el )
 	//this.gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
 
     this.camera = new Camera();
+
+	this.spriteManager = new SpriteManager();
+	this.textureManager = new TextureManager()
+	this.buffers = {};
+	this.varLocals = {};
 }
 
 
 Renderer.prototype.as_prepare = async function(){
     // Load shaders
 	await this.loadShaders();
+	await this.textureManager.waitInit;
 }
 
 // run()
@@ -85,6 +90,39 @@ Renderer.prototype.draw = function()
 	this.checkViewport();
 	gl.viewport( 0, 0, gl.viewportWidth, gl.viewportHeight );
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
+	// sprites render
+	gl.useProgram(this.programs.sprite);
+
+	// buffers
+	let sprites = this.spriteManager.static
+	let locals = this.varLocals.sprites
+	gl.enableVertexAttribArray( locals.a_position );
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.vert)
+	if(sprites.updateFlags.v) gl.bufferData(gl.ARRAY_BUFFER, sprites.verticles, gl.STATIC_DRAW);
+	gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0)
+
+	gl.enableVertexAttribArray( locals.a_texture );
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.tex)
+	if(sprites.updateFlags.t) gl.bufferData(gl.ARRAY_BUFFER, sprites.textures, gl.DYNAMIC_DRAW);
+	gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0)
+
+	// uniforms
+	
+	// textures
+	let texture = this.textureManager.getTexture()
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.uniform1i(sprites.varLocals.u_texture_src, 0);
+
+	// отрисовка геометрии
+	gl.drawArrays(gl.TRIANGLES, 0, sprites.usedIndexes.length*6);
+
+	// effects
+	// gl.useProgram(this.programs.effects);
+
+	// postFX
+	// gl.useProgram(this.programs.post);
 }
 
 // updateViewport()
@@ -114,52 +152,63 @@ Renderer.prototype.checkViewport = function()
 //
 // Takes care of loading the shaders.
 
-Renderer.prototype.as_loadShaders = async function()
+Renderer.prototype.loadShaders = async function()
 {
-	var gl = this.gl;
+	let gl = this.gl;
+
+	async function getProgram(name){
+
+		async function getShader(name, shader_type){
+			let shaderSource = await utils.loadTextResorces(`shaders/${name}`);
 	
-	// Create shader program
-	var program = this.program = gl.createProgram();
+			let shader = gl.createShader( shader_type );
+			gl.shaderSource( shader, shaderSource );
+			gl.compileShader( shader );
+			gl.attachShader( program, shader );
+
+			if ( !gl.getShaderParameter( shader, gl.COMPILE_STATUS ) )
+				throw "Could not compile vertex shader!\n" + gl.getShaderInfoLog( shader );
+		}
+
+		let program = gl.createProgram();
+
+		await Promise.all([
+			getShader(name+'.vert', gl.VERTEX_SHADER),	// Compile vertex shader
+			getShader(name+'.frag', gl.FRAGMENT_SHADER) // Compile fragment shader
+		])
+		// Finish program
+		gl.linkProgram( program );
+		
+		if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) )
+			throw "Could not link the shader program!";
+
+		// bind program to renderer
+		this.programs[name] = await getProgram(name);
+		return program
+	}
 	
-	// Compile vertex shader
-	var vertexShader = gl.createShader( gl.VERTEX_SHADER );
-	gl.shaderSource( vertexShader, vertexSource );
-	gl.compileShader( vertexShader );
-	gl.attachShader( program, vertexShader );
-	
-	if ( !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) )
-		throw "Could not compile vertex shader!\n" + gl.getShaderInfoLog( vertexShader );
-	
-	// Compile fragment shader
-	var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
-	gl.shaderSource( fragmentShader, fragmentSource );
-	gl.compileShader( fragmentShader );
-	gl.attachShader( program, fragmentShader );
-	
-	if ( !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) )
-		throw "Could not compile fragment shader!\n" + gl.getShaderInfoLog( fragmentShader );
-	
-	// Finish program
-	gl.linkProgram( program );
-	
-	if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) )
-		throw "Could not link the shader program!";
-	
-	gl.useProgram( program );
-	
-	// Store variable locations
-	this.uProjMat = gl.getUniformLocation( program, "uProjMatrix" );
-	this.uViewMat= gl.getUniformLocation( program, "uViewMatrix" );
-	this.uModelMat= gl.getUniformLocation( program, "uModelMatrix" );
-	this.uSampler = gl.getUniformLocation( program, "uSampler" );
-	this.aPos = gl.getAttribLocation( program, "aPos" );
-	this.aColor = gl.getAttribLocation( program, "aColor" );
-	this.aTexCoord = gl.getAttribLocation( program, "aTexCoord" );
-	
-	// Enable input
-	gl.enableVertexAttribArray( this.aPos );
-	gl.enableVertexAttribArray( this.aColor );
-	gl.enableVertexAttribArray( this.aTexCoord );
+	// COULD BE EDITED TO LOAD NEW PROGRAMS
+	let spritesPr = getProgram('sprites').then((program)=>{
+		gl.useProgram( program );
+		this.buffers.static = {
+			vert: gl.createBuffer(),
+			tex: gl.createBuffer(),
+		}
+		this.buffers.dynamic = {
+			vert: gl.createBuffer(),
+			tex: gl.createBuffer(),
+		}
+
+		this.varLocals.sprites = {
+			a_position: gl.getAttribLocation(program, "a_position"),
+			a_texture: gl.getAttribLocation(program, "a_texture"),
+			u_texture_src: gl.getAttribLocation(program, "u_texture_src"),
+		}
+	})
+
+	await Promise.all([
+		spritesPr
+	])
 }
 
 // setPerspective( fov, min, max )

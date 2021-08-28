@@ -1,3 +1,7 @@
+function Physics(){
+
+}
+
 function PhBox( x, y, w, h )
 {
     this.x = x || 0;
