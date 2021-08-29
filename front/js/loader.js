@@ -25,6 +25,7 @@ async function loadLibs(){
         utils.initScript("js/entities/player.js"),
 
         utils.initScript("js/physics/base.js"),
+        utils.initScript("js/physics/box.js"),
 
         utils.initScript("js/dispatcher.js"),
         utils.initScript("js/network.js"),
