@@ -1,6 +1,6 @@
 // LOADER SCRIPT
 async function initGame(){
-    await initScript("js/loader.js")
+    await utils.initScript("js/loader.js")
     await loadLibs()
 
     console.log("Game started...")
@@ -8,10 +8,10 @@ async function initGame(){
 
     state = new Statement(canvas)
     state.loop.interval = 0.016
+    
     await loadGame(state)
 
-    state.run()
+    //state.run()
 }
 // start
-var state;
 initGame()

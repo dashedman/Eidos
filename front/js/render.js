@@ -11,39 +11,39 @@
 //
 // id - Identifier of the HTML canvas element to render to.
 
-function Renderer( canvas_el )
+function Renderer(state, canvas_el)
 {
+	this._state = state
     this.frameId = -1;
 
 	this.canvas = canvas_el;
 	this.canvas.renderer = this;
-	this.canvas.width = canvas.clientWidth;
-	this.canvas.height = canvas.clientHeight;
+	this.canvas.width = canvas_el.clientWidth;
+	this.canvas.height = canvas_el.clientHeight;
 
 	// Initialise WebGL
-	this.gl = canvas.getContext( "webgl2" );
-	if(!this.gl) throw "Your browser doesn't support WebGL!";
+	this.gl = canvas_el.getContext( "webgl2" );
+	let gl = this.gl
+	if(!gl) throw "Your browser doesn't support WebGL!";
 
-	this.gl.viewportWidth = canvas.width;
-	this.gl.viewportHeight = canvas.height;
+	gl.viewportWidth = canvas_el.width;
+	gl.viewportHeight = canvas_el.height;
 	
-	this.gl.clearColor( 0.62, 0.81, 1.0, 1.0 );
-	this.gl.enable( gl.DEPTH_TEST );
-	//this.gl.enable( gl.CULL_FACE );
-	//this.gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
-
-    this.camera = new Camera();
-
-	this.spriteManager = new SpriteManager();
-	this.textureManager = new TextureManager()
-	this.buffers = {};
-	this.varLocals = {};
+	gl.clearColor( 0.62, 0.81, 1.0, 1.0 );
+	gl.enable( gl.DEPTH_TEST );
+	//gl.enable( gl.CULL_FACE );
+	//gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
 }
 
 
 Renderer.prototype.as_prepare = async function(){
     // Load shaders
-	await this.loadShaders();
+	this.spriteManager = new SpriteManager (this._state)
+	this.textureManager = new TextureManager (this._state)
+	this.buffers = {};
+	this.varLocals = {};
+
+	//await this.loadShaders();
 	await this.textureManager.waitInit;
 }
 
@@ -66,7 +66,7 @@ Renderer.prototype.run = function()
 		// call next frame
 		this.frameId = requestAnimationFrame(renderFrame)
 	}
-	this.framrId = requestAnimationFrame(renderFrame)
+	this.frameId = requestAnimationFrame(renderFrame)
 }
 
 // stop()
@@ -159,7 +159,7 @@ Renderer.prototype.loadShaders = async function()
 	async function getProgram(name){
 
 		async function getShader(name, shader_type){
-			let shaderSource = await utils.loadTextResorces(`shaders/${name}`);
+			let shaderSource = await utils.loadTextResources(`shaders/${name}`);
 	
 			let shader = gl.createShader( shader_type );
 			gl.shaderSource( shader, shaderSource );
@@ -238,8 +238,8 @@ Renderer.prototype.setCamera = function()
 {
 	var gl = this.gl;
 	
-	this.camPos = this.state.camera.position;
-    this.camDir = this.state.camera.direction;
+	this.camPos = this._state.camera.position;
+    this.camDir = this._state.camera.direction;
 	
 	mat4.identity( this.viewMatrix );
 	

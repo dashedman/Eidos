@@ -1,103 +1,146 @@
 // TODO: BIG ATLAS GENERATOR
 
-function TextureManager()
-{
-    this.state = this.STATES.INIT
-    this.worker = new Worker('js/textures/getAtlas.js')
-
-    this.textures = new Map()
-    this.atlas;
-
-    this.waitInit = new Promise((resolve, reject) => {
-        setTimeout(this.createPlug, 0, resolve, reject)
-    })
-
-    this.gl_texture = gl.createTexture();
-}
-
-
-TextureManager.prototype.STATES = {
-    COMPILING: 0,
-    READY: 1,
-    INIT: 2
-}
-
-TextureManager.prototype.createPlug = async function(resolve, rej){
-    this.plug = new ColorTexture([
-        0, 0, 0, 255,
-        255, 0, 255, 255,
-        0, 0, 0, 255,
-        255, 0, 255, 255,
-    ], 2, 2)
-    this.textures.set('_plug', this.plug)
-    await this.compileAtlas()
-    resolve()
-}
-
-
-TextureManager.prototype.push = async function(texture){
-    // TODO
-    if(!this.textures.has(texture.name)) this.textures.set(texture.name, texture)
-
-    texture.setAtlas(this.plug.coords)
-    this.compileAtlas()
-}
-
-
-TextureManager.prototype.pop = async function(texture){
-    // TODO
-    this.textures.delete(texture.name)
-    this.compileAtlas()
-}
-
-
-TextureManager.prototype.compileAtlas = async function (){
-    if(this.state == this.STATES.COMPILING) return;
-    this.state = this.STATES.COMPILING
-
-    for(const tex of this.textures){
-        await tex.loadState
+class TextureManager {
+    static STATUSES = {
+        COMPILING: 0,
+        READY: 1,
+        INIT: 2
     }
-    
-    this.worker.onmessage = function(e){
-        this.bindAtlas(e.data.atlas)
 
-        for(let tile of e.data.tiling){
-            this.textures[tile.index].setAtlas({
+    constructor(state) {
+        this._state = state
+
+        this.status = TextureManager.STATUSES.INIT
+        this.worker = new Worker('js/textures/getAtlas.js')
+
+        this.textures = new Map()
+        this.atlas
+
+        this.waitInit = new Promise((resolve, reject) => {
+            setTimeout(this.createPlug.bind(this), 0, resolve, reject)
+        })
+
+        let gl = this._state.render.gl
+        this.gl_texture = gl.createTexture()
+    }
+
+    async createPlug(resolve, rej) {
+        this.plug = new ColorTexture(
+            this._state, 
+            '_plug',
+            [
+                0, 0, 0, 255,
+                255, 0, 255, 255,
+                255, 0, 255, 255,
+                0, 0, 0, 255,
+            ], 
+            20, 
+            20
+        )
+        this.textures.set(this.plug.name, this.plug)
+        await this.compileAtlas()
+        resolve()
+    }
+
+    createTexture(name, src){
+        let texture = new Texture(this._state, name, src)
+        this.push(texture)
+        return texture
+    }
+
+    createColorTexture(name, colors, w, h){
+        let texture = new ColorTexture(this._state, name, colors, w, h)
+        this.push(texture)
+        return texture
+    }
+
+    push(texture) {
+        // TODO
+        if (!this.textures.has(texture.name))
+            this.textures.set(texture.name, texture)
+
+        texture.setAtlas(this.plug.coords)
+        this.compileAtlas()
+    }
+
+    pop(name) {
+        // TODO
+        this.textures.delete(name)
+        this.compileAtlas()
+    }
+
+    async compileAtlas() {
+        if (this.status == TextureManager.STATUSES.COMPILING)
+            return
+        this.status = TextureManager.STATUSES.COMPILING
+
+        for (const tex of this.textures.values()) {
+            await tex.loadState
+        }
+
+        // this.worker.onmessage = function(e){
+        //     this.bindAtlas(e.data.atlas)
+        //     for(let tile of e.data.tiling){
+        //         this.textures[tile.index].setAtlas({
+        //             w: tile.w,
+        //             h: tile.h,
+        //             x: tile.x,
+        //             y: tile.y,
+        //         })
+        //     }
+        //     this.status = this.STATUSES.READY
+        // }
+        // this.worker.postMessage({textures: [...this.textures]})
+        // SYNC
+        let data = atlas.syncCompiling({ textures: [...this.textures.values()] })
+
+        this.bindAtlas(data.atlas)
+
+        for (let tile of data.tiling) {
+            this.textures.get(tile.name).setAtlas({
                 w: tile.w,
                 h: tile.h,
                 x: tile.x,
                 y: tile.y,
             })
         }
-
-        this.state = this.STATES.READY
+        this.status = TextureManager.STATUSES.READY
     }
-    this.worker.postMessage({textures: [...this.textures]})
+    bindAtlas(atlas) {
+        this.atlas = new Image()
+        this.atlas.src = atlas
+
+        this.atlas.onload = () => {
+            let gl = this._state.render.gl
+            // SET IMAGE
+            gl.bindTexture(gl.TEXTURE_2D, this.gl_texture)
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                this.atlas // image
+            )
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+        }
+    }
+    getTexture() {
+        return this.atlas
+    }
 }
 
 
-TextureManager.prototype.bindAtlas = function (atlas){
-    this.atlas = atlas
-    let gl = state.render.gl
-    // SET IMAGE
-    gl.bindTexture(gl.TEXTURE_2D, this.gl_texture);
-    gl.texImage2D(
-        gl.TEXTURE_2D, 
-        0, // level
-        gl.RGBA, // format
-        gl.RGBA, // sourse format
-        gl.UNSIGNED_BYTE, // source type
-        this.atlas // image
-    );
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-}
 
 
-TextureManager.prototype.getTexture = function(){
-    return this.atlas
-}
+
+
+
+
+
+
+

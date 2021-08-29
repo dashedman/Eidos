@@ -11,17 +11,18 @@ function Statement(canvas_el) {
         interval: 0
     }
     this.time = new TimeManager()
-    
-    this.dispatcher = new Dispatcher(canvas_el)
-    this.render = new Renderer(canvas_el)
-    this.network = new Network()
-    this.physics = new Physics()
+
+    this.dispatcher = new Dispatcher(this, canvas_el)
+    this.render = new Renderer(this, canvas_el)
+    this.network = new Network(this)
+    this.physics = new Physics(this)
 
     // Set up entities and location
     this.player = new Player()
     this.entities = [this.player] // array of entities
     this.location = new Location()
 }
+
 
 Statement.prototype.run = function() {
     // Start a Render loops	

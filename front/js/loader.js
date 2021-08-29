@@ -1,33 +1,36 @@
 async function loadLibs(){
     await Promise.all([
-        initScript("js/glMatrix-1.2.min.js"),
-        initScript("js/glsl_math.js"),
+        utils.initScript("js/glMatrix-1.2.min.js"),
+        utils.initScript("js/glsl_math.js"),
     ])
 
     // крутилка
 
 
     // большая загрузка
-    await allWithProgress([
-        initScript("js/utils/time.js"),
-        initScript("js/utils/camera.js"),
+    await Promise.all([
+        utils.initScript("js/utils/time.js"),
+        utils.initScript("js/utils/camera.js"),
 
-        initScript("js/textures/base.js"),
+        utils.initScript("js/textures/base.js"),
+        utils.initScript("js/textures/color.js"),
+        utils.initScript("js/textures/manager.js"),
+        utils.initScript("js/textures/getAtlas.js"),
 
-        initScript("js/sprites/base.js"),
-        initScript("js/sprites/manager.js"),
+        utils.initScript("js/sprites/base.js"),
+        utils.initScript("js/sprites/manager.js"),
 
-        initScript("js/entities/base.js"),
-        initScript("js/entities/location.js"),
-        initScript("js/entities/player.js"),
+        utils.initScript("js/entities/base.js"),
+        utils.initScript("js/entities/location.js"),
+        utils.initScript("js/entities/player.js"),
 
-        initScript("js/physics/base.js"),
+        utils.initScript("js/physics/base.js"),
 
-        initScript("js/dispatcher.js"),
-        initScript("js/network.js"),
-        initScript("js/render.js"),
-        initScript("js/logic.js"),
-        initScript("js/statement.js"),
+        utils.initScript("js/dispatcher.js"),
+        utils.initScript("js/network.js"),
+        utils.initScript("js/render.js"),
+        utils.initScript("js/logic.js"),
+        utils.initScript("js/statement.js"),
     ])
 
     // крутилка офф
@@ -37,8 +40,16 @@ async function loadLibs(){
 async function loadGame(state){
     await state.render.as_prepare()
 
-    await state.netwotk.updatePlayer()
-    await state.network.updateLocation()
+    let test_texture = state.render.textureManager.createTexture('test', 'resources/test.jpg')
+    let test_col_texture = state.render.textureManager.createColorTexture(
+        'color', 
+        [ 0, 255, 0 , 255],
+        50, 30
+    )
+    let test_sprite = new Sprite(state, test_texture)
+
+    //await state.netwotk.updatePlayer()
+    //await state.network.updateLocation()
 }
 
 

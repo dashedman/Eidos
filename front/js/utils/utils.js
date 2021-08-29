@@ -1,4 +1,15 @@
-utils = {
+var utils = {
+  waitTick: () => new Promise( (resolve) => {
+    setTimeout(()=>{
+      console.log('tick')
+      resolve()
+    }, 0)
+  }),
+  waitTicks: async (ticks = 1) => {
+    for(let i=0; i<ticks; i++){
+      await utils.waitTick()
+    }
+  },
   loadTextResources: function (url){
     return new Promise(function(resolve, reject){
       const request = new XMLHttpRequest()
@@ -24,15 +35,32 @@ utils = {
       document.head.appendChild(newScript);
 
       newScript.onload = resolve
-      newScript.onerror = (e) => reject('Failed on load script ['+src+']: '+e)
+      newScript.onerror = (e) => reject('Failed to load script ['+src+']: '+e)
     })
   },
   initScript: async function (src){
     // load, insert and initialize script
     return new Promise(function(resolve, reject){
-      loadScript(src)
-      .then(() => setTimeout(resolve, 0))
-      .catch(reject)
+      console.log('Start init: '+src)
+      utils.loadScript(src)
+      .then(() => {
+        setTimeout(() => {
+          console.log('Finish init: '+src)
+          resolve()
+        }, 0)
+      })
+      .catch()
     })
   },
+  supportCanvas: function (width, height){
+    let canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    //canvas.style = "display: none;"
+    //document.body.appendChild(canvas)
+    return canvas
+  },
+  removeCanvas: function (canvas){
+    document.body.removeChild(canvas)
+  }
 }

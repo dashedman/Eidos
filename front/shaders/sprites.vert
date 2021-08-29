@@ -3,10 +3,11 @@
 #define PI 3.141592
 
 in vec3 a_position;
-out vec3 a_texture;
+in vec2 a_texture;
+
+out vec2 v_texture;
 
 void main(){
     v_texture = a_texture;
-
-    gl_Position = a_position;
+    gl_Position = vec4(a_position, 0.f);
 }

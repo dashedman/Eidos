@@ -1,5 +1,7 @@
-function Dispatcher(el) {
+function Dispatcher(state, el) {
     // id of the game loop to handle
+    this._state = state
+
 	this.pressedKeys = new Uint8Array(128)
     this.pressedOnce = new Set()
 

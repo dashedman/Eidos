@@ -1,4 +1,5 @@
-function Network() {
+function Network(state) {
+    this._state = state
     this.socket = null
 }
 

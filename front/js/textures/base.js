@@ -1,9 +1,6 @@
-function Texture( name, src ){
+function Texture(state, name, src ){
+    this._state = state
     
-    this.x = 0
-    this.y = 0
-    this.w = 0
-    this.h = 0
     this.atlasCoords = {}
 
     this.loadState;
@@ -19,13 +16,11 @@ Texture.prototype.loadImage = function( src ){
         this.image.onload = resolve
         this.image.onerror = reject
     })
-    // Add texture to Atlas
-    state.render.TextureManager.push(this);
 }
 
 Texture.prototype.delete = function(){
     // release memory buffer
-    state.render.TextureManager.pop(this);
+    this._state.render.textureManager.pop(this.name);
 }
 
 Texture.prototype.setAtlas = function(coords){

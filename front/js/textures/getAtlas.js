@@ -1,21 +1,50 @@
-onmessage = function(event){
-    let textures = event.data.textures
-    // calc optimal positions
-    let [size, tiling] = generateTiling(textures)
-
-    // draw atlas
-    let canvas = new OffscreenCanvas(size.w, size.h)
-    let ctx = canvas.getContext('2d')
-    for(let tile of tiling){
-        ctx.drawImage(
-            textures[tile.index].image, 
-            tile.x, tile.y, tile.w, tile.h
-        )
+if(this.document === undefined){
+    // FOR WORKER
+    onmessage = function(event){
+    
+        let textures = event.data.textures
+        // calc optimal positions
+        let [size, tiling] = generateTiling(textures)
+    
+        // draw atlas
+        let canvas = new OffscreenCanvas(size.w, size.h)
+        let ctx = canvas.getContext('2d')
+        for(let tile of tiling){
+            ctx.drawImage(
+                textures[tile.index].image, 
+                tile.x, tile.y, tile.w, tile.h
+            )
+        }
+    
+        // send answer
+        postMessage({tiling: tiling, atlas: canvas.toDataUrl('png')})
     }
+}else{
+    var atlas = {
+        syncCompiling: function (data){
+            let textures = data.textures
+            // calc optimal positions
+            let {size, tiling} = generateTiling(textures)
 
-    // send answer
-    postMessage({tiling: tiling, atlas: canvas.toDataUrl('png')})
+            // draw atlas
+            let canvas = utils.supportCanvas(size.w, size.h)
+            let ctx = canvas.getContext('2d')
+            for(let tile of tiling){
+                ctx.drawImage(
+                    textures[tile.index].image, 
+                    tile.x, tile.y, tile.w, tile.h
+                )
+            }
+
+            // send answer
+            return {tiling: tiling, atlas: canvas.toDataURL()}
+        }
+    }
 }
+
+
+
+
 
 function generateTiling(textures){
     /*
@@ -25,19 +54,20 @@ function generateTiling(textures){
 
     // get sorted rectangles
     let rectangles = textures.map(
-        tex, index => ({
+        (tex, index) => ({
             index: index, 
+            name: tex.name,
             w: tex.image.width, 
             h: tex.image.height,
             x: 0,
             y: 0
         })
     ).sort(
-        rect_1, rect_2 => rect_2.h - rect_1.h
+        (rect_1, rect_2) => rect_2.h - rect_1.h
     )
 
     // calc sum of rects areas
-    let summaryArea = rectangles.reduce( acumulator, rect => acumulator + rect.w*rect.h )
+    let summaryArea = rectangles.reduce( (acumulator, rect) => acumulator + rect.w*rect.h, 0 )
     // estimating width by square area
     // with golden cut
     let estimateWidth = Math.sqrt(summaryArea)
@@ -45,7 +75,7 @@ function generateTiling(textures){
     // algorithm
     let levels = []
     let lastLevelHeight = 0;
-    for(const i = 0; i < rectangles.length; i++){
+    for(let i = 0; i < rectangles.length; i++){
         let rect = rectangles[i]
         let newLevel = true
         for(const level of levels){

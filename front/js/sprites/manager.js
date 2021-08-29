@@ -1,5 +1,6 @@
-function SpriteManager()
+function SpriteManager(state)
 {
+    this._state = state
     this.static = {
         verticles: new Float32Array(),
         textures: new Float32Array(),
