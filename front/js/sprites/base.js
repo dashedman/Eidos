@@ -3,6 +3,7 @@
 class Sprite {
     _v;
     _t;
+    _bufferIndexes;
     constructor(state, bufferIndexes, texture) {
         this._state = state;
         this._bufferIndexes = bufferIndexes;
@@ -31,40 +32,24 @@ class Sprite {
     }
 
     set w(value) {
-        const idx = this._bufferIndexes.v
+        const idx = _bufferIndexes.v
         _v[idx]     = _v[idx + 2] = _v[idx + 6]  = this.x;
         _v[idx + 4] = _v[idx + 8] = _v[idx + 10] = this.x + value;
     }
 
     set h(value) {
-        const idx = this._bufferIndexes.v
+        const idx = _bufferIndexes.v
         _v[idx + 1] = _v[idx + 5] = _v[idx + 9]  = this.y;
         _v[idx + 3] = _v[idx + 7] = _v[idx + 11] = this.y + value;
     }
+    set x(value) {
+        const idx = _bufferIndexes.v
+        _v[idx]     = _v[idx + 2] = _v[idx + 6]  = value;
+        _v[idx + 4] = _v[idx + 8] = _v[idx + 10] = value + this.w;
+    }
+    set y(value) {
+        const idx = this._bufferIndexes.v
+        _v[idx + 1] = _v[idx + 5] = _v[idx + 9]  = value;
+        _v[idx + 3] = _v[idx + 7] = _v[idx + 11] = value + this.h;
+    }
 }
-// Object.defineProperty(Sprite.prototype, "w", {
-//     
-//   });
-// Object.defineProperty(Sprite.prototype, "h", {
-//     set: function(value) {
-//         const idx = this._bufferIndexes.v
-//         _v[idx + 1] = _v[idx + 5] = _v[idx + 9]  = this.y;
-//         _v[idx + 3] = _v[idx + 7] = _v[idx + 11] = this.y + value;
-//     }
-// });
-// Object.defineProperty(Sprite.prototype, "x", {
-//     set: function(value) {
-//         const idx = this._bufferIndexes.v
-//         _v[idx]     = _v[idx + 2] = _v[idx + 6]  = value;
-//         _v[idx + 4] = _v[idx + 8] = _v[idx + 10] = value + this.w;
-//     }
-//   });
-// Object.defineProperty(Sprite.prototype, "y", {
-//     set: function(value) {
-//         const idx = this._bufferIndexes.v
-//         _v[idx + 1] = _v[idx + 5] = _v[idx + 9]  = value;
-//         _v[idx + 3] = _v[idx + 7] = _v[idx + 11] = value + this.h;
-//     }
-// });
-
-

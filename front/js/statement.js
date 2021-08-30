@@ -31,7 +31,7 @@ Statement.prototype.run = function() {
         this.time.calc()
 
         // Simulate world
-        logic(this)
+        this.physics.update()
 
         // call next iteraction
         this.loop.id = setTimeout( 

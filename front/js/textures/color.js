@@ -1,4 +1,4 @@
-class ColorTexture extends Texture {
+class ColorTexture{
     constructor(state, name, colors, w, h) {
         this._state = state
         this.name = name
@@ -26,6 +26,9 @@ class ColorTexture extends Texture {
             this.image.onerror = reject
         })
     }
+
+    delete = Texture.prototype.delete
+    setAtlas = Texture.prototype.setAtlas
 }
 
 
