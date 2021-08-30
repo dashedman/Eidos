@@ -1,6 +1,7 @@
 class Texture {
     constructor(state, name, src) {
         this._state = state;
+        this._traced = new Set()
 
         this.atlasCoords = {};
 
@@ -24,12 +25,15 @@ class Texture {
     setAtlas(coords) {
         this.atlasCoords = Object.assign({}, coords);
         // TODO reset verticles
-        let evt = new CustomEvent('resetTextureAtlas', {detail: 
-            {
-                texture_name: this.name
-            }
-        })
-        document.dispatchEvent(evt)
+        for(const [traced_obj, _] of this._traced){
+            traced_obj.trace_event(this)
+        }
+    }
+    addToTrace(obj){
+        this._traced.add(obj)
+    }
+    removeFromTrace(obj){
+        this._traced.delete(obj)
     }
 }
 

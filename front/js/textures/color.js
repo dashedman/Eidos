@@ -29,6 +29,8 @@ class ColorTexture{
 
     delete = Texture.prototype.delete
     setAtlas = Texture.prototype.setAtlas
+    addToTrace = Texture.prototype.addToTrace
+    removeFromTrace = Texture.prototype.removeFromTrace
 }
 
 
