@@ -1,14 +1,5 @@
-class ColorTexture{
-    constructor(state, name, colors, w, h) {
-        this._state = state
-        this.name = name
-
-        this.atlasCoords = {}
-
-        this.loadState
-        this.loadColors(colors, w, h)
-    }
-    loadColors(colors, w, h) {
+class ColorTexture extends Texture{
+    loadData(colors, w, h) {
         // render color pixels to image
         let canvas = utils.supportCanvas(w, h)
         let ctx = canvas.getContext('2d')
@@ -26,11 +17,6 @@ class ColorTexture{
             this.image.onerror = reject
         })
     }
-
-    delete = Texture.prototype.delete
-    setAtlas = Texture.prototype.setAtlas
-    addToTrace = Texture.prototype.addToTrace
-    removeFromTrace = Texture.prototype.removeFromTrace
 }
 
 

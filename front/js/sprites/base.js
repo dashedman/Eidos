@@ -9,6 +9,7 @@ class Sprite {
         this._bufferIndexes = bufferIndexes;
 
         this.texture = texture;
+        texture.addToTrace(this)
         
 
         let _s = this._state.render.spriteManager.static;
@@ -26,8 +27,12 @@ class Sprite {
         this.w = this.texture.image.width
         this.h = this.texture.image.height
     }
+    tracerEvent(){
+        
+    }
     delete() {
         // release memory buffer
+        this.texture.removeFromTrace(this)
         this._state.render.spriteManager.release('static', _bufferIndexes);
     }
 

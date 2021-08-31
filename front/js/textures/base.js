@@ -1,5 +1,6 @@
 class Texture {
-    constructor(state, name, src) {
+    constructor(state, name, ...params) {
+        // params is {src: str}
         this._state = state;
         this._traced = new Set()
 
@@ -7,9 +8,9 @@ class Texture {
 
         this.loadState;
         this.name = name;
-        this.loadImage(src);
+        this.loadData( params );
     }
-    loadImage(src) {
+    loadData({src}) {
         this.image = new Image();
         this.image.src = src;
 
