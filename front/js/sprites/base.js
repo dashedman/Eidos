@@ -15,7 +15,7 @@ class Sprite {
         this._textureCoords = {x: 0, y:0, z:0, w:0, h:0}
         
 
-        let _s = this._state.render.spriteManager.static;
+        let _s = this._state.render.staticSspriteManager;
         this._v = _s.verticles;
         this._t = _s.textures;
 
@@ -36,6 +36,15 @@ class Sprite {
         this.ty = 0
         this.tw = this.texture.image.width
         this.th = this.texture.image.height
+    }
+    forceUpdate(){
+        // force update for verticles
+        this.sx = this.sx
+        this.sy = this.sy
+        this.sz = this.sz
+
+        this.tx = this.tx
+        this.ty = this.ty
     }
     tracerEvent(texture){
         if(this.texture == texture){
