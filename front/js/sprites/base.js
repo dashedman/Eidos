@@ -1,24 +1,22 @@
 // Realize container for texture, with rect
 
 class Sprite {
-    _v;
+    _p;
     _t;
     _bufferIndexes;
     constructor(state, bufferIndexes, texture) {
         this._state = state;
         this._bufferIndexes = bufferIndexes;
 
-        this.texture = texture;
-        texture.addToTrace(this)
-
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, z:0, w:0, h:0}
-        
 
-        let _s = this._state.render.staticSspriteManager;
-        this._v = _s.verticles;
-        this._t = _s.textures;
+        let _s = this._state.render.staticSpriteManager;
+        this._p = _s.positonHandler.data;
+        this._t = _s.textureHandler.data;
 
+        this.texture = texture;
+        texture.addToTrace(this)
         // async constructor
         this.initState = this.async_constructor()
     }
@@ -64,8 +62,8 @@ class Sprite {
         this._spriteCoords.w = value
 
         const idx = _bufferIndexes.v
-        _v[idx]     = _v[idx + 2] = _v[idx + 6]  = this.sx;
-        _v[idx + 4] = _v[idx + 8] = _v[idx + 10] = this.sx + value;
+        _p[idx]     = _p[idx + 2] = _p[idx + 6]  = this.sx;
+        _p[idx + 4] = _p[idx + 8] = _p[idx + 10] = this.sx + value;
     }
 
     /**
@@ -75,8 +73,8 @@ class Sprite {
         this._spriteCoords.h = value
 
         const idx = _bufferIndexes.v
-        _v[idx + 1] = _v[idx + 5] = _v[idx + 9]  = this.sy;
-        _v[idx + 3] = _v[idx + 7] = _v[idx + 11] = this.sy + value;
+        _p[idx + 1] = _p[idx + 5] = _p[idx + 9]  = this.sy;
+        _p[idx + 3] = _p[idx + 7] = _p[idx + 11] = this.sy + value;
     }
     /**
      * @param {number} value
@@ -85,8 +83,8 @@ class Sprite {
         this._spriteCoords.x = value
 
         const idx = _bufferIndexes.v
-        _v[idx]     = _v[idx + 3] = _v[idx + 9]  = value;
-        _v[idx + 6] = _v[idx + 12] = _v[idx + 15] = value + this.sw;
+        _p[idx]     = _p[idx + 3] = _p[idx + 9]  = value;
+        _p[idx + 6] = _p[idx + 12] = _p[idx + 15] = value + this.sw;
     }
     /**
      * @param {number} value
@@ -95,8 +93,8 @@ class Sprite {
         this._spriteCoords.y = value
 
         const idx = this._bufferIndexes.v
-        _v[idx + 1] = _v[idx + 7] = _v[idx + 13]  = value;
-        _v[idx + 4] = _v[idx + 10] = _v[idx + 16] = value + this.sh;
+        _p[idx + 1] = _p[idx + 7] = _p[idx + 13]  = value;
+        _p[idx + 4] = _p[idx + 10] = _p[idx + 16] = value + this.sh;
     }
     /**
      * @param {number} value
@@ -105,7 +103,7 @@ class Sprite {
         this._spriteCoords.z = value
 
         const idx = this._bufferIndexes.v
-        for(let i = 2; i < 18; i += 3) _v[idx + i] = value;
+        for(let i = 2; i < 18; i += 3) _p[idx + i] = value;
     }
 
     /**
