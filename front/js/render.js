@@ -42,7 +42,7 @@ class Renderer {
 		this.buffers = {};
 		this.varLocals = {};
 		this.programs = {};
-
+		
 		await this.loadShaders();
 		await this.textureManager.waitInit;
 	}
@@ -109,10 +109,10 @@ class Renderer {
 		let texture = this.textureManager.getTexture();
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.uniform1i(sprites.varLocals.u_texture_src, 0);
+		gl.uniform1i(locals.u_texture_src, 0);
 
 		// отрисовка геометрии
-		gl.drawArrays(gl.TRIANGLES, 0, sprites.usedIndexes.length * 6);
+		gl.drawArrays(gl.TRIANGLES, 0, sprtMngr.length);
 
 		// effects
 		// gl.useProgram(this.programs.effects);
@@ -172,6 +172,7 @@ class Renderer {
 				throw "Could not link the shader program!";
 
 			// bind program to renderer
+			console.log(`Programm '${name}' ready.`)
 			this.programs[name] = program;
 			return program;
 		}
@@ -191,13 +192,14 @@ class Renderer {
 			this.varLocals.sprites = {
 				a_position: gl.getAttribLocation(program, "a_position"),
 				a_texture: gl.getAttribLocation(program, "a_texture"),
-				u_texture_src: gl.getAttribLocation(program, "u_texture_src"),
+				u_texture_src: gl.getUniformLocation(program, "u_texture_src"),
 			};
 		});
 
 		await Promise.all([
 			spritesPr
 		]);
+		console.log('Shaders loaded.')
 	}
 	// setPerspective( fov, min, max )
 	//

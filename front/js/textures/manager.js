@@ -24,22 +24,20 @@ class TextureManager {
         this.gl_texture = gl.createTexture()
     }
 
-    async createPlug(resolve, rej) {
+    async createPlug(wait_resolve, wait_reject) {
         this.plug = new ColorTexture(
-            this._state, 
-            '_plug',
+            this, '_plug',
             [
                 0, 0, 0, 255,
                 255, 0, 255, 255,
                 255, 0, 255, 255,
                 0, 0, 0, 255,
             ], 
-            20, 
-            20
+            2, 2
         )
         this.textures.set(this.plug.name, this.plug)
         await this.compileAtlas()
-        resolve()
+        wait_resolve()
     }
 
     createTexture(name, src){
@@ -132,7 +130,7 @@ class TextureManager {
         }
     }
     getTexture() {
-        return this.atlas
+        return this.gl_texture
     }
 }
 

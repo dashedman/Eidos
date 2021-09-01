@@ -5,7 +5,7 @@ class Sprite {
         this._bufferIndexes = bufferIndexes;
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
-        this._textureCoords = {x: 0, y:0, z:0, w:0, h:0}
+        this._textureCoords = {x: 0, y:0, w:0, h:0}
 
         this._manager = manager;
         this._p = this._manager.positionHandler.data;
@@ -40,9 +40,9 @@ class Sprite {
         this.tx = this.tx
         this.ty = this.ty
     }
-    tracerEvent(texture){
+    traceEvent(texture){
         if(this.texture == texture){
-            forceUpdate()
+            this.forceUpdate()
         }
     }
     delete() {

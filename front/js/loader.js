@@ -39,8 +39,10 @@ async function loadLibs(){
 
 
 async function loadGame(state){
+    console.log('hoba')
     await state.render.as_prepare()
 
+    console.log('hoba')
     let test_texture = state.render.textureManager.createTexture('test', 'resources/test.jpg')
     let test_col_texture = state.render.textureManager.createColorTexture(
         'color', 

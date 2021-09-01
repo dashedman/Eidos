@@ -26,8 +26,8 @@ class Texture {
     setAtlas(coords) {
         this.atlasCoords = Object.assign({}, coords);
         // TODO reset verticles
-        for(let [traced_obj, _] of this._traced){
-            traced_obj.trace_event(this)
+        for(const traced_obj of this._traced){
+            traced_obj.traceEvent(this)
         }
     }
     addToTrace(obj){

@@ -9,6 +9,7 @@ class SpriteManager {
     constructor(state) {
         this._state = state
         this.sprites = new Set()
+        this.length = 0
 
         this.positionHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 3 * 6})
         this.textureHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 2 * 6})
@@ -30,6 +31,7 @@ class SpriteManager {
         return dataIndex
     }
     allocate() {
+        this.length += 6
         
         let positionIndex = this._allocateWithHandler(this.positionHandler)
         let textureIndex = this._allocateWithHandler(this.textureHandler)
@@ -53,6 +55,7 @@ class SpriteManager {
     }
     release(sprite) {
         if(this.sprites.has(sprite)){
+            this.length -= 6
             let indexes = sprite._bufferIndexes
             // clear verticles
             this._releaseWithHandler(this.positionHandler, indexes.p)
