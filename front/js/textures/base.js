@@ -1,16 +1,16 @@
 class Texture {
-    constructor(state, name, ...params) {
-        // params is {src: str}
-        this._state = state;
+    constructor(manager, name, ...params) {
+        // params is [src: str]
+        this._manager = manager;
         this._traced = new Set()
 
         this.atlasCoords = {};
 
         this.loadState;
         this.name = name;
-        this.loadData( params );
+        this.loadData( ...params );
     }
-    loadData({src}) {
+    loadData(src) {
         this.image = new Image();
         this.image.src = src;
 
@@ -21,12 +21,12 @@ class Texture {
     }
     delete() {
         // release memory buffer
-        this._state.render.textureManager.pop(this.name);
+        this._manager.pop(this.name);
     }
     setAtlas(coords) {
         this.atlasCoords = Object.assign({}, coords);
         // TODO reset verticles
-        for(const [traced_obj, _] of this._traced){
+        for(let [traced_obj, _] of this._traced){
             traced_obj.trace_event(this)
         }
     }

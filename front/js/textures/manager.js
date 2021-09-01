@@ -43,13 +43,13 @@ class TextureManager {
     }
 
     createTexture(name, src){
-        let texture = new Texture(this._state, name, src)
+        let texture = new Texture(this, name, src)
         this.push(texture)
         return texture
     }
 
     createColorTexture(name, colors, w, h){
-        let texture = new ColorTexture(this._state, name, colors, w, h)
+        let texture = new ColorTexture(this, name, colors, w, h)
         this.push(texture)
         return texture
     }
@@ -73,6 +73,7 @@ class TextureManager {
         if (this.status == TextureManager.STATUSES.COMPILING)
             return
         this.status = TextureManager.STATUSES.COMPILING
+        console.log('Start compile texture altas')
 
         for (const tex of this.textures.values()) {
             await tex.loadState
@@ -104,6 +105,7 @@ class TextureManager {
                 y: tile.y,
             })
         }
+        console.log('Texture altas compile done')
         this.status = TextureManager.STATUSES.READY
     }
     bindAtlas(atlas) {

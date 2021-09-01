@@ -1,19 +1,15 @@
 // Realize container for texture, with rect
 
 class Sprite {
-    _p;
-    _t;
-    _bufferIndexes;
-    constructor(state, bufferIndexes, texture) {
-        this._state = state;
+    constructor(manager, bufferIndexes, texture) {
         this._bufferIndexes = bufferIndexes;
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, z:0, w:0, h:0}
 
-        let _s = this._state.render.staticSpriteManager;
-        this._p = _s.positonHandler.data;
-        this._t = _s.textureHandler.data;
+        this._manager = manager;
+        this._p = this._manager.positionHandler.data;
+        this._t = this._manager.textureHandler.data;
 
         this.texture = texture;
         texture.addToTrace(this)
@@ -52,7 +48,7 @@ class Sprite {
     delete() {
         // release memory buffer
         this.texture.removeFromTrace(this)
-        this._state.render.spriteManager.release('static', _bufferIndexes);
+        this._manager.release(this._bufferIndexes);
     }
 
     /**
@@ -61,9 +57,10 @@ class Sprite {
     set sw(value) {
         this._spriteCoords.w = value
 
-        const idx = _bufferIndexes.v
-        _p[idx]     = _p[idx + 2] = _p[idx + 6]  = this.sx;
-        _p[idx + 4] = _p[idx + 8] = _p[idx + 10] = this.sx + value;
+        const idx = this._bufferIndexes.v
+        this._p[idx]     = this._p[idx + 2] = this._p[idx + 6]  = this.sx;
+        this._p[idx + 4] = this._p[idx + 8] = this._p[idx + 10] = this.sx + value;
+        this._manager.positionHandler.needUpdate = true
     }
 
     /**
@@ -72,9 +69,10 @@ class Sprite {
     set sh(value) {
         this._spriteCoords.h = value
 
-        const idx = _bufferIndexes.v
-        _p[idx + 1] = _p[idx + 5] = _p[idx + 9]  = this.sy;
-        _p[idx + 3] = _p[idx + 7] = _p[idx + 11] = this.sy + value;
+        const idx = this._bufferIndexes.v
+        this._p[idx + 1] = this._p[idx + 5] = this._p[idx + 9]  = this.sy;
+        this._p[idx + 3] = this._p[idx + 7] = this._p[idx + 11] = this.sy + value;
+        this._manager.positionHandler.needUpdate = true
     }
     /**
      * @param {number} value
@@ -82,9 +80,10 @@ class Sprite {
     set sx(value) {
         this._spriteCoords.x = value
 
-        const idx = _bufferIndexes.v
-        _p[idx]     = _p[idx + 3] = _p[idx + 9]  = value;
-        _p[idx + 6] = _p[idx + 12] = _p[idx + 15] = value + this.sw;
+        const idx = this._bufferIndexes.v
+        this._p[idx]     = this._p[idx + 3] = this._p[idx + 9]  = value;
+        this._p[idx + 6] = this._p[idx + 12] = this._p[idx + 15] = value + this.sw;
+        this._manager.positionHandler.needUpdate = true
     }
     /**
      * @param {number} value
@@ -93,8 +92,9 @@ class Sprite {
         this._spriteCoords.y = value
 
         const idx = this._bufferIndexes.v
-        _p[idx + 1] = _p[idx + 7] = _p[idx + 13]  = value;
-        _p[idx + 4] = _p[idx + 10] = _p[idx + 16] = value + this.sh;
+        this._p[idx + 1] = this._p[idx + 7] = this._p[idx + 13]  = value;
+        this._p[idx + 4] = this._p[idx + 10] = this._p[idx + 16] = value + this.sh;
+        this._manager.positionHandler.needUpdate = true
     }
     /**
      * @param {number} value
@@ -103,7 +103,8 @@ class Sprite {
         this._spriteCoords.z = value
 
         const idx = this._bufferIndexes.v
-        for(let i = 2; i < 18; i += 3) _p[idx + i] = value;
+        for(let i = 2; i < 18; i += 3) this._p[idx + i] = value;
+        this._manager.positionHandler.needUpdate = true
     }
 
     /**
@@ -112,9 +113,10 @@ class Sprite {
     set tw(value) {
         this._textureCoords.w = value
 
-        const idx = _bufferIndexes.t
-        _t[idx]     = _t[idx + 2] = _t[idx + 6]  = this._textureCoords.x + this.texture.atlasCoords.x;
-        _t[idx + 4] = _t[idx + 8] = _t[idx + 10] = this._textureCoords.x + this.texture.atlasCoords.x + value;
+        const idx = this._bufferIndexes.t
+        this._t[idx]     = this._t[idx + 2] = this._t[idx + 6]  = this._textureCoords.x + this.texture.atlasCoords.x;
+        this._t[idx + 4] = this._t[idx + 8] = this._t[idx + 10] = this._textureCoords.x + this.texture.atlasCoords.x + value;
+        this._manager.textureHandler.needUpdate = true
     }
     /**
      * @param {number} value
@@ -122,9 +124,10 @@ class Sprite {
     set th(value) {
         this._textureCoords.h = value
 
-        const idx = _bufferIndexes.t
-        _t[idx + 1] = _t[idx + 5] = _t[idx + 9]  = this._textureCoords.y + this.texture.atlasCoords.y;
-        _t[idx + 3] = _t[idx + 7] = _t[idx + 11] = this._textureCoords.y + this.texture.atlasCoords.y + value;
+        const idx = this._bufferIndexes.t
+        this._t[idx + 1] = this._t[idx + 5] = this._t[idx + 9]  = this._textureCoords.y + this.texture.atlasCoords.y;
+        this._t[idx + 3] = this._t[idx + 7] = this._t[idx + 11] = this._textureCoords.y + this.texture.atlasCoords.y + value;
+        this._manager.textureHandler.needUpdate = true
     }
     /**
      * @param {number} value
@@ -132,9 +135,10 @@ class Sprite {
     set tx(value) {
         this._textureCoords.x = value
 
-        const idx = _bufferIndexes.t
-        _t[idx]     = _t[idx + 2] = _t[idx + 6]  = value + this.texture.atlasCoords.x;
-        _t[idx + 4] = _t[idx + 8] = _t[idx + 10] = value + this.texture.atlasCoords.x +this._textureCoords.w;
+        const idx = this._bufferIndexes.t
+        this._t[idx]     = this._t[idx + 2] = this._t[idx + 6]  = value + this.texture.atlasCoords.x;
+        this._t[idx + 4] = this._t[idx + 8] = this._t[idx + 10] = value + this.texture.atlasCoords.x +this._textureCoords.w;
+        this._manager.textureHandler.needUpdate = true
     }
     /**
      * @param {number} value
@@ -143,8 +147,9 @@ class Sprite {
         this._textureCoords.y = value
 
         const idx = this._bufferIndexes.t
-        _t[idx + 1] = _t[idx + 5] = _t[idx + 9]  = value + this.texture.atlasCoords.y;
-        _t[idx + 3] = _t[idx + 7] = _t[idx + 11] = value + this.texture.atlasCoords.y + this._textureCoords.h;
+        this._t[idx + 1] = this._t[idx + 5] = this._t[idx + 9]  = value + this.texture.atlasCoords.y;
+        this._t[idx + 3] = this._t[idx + 7] = this._t[idx + 11] = value + this.texture.atlasCoords.y + this._textureCoords.h;
+        this._manager.textureHandler.needUpdate = true
     }
 
     get sx(){return this._spriteCoords.x}

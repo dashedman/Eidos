@@ -1,6 +1,6 @@
 // LOADER SCRIPT
 async function initGame(){
-    await utils.initScript("js/loader.js")
+    await utils.loadScript("js/loader.js")
     await loadLibs()
 
     console.log("Game started...")
@@ -11,7 +11,7 @@ async function initGame(){
     
     await loadGame(state)
 
-    //state.run()
+    state.run()
 }
 // start
 initGame()

@@ -8,60 +8,41 @@ class SpriteManager {
     
     constructor(state) {
         this._state = state
-        this.sprites = []
+        this.sprites = new Set()
 
-        positionHandler = Object.assign({
-            offset: 3 * 6
-        }, SpriteManager.handlerPattern)
-        textureHandler = Object.assign({
-            offset: 2 * 6
-        }, SpriteManager.handlerPattern)
+        this.positionHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 3 * 6})
+        this.textureHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 2 * 6})
     }
 
-    _allocateWithHandler(handler, verticles) {
-        // new data index
+    createSprite(texture){
+        let bufferIndexes = this.allocate()
+        let sprite = new Sprite(this, bufferIndexes, texture)
+        this.sprites.add(sprite)
+        return sprite
+    }
+
+    _allocateWithHandler(handler) {
+        // пошаговое предельное управление памятью
         let dataIndex = handler.data.length
-        handler.date.push(
-            ...verticles
-        )
-        handler.needUpdate = true
+        let old_data = handler.data
+        handler.data = new Float32Array(handler.data.length + handler.offset)
+        handler.data.set(old_data)
         return dataIndex
     }
-    allocate(type, sprite) {
-        let positionIndex = this._allocateWithHandler( 
-            this.positionHandler,
-            [
-                sprite.x, sprite.y, sprite.z,
-                sprite.x, sprite.y + sprite.h, sprite.z,
-                sprite.x + sprite.w, sprite.y, sprite.z,
+    allocate() {
+        
+        let positionIndex = this._allocateWithHandler(this.positionHandler)
+        let textureIndex = this._allocateWithHandler(this.textureHandler)
 
-                sprite.x, sprite.y + sprite.h, sprite.z,
-                sprite.x + sprite.w, sprite.y, sprite.z,
-                sprite.x + sprite.w, sprite.y + sprite.h, sprite.z
-            ]
-        )
-
-        buffers.textures.length
-        let tex = sprite.texture
-        // TODO: set normal coords
-        let textureIndex = this._allocateWithHandler(
-            this.textureHandler,
-            [
-                tex.x, tex.y,
-                tex.x, tex.y + tex.h,
-                tex.x + tex.w, tex.y,
-
-                tex.x, tex.y + tex.h,
-                tex.x + tex.w, tex.y,
-                tex.x + tex.w, tex.y + tex.h,
-                tex.x + tex.w, tex.y + tex.h
-            ]
-        )
-        return { p: position, t: textureIndex }
+        return { p: positionIndex, t: textureIndex }
     }
     
     _releaseWithHandler(handler, index){
-        handler.data.splice(index, handler.offset)
+        // пошаговое предельное управление памятью
+        let old_data = handler.data
+        handler.data = new Float32Array(handler.data.length - handler.offset)
+        handler.data.set(old_data.subarray(0, index))
+        handler.data.set(old_data.subarray(index + handler.offset), index)
 
         let idxToDel = handler.usedIndexes.indexOf(index)
         handler.usedIndexes.splice(idxToDel, 1)
@@ -70,11 +51,16 @@ class SpriteManager {
         }
         handler.needUpdate = true
     }
-    release(type, indexes) {
-        // clear verticles
-        this._releaseWithHandler(this.positionHandler, indexes.p)
-        // clear textures
-        this._releaseWithHandler(this.textureHandler, indexes.t)
+    release(sprite) {
+        if(this.sprites.has(sprite)){
+            let indexes = sprite._bufferIndexes
+            // clear verticles
+            this._releaseWithHandler(this.positionHandler, indexes.p)
+            // clear textures
+            this._releaseWithHandler(this.textureHandler, indexes.t)
+
+            this.sprites.delete(sprite)
+        }
     }
 }
 

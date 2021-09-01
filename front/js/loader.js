@@ -9,29 +9,29 @@ async function loadLibs(){
 
     // большая загрузка
     await Promise.all([
-        utils.initScript("js/utils/time.js"),
-        utils.initScript("js/utils/camera.js"),
+        utils.initScript("js/utils/time.js", 'defer'),
+        utils.initScript("js/utils/camera.js", 'defer'),
 
-        utils.initScript("js/textures/base.js"),
-        utils.initScript("js/textures/color.js"),
-        utils.initScript("js/textures/manager.js"),
-        utils.initScript("js/textures/getAtlas.js"),
+        utils.initScript("js/textures/base.js", 'defer'),
+        utils.initScript("js/textures/color.js", 'defer'),
+        utils.initScript("js/textures/getAtlas.js", 'defer'),
+        utils.initScript("js/textures/manager.js", 'defer'),
 
-        utils.initScript("js/sprites/base.js"),
-        utils.initScript("js/sprites/manager.js"),
+        utils.initScript("js/sprites/base.js", 'defer'),
+        utils.initScript("js/sprites/manager.js", 'defer'),
 
-        utils.initScript("js/entities/base.js"),
-        utils.initScript("js/entities/location.js"),
-        utils.initScript("js/entities/player.js"),
+        utils.initScript("js/entities/base.js", 'defer'),
+        utils.initScript("js/entities/location.js", 'defer'),
+        utils.initScript("js/entities/player.js", 'defer'),
 
-        utils.initScript("js/physics/base.js"),
-        utils.initScript("js/physics/box.js"),
+        utils.initScript("js/physics/base.js", 'defer'),
+        utils.initScript("js/physics/box.js", 'defer'),
 
-        utils.initScript("js/dispatcher.js"),
-        utils.initScript("js/network.js"),
-        utils.initScript("js/render.js"),
-        utils.initScript("js/logic.js"),
-        utils.initScript("js/statement.js"),
+        utils.initScript("js/dispatcher.js", 'defer'),
+        utils.initScript("js/network.js", 'defer'),
+        utils.initScript("js/render.js", 'defer'),
+        utils.initScript("js/logic.js", 'defer'),
+        utils.initScript("js/statement.js", 'defer'),
     ])
 
     // крутилка офф
@@ -47,7 +47,8 @@ async function loadGame(state){
         [ 0, 255, 0 , 255],
         50, 30
     )
-    let test_sprite = new Sprite(state, test_texture)
+    let test_sprite = state.render.staticSpriteManager.createSprite(test_texture)
+    console.log(test_sprite)
 
     //await state.netwotk.updatePlayer()
     //await state.network.updateLocation()
