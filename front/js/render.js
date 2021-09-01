@@ -31,7 +31,7 @@ class Renderer {
 		gl.viewportHeight = canvas_el.height;
 
 		gl.clearColor(0.62, 0.81, 1.0, 1.0);
-		gl.enable(gl.DEPTH_TEST);
+		//gl.enable(gl.DEPTH_TEST);
 		//gl.enable( gl.CULL_FACE );
 		//gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
 	}
@@ -74,7 +74,6 @@ class Renderer {
 	//
 	// Render one frame of the world to the canvas.
 	draw() {
-		console.log('draw'+this.frameId)
 		let gl = this.gl;
 
 		// Initialise view
@@ -94,7 +93,9 @@ class Renderer {
 		gl.enableVertexAttribArray(locals.a_position);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.pos);
 		if (sprtMngr.positionHandler.needUpdate) {
-			gl.bufferData(gl.ARRAY_BUFFER, sprtMngr.positionHandler.data, gl.STATIC_DRAW);
+			gl.bufferData(gl.ARRAY_BUFFER, sprtMngr.positionHandler.data, gl.DYNAMIC_DRAW);
+			console.log('pos update', ...sprtMngr.positionHandler.data)
+			sprtMngr.positionHandler.needUpdate = false
 		}
 		gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0);
 		// textures
@@ -102,17 +103,20 @@ class Renderer {
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.tex);
 		if (sprtMngr.textureHandler.needUpdate) {
 			gl.bufferData(gl.ARRAY_BUFFER, sprtMngr.textureHandler.data, gl.DYNAMIC_DRAW);
+			console.log('tex update', ...sprtMngr.textureHandler.data)
+			sprtMngr.textureHandler.needUpdate = false
 		}
 		gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0);
 
 		// uniforms
 		// textures
-		let texture = this.textureManager.getTexture();
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.uniform1i(locals.u_texture_src, 0);
+		// let texture = this.textureManager.getTexture();
+		// gl.activeTexture(gl.TEXTURE0);
+		// gl.bindTexture(gl.TEXTURE_2D, texture);
+		// gl.uniform1i(locals.u_texture_src, 0);
 
 		// отрисовка геометрии
+		// console.log(sprtMngr.length, sprtMngr.positionHandler.data.length / 3, sprtMngr.textureHandler.data.length / 2)
 		gl.drawArrays(gl.TRIANGLES, 0, sprtMngr.length);
 
 		// effects
@@ -195,6 +199,7 @@ class Renderer {
 				a_position: gl.getAttribLocation(program, "a_position"),
 				a_texture: gl.getAttribLocation(program, "a_texture"),
 				u_texture_src: gl.getUniformLocation(program, "u_texture_src"),
+				u_texture_resolution: gl.getUniformLocation(program, "u_texture_resolution"),
 			};
 		});
 

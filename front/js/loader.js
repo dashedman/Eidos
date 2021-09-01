@@ -1,48 +1,54 @@
 async function loadLibs(){
-    await Promise.all([
-        utils.initScript("js/glMatrix-1.2.min.js"),
-        utils.initScript("js/glsl_math.js"),
-    ])
-
     // крутилка
 
-
     // большая загрузка
-    await Promise.all([
-        utils.initScript("js/utils/time.js", 'defer'),
-        utils.initScript("js/utils/camera.js", 'defer'),
+    let load_chunks = [
+        [
+            "js/glMatrix-1.2.min.js",
+            "js/glsl_math.js",
+        ], [
+            "js/utils/time.js",
+            "js/utils/camera.js",
 
-        utils.initScript("js/textures/base.js", 'defer'),
-        utils.initScript("js/textures/color.js", 'defer'),
-        utils.initScript("js/textures/getAtlas.js", 'defer'),
-        utils.initScript("js/textures/manager.js", 'defer'),
+            "js/textures/base.js",
+            "js/textures/color.js",
+            "js/textures/getAtlas.js",
+            "js/textures/manager.js",
+        ], [
+            "js/sprites/base.js",
+            "js/sprites/manager.js",
+        ], [
+            "js/entities/base.js",
+            "js/entities/location.js",
+            "js/entities/player.js",
 
-        utils.initScript("js/sprites/base.js", 'defer'),
-        utils.initScript("js/sprites/manager.js", 'defer'),
-
-        utils.initScript("js/entities/base.js", 'defer'),
-        utils.initScript("js/entities/location.js", 'defer'),
-        utils.initScript("js/entities/player.js", 'defer'),
-
-        utils.initScript("js/physics/base.js", 'defer'),
-        utils.initScript("js/physics/box.js", 'defer'),
-
-        utils.initScript("js/dispatcher.js", 'defer'),
-        utils.initScript("js/network.js", 'defer'),
-        utils.initScript("js/render.js", 'defer'),
-        utils.initScript("js/logic.js", 'defer'),
-        utils.initScript("js/statement.js", 'defer'),
-    ])
+            "js/physics/base.js",
+            "js/physics/box.js",
+        ], [
+            "js/dispatcher.js",
+            "js/network.js",
+            "js/render.js",
+            "js/statement.js",
+        ]
+    ]
+    
+    for(let load_chunk of load_chunks){
+        let load_process = []
+        for(let src of load_chunk){
+            load_process.push(
+                utils.initScript(src, 'defer')
+            )
+        }
+        await Promise.all(load_process)
+    }
 
     // крутилка офф
 }
 
 
 async function loadGame(state){
-    console.log('hoba')
     await state.render.as_prepare()
 
-    console.log('hoba')
     let test_texture = state.render.textureManager.createTexture('test', 'resources/test.jpg')
     let test_col_texture = state.render.textureManager.createColorTexture(
         'color', 
@@ -50,7 +56,9 @@ async function loadGame(state){
         50, 30
     )
     let test_sprite = state.render.staticSpriteManager.createSprite(test_texture)
-    console.log(test_sprite)
+    
+    state.test = [test_texture, test_sprite]
+    console.log(state.test)
 
     //await state.netwotk.updatePlayer()
     //await state.network.updateLocation()

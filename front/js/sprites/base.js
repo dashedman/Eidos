@@ -21,7 +21,7 @@ class Sprite {
 
         this.sx = 0
         this.sy = 0
-        this.sz = 0
+        this.sz = -1
         this.sw = this.texture.image.width
         this.sh = this.texture.image.height
 
@@ -57,9 +57,9 @@ class Sprite {
     set sw(value) {
         this._spriteCoords.w = value
 
-        const idx = this._bufferIndexes.v
-        this._p[idx]     = this._p[idx + 2] = this._p[idx + 6]  = this.sx;
-        this._p[idx + 4] = this._p[idx + 8] = this._p[idx + 10] = this.sx + value;
+        const idx = this._bufferIndexes.p
+        this._p[idx]     = this._p[idx + 3] = this._p[idx + 9]  = this.sx;
+        this._p[idx + 6] = this._p[idx + 12] = this._p[idx + 15] = this.sx + value;
         this._manager.positionHandler.needUpdate = true
     }
 
@@ -69,9 +69,9 @@ class Sprite {
     set sh(value) {
         this._spriteCoords.h = value
 
-        const idx = this._bufferIndexes.v
-        this._p[idx + 1] = this._p[idx + 5] = this._p[idx + 9]  = this.sy;
-        this._p[idx + 3] = this._p[idx + 7] = this._p[idx + 11] = this.sy + value;
+        const idx = this._bufferIndexes.p
+        this._p[idx + 1] = this._p[idx + 7] = this._p[idx + 13] = this.sy;
+        this._p[idx + 4] = this._p[idx + 10] = this._p[idx + 16] = this.sy + value;
         this._manager.positionHandler.needUpdate = true
     }
     /**
@@ -80,7 +80,7 @@ class Sprite {
     set sx(value) {
         this._spriteCoords.x = value
 
-        const idx = this._bufferIndexes.v
+        const idx = this._bufferIndexes.p
         this._p[idx]     = this._p[idx + 3] = this._p[idx + 9]  = value;
         this._p[idx + 6] = this._p[idx + 12] = this._p[idx + 15] = value + this.sw;
         this._manager.positionHandler.needUpdate = true
@@ -91,7 +91,7 @@ class Sprite {
     set sy(value) {
         this._spriteCoords.y = value
 
-        const idx = this._bufferIndexes.v
+        const idx = this._bufferIndexes.p
         this._p[idx + 1] = this._p[idx + 7] = this._p[idx + 13]  = value;
         this._p[idx + 4] = this._p[idx + 10] = this._p[idx + 16] = value + this.sh;
         this._manager.positionHandler.needUpdate = true
@@ -102,7 +102,7 @@ class Sprite {
      set sz(value) {
         this._spriteCoords.z = value
 
-        const idx = this._bufferIndexes.v
+        const idx = this._bufferIndexes.p
         for(let i = 2; i < 18; i += 3) this._p[idx + i] = value;
         this._manager.positionHandler.needUpdate = true
     }
