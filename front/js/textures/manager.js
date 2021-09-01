@@ -17,7 +17,9 @@ class TextureManager {
         this.atlas
 
         this.waitInit = new Promise((resolve, reject) => {
-            setTimeout(this.createPlug.bind(this), 0, resolve, reject)
+            setTimeout(() => {
+                this.createPlug(resolve, reject)
+            }, 0)
         })
 
         let gl = this._state.render.gl
@@ -112,6 +114,7 @@ class TextureManager {
 
         this.atlas.onload = () => {
             let gl = this._state.render.gl
+            gl.useProgram(this._state.render.programs.sprite)
             // SET IMAGE
             gl.bindTexture(gl.TEXTURE_2D, this.gl_texture)
             gl.texImage2D(

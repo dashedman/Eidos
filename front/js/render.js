@@ -74,6 +74,7 @@ class Renderer {
 	//
 	// Render one frame of the world to the canvas.
 	draw() {
+		console.log('draw'+this.frameId)
 		let gl = this.gl;
 
 		// Initialise view
@@ -82,7 +83,7 @@ class Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		// sprites render
-		gl.useProgram(this.programs.sprite);
+		gl.useProgram(this.programs.sprites);
 
 		// buffers
 		// static
@@ -135,7 +136,7 @@ class Renderer {
 			canvas.height = canvas.clientHeight;
 
 			// Update perspective projection based on new w/h ratio
-			this.setPerspective(this.fov, this.min, this.max);
+			// this.setPerspective(this.fov, this.min, this.max);
 		}
 	}
 	// loadShaders()
@@ -179,6 +180,7 @@ class Renderer {
 
 		// COULD BE EDITED TO LOAD NEW PROGRAMS
 		let spritesPr = getProgram('sprites').then((program) => {
+			console.log(`gl.useProgram(${program})`)
 			gl.useProgram(program);
 			this.buffers.static = {
 				pos: gl.createBuffer(),
@@ -235,17 +237,6 @@ class Renderer {
 		mat4.translate(this.viewMatrix, [-pos[0], -pos[1], -pos[2]], this.viewMatrix);
 
 		gl.uniformMatrix4fv(this.uViewMat, false, this.viewMatrix);
-	}
-	drawBuffer(buffer) {
-		var gl = this.gl;
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-
-		gl.vertexAttribPointer(this.aPos, 3, gl.FLOAT, false, 9 * 4, 0);
-		gl.vertexAttribPointer(this.aColor, 4, gl.FLOAT, false, 9 * 4, 5 * 4);
-		gl.vertexAttribPointer(this.aTexCoord, 2, gl.FLOAT, false, 9 * 4, 3 * 4);
-
-		gl.drawArrays(gl.TRIANGLES, 0, buffer.vertices);
 	}
 }
 
