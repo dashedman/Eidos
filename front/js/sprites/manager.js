@@ -22,6 +22,12 @@ class SpriteManager {
         return sprite
     }
 
+    async as_createSprite(texture){
+        let sprite = this.createSprite(texture)
+        await sprite.waitInit
+        return sprite
+    }
+
     _allocateWithHandler(handler) {
         // пошаговое предельное управление памятью
         let dataIndex = handler.data.length

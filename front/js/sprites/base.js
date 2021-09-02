@@ -14,7 +14,7 @@ class Sprite {
         this.texture = texture;
         texture.addToTrace(this)
         // async constructor
-        this.initState = this.async_constructor()
+        this.waitInit = this.async_constructor()
     }
     async async_constructor(resolve){
         await this.texture.loadState
@@ -26,6 +26,7 @@ class Sprite {
         this.sh = this.texture.image.height
 
         // texture coords
+        console.log(this.texture.image)
         this.tx = 0
         this.ty = 0
         this.tw = this.texture.image.width
@@ -33,16 +34,25 @@ class Sprite {
     }
     forceUpdate(){
         // force update for verticles
+        forceUpdateSprite()
+        forceUpdateTexture()
+    }
+    forceUpdateTexture(){
+        // force update for verticles
+        this.tx = this.tx
+        this.ty = this.ty
+        this.tw = this.texture.atlasCoords.w
+        this.th = this.texture.atlasCoords.h
+    }
+    forceUpdateSprite(){
+        // force update for verticles
         this.sx = this.sx
         this.sy = this.sy
         this.sz = this.sz
-
-        this.tx = this.tx
-        this.ty = this.ty
     }
     traceEvent(texture){
         if(this.texture == texture){
-            this.forceUpdate()
+            this.forceUpdateTexture()
         }
     }
     delete() {

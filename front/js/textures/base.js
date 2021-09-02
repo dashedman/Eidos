@@ -24,6 +24,7 @@ class Texture {
         this._manager.pop(this.name);
     }
     setAtlas(coords) {
+        console.log('set', this.name, coords)
         this.atlasCoords = Object.assign({}, coords);
         // TODO reset verticles
         for(const traced_obj of this._traced){

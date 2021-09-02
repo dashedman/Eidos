@@ -34,16 +34,18 @@ class Renderer {
 		//gl.enable(gl.DEPTH_TEST);
 		//gl.enable( gl.CULL_FACE );
 		//gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+
+		this.waitInit = this.async_constructor();
 	}
-	async as_prepare() {
+	async async_constructor() {
 		// Load shaders
-		this.staticSpriteManager = new SpriteManager(this._state);
-		this.textureManager = new TextureManager(this._state);
 		this.buffers = {};
 		this.varLocals = {};
 		this.programs = {};
-		
 		await this.loadShaders();
+		
+		this.staticSpriteManager = new SpriteManager(this._state);
+		this.textureManager = new TextureManager(this._state);
 		await this.textureManager.waitInit;
 	}
 	// run()

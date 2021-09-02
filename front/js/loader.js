@@ -47,15 +47,30 @@ async function loadLibs(){
 
 
 async function loadGame(state){
-    await state.render.as_prepare()
+    await state.render.waitInit
 
     let test_texture = state.render.textureManager.createTexture('test', 'resources/test.jpg')
-    let test_col_texture = state.render.textureManager.createColorTexture(
-        'color', 
+    // let test_col1_texture = state.render.textureManager.createColorTexture(
+    //     'color1', 
+    //     [ 0, 0, 255 , 255],
+    //     1450, 420
+    // )
+    let test_col2_texture = state.render.textureManager.createColorTexture(
+        'color2', 
         [ 0, 255, 0 , 255],
-        50, 30
+        150, 420
     )
-    let test_sprite = state.render.staticSpriteManager.createSprite(test_texture)
+    // let test_col3_texture = state.render.textureManager.createColorTexture(
+    //     'color3', 
+    //     [ 255, 0, 0 , 255],
+    //     50, 420
+    // )
+    let test_sprite = await state.render.staticSpriteManager.as_createSprite(test_texture)
+    await state.render.textureManager.waitInit
+    test_sprite.sw = 1
+    test_sprite.sh = 1
+    test_sprite.tw = state.render.textureManager.atlas.width
+    test_sprite.th = state.render.textureManager.atlas.height
     
     state.test = [test_texture, test_sprite]
     console.log(state.test)

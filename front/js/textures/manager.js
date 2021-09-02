@@ -95,42 +95,55 @@ class TextureManager {
         // SYNC
         let data = atlas.syncCompiling({ textures: [...this.textures.values()] })
 
-        this.bindAtlas(data.atlas)
+        await this.bindAtlas(data.atlas)
 
         for (let tile of data.tiling) {
+            let inverted_tile = Object.assign({}, tile)
+            inverted_tile.y = this.atlas.height - tile.h - tile.y
+
             this.textures.get(tile.name).setAtlas({
-                w: tile.w,
-                h: tile.h,
-                x: tile.x,
-                y: tile.y,
+                w: inverted_tile.w,
+                h: inverted_tile.h,
+                x: inverted_tile.x,
+                y: inverted_tile.y,
             })
         }
         console.log('Texture altas compile done')
         this.status = TextureManager.STATUSES.READY
     }
-    bindAtlas(atlas) {
+    async bindAtlas(atlas) {
         this.atlas = new Image()
         this.atlas.src = atlas
 
-        this.atlas.onload = () => {
-            let gl = this._state.render.gl
-            gl.useProgram(this._state.render.programs.sprite)
-            // SET IMAGE
-            gl.bindTexture(gl.TEXTURE_2D, this.gl_texture)
-            gl.texImage2D(
-                gl.TEXTURE_2D,
-                0,
-                gl.RGBA,
-                gl.RGBA,
-                gl.UNSIGNED_BYTE,
-                this.atlas // image
-            )
+        await new Promise((resolve, reject) =>{
+            this.atlas.onload = () => resolve()
+        })
 
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-        }
+        console.log(this.atlas.width)
+        let gl = this._state.render.gl
+        gl.useProgram(this._state.render.programs.sprites)
+        
+        // SET IMAGE
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.bindTexture(gl.TEXTURE_2D, this.gl_texture)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            this.atlas // image
+        )
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+        gl.uniform2f(
+            this._state.render.varLocals.sprites.u_texture_resolution, 
+            this.atlas.width, this.atlas.height
+        )
     }
     getTexture() {
         return this.gl_texture
