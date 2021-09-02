@@ -15,15 +15,15 @@ class SpriteManager {
         this.textureHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 2 * 6})
     }
 
-    createSprite(texture){
+    createSprite(texture, ...mixins){
         let bufferIndexes = this.allocate()
-        let sprite = new Sprite(this, bufferIndexes, texture)
+        let sprite = new Sprite(this, bufferIndexes, texture, ...mixins)
         this.sprites.add(sprite)
         return sprite
     }
 
-    async as_createSprite(texture){
-        let sprite = this.createSprite(texture)
+    async as_createSprite(texture, ...mixins){
+        let sprite = this.createSprite(texture, ...mixins)
         await sprite.waitInit
         return sprite
     }

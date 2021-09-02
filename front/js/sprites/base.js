@@ -1,7 +1,7 @@
 // Realize container for texture, with rect
 
 class Sprite {
-    constructor(manager, bufferIndexes, texture) {
+    constructor(manager, bufferIndexes, texture, ...mixins) {
         this._bufferIndexes = bufferIndexes;
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
@@ -15,6 +15,9 @@ class Sprite {
         texture.addToTrace(this)
         // async constructor
         this.waitInit = this.async_constructor()
+
+        // add mixins
+        Object.assign(this, ...mixins)
     }
     async async_constructor(resolve){
         await this.texture.loadState
@@ -22,15 +25,15 @@ class Sprite {
         this.sx = 0
         this.sy = 0
         this.sz = -1
-        this.sw = this.texture.image.width
-        this.sh = this.texture.image.height
+        this.sw = this.texture.image.naturalWidth
+        this.sh = this.texture.image.naturalHeight
 
         // texture coords
         console.log(this.texture.image)
         this.tx = 0
         this.ty = 0
-        this.tw = this.texture.image.width
-        this.th = this.texture.image.height
+        this.tw = this.texture.image.naturalWidth
+        this.th = this.texture.image.naturalHeight
     }
     forceUpdate(){
         // force update for verticles
@@ -41,7 +44,7 @@ class Sprite {
         // force update for verticles
         this.tx = this.tx
         this.ty = this.ty
-        this.tw = this.texture.atlasCoords.w
+        this.tw = this.texture.frameOffset
         this.th = this.texture.atlasCoords.h
     }
     forceUpdateSprite(){

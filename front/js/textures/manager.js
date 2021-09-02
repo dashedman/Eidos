@@ -99,7 +99,7 @@ class TextureManager {
 
         for (let tile of data.tiling) {
             let inverted_tile = Object.assign({}, tile)
-            inverted_tile.y = this.atlas.height - tile.h - tile.y
+            inverted_tile.y = this.atlas.naturalHeight - tile.h - tile.y
 
             this.textures.get(tile.name).setAtlas({
                 w: inverted_tile.w,
@@ -119,7 +119,6 @@ class TextureManager {
             this.atlas.onload = () => resolve()
         })
 
-        console.log(this.atlas.width)
         let gl = this._state.render.gl
         gl.useProgram(this._state.render.programs.sprites)
         
@@ -142,7 +141,7 @@ class TextureManager {
 
         gl.uniform2f(
             this._state.render.varLocals.sprites.u_texture_resolution, 
-            this.atlas.width, this.atlas.height
+            this.atlas.naturalWidth, this.atlas.naturalHeight
         )
     }
     getTexture() {

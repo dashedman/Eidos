@@ -6,6 +6,9 @@ class Texture {
 
         this.atlasCoords = {};
 
+        this.frameNumber = 1,
+        this.frameOffset = 1, // frame width
+
         this.loadState;
         this.name = name;
         this.loadData( ...params );
@@ -24,9 +27,9 @@ class Texture {
         this._manager.pop(this.name);
     }
     setAtlas(coords) {
-        console.log('set', this.name, coords)
         this.atlasCoords = Object.assign({}, coords);
-        // TODO reset verticles
+        this.computeFrameOffset()
+
         for(const traced_obj of this._traced){
             traced_obj.traceEvent(this)
         }
@@ -36,6 +39,9 @@ class Texture {
     }
     removeFromTrace(obj){
         this._traced.delete(obj)
+    }
+    computeFrameOffset(){
+        this.frameOffset = this.atlasCoords.w / this.frameNumber
     }
 }
 

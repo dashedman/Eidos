@@ -3,17 +3,18 @@ const SpriteMixins = {
         // texture must be framed
         iAnimated: true,
         animationTime: 0,
-        animationFrameRate: 1,
+        animationFrameRate: 1000,
         currentFrame: 0,
 
         initAnimation(frameRate){
-            this.animationTime = 0
+            this.currentFrame = 0
+            this.animationTime = this._manager._state.time.time
             this.animationFrameRate = frameRate || this.animationFrameRate
             this.tw = this.texture.frameOffset
         },
         resetAnimation(){
             this.currentFrame = 0
-            this.animationTime = 0
+            this.animationTime = this._manager._state.time.time
         },
         doAnimation(time){
             this.currentFrame = (
@@ -37,9 +38,12 @@ const SpriteMixins = {
             this.state_textures.set(this.current_state, this.texture)
 
             for(let [state, texture] in texture_map){
-                this.state_textures.set(state, texture)
+                this.addState(state, texture)
             }
             
+        },
+        addState(state_id, texture){
+            this.state_textures.set(state_id, texture)
         },
         setState(state_id){
             this.current_state = state_id
@@ -50,5 +54,6 @@ const SpriteMixins = {
                 this.initAnimation()
             }
         },
+        
     },
 }

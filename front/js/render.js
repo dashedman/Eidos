@@ -96,7 +96,6 @@ class Renderer {
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.pos);
 		if (sprtMngr.positionHandler.needUpdate) {
 			gl.bufferData(gl.ARRAY_BUFFER, sprtMngr.positionHandler.data, gl.DYNAMIC_DRAW);
-			console.log('pos update', ...sprtMngr.positionHandler.data)
 			sprtMngr.positionHandler.needUpdate = false
 		}
 		gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0);
@@ -105,7 +104,6 @@ class Renderer {
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.tex);
 		if (sprtMngr.textureHandler.needUpdate) {
 			gl.bufferData(gl.ARRAY_BUFFER, sprtMngr.textureHandler.data, gl.DYNAMIC_DRAW);
-			console.log('tex update', ...sprtMngr.textureHandler.data)
 			sprtMngr.textureHandler.needUpdate = false
 		}
 		gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0);

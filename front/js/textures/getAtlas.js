@@ -57,8 +57,8 @@ function generateTiling(textures){
         (tex, index) => ({
             index: index, 
             name: tex.name,
-            w: tex.image.width, 
-            h: tex.image.height,
+            w: tex.image.naturalWidth, 
+            h: tex.image.naturalHeight,
             x: 0,
             y: 0
         })
@@ -68,9 +68,10 @@ function generateTiling(textures){
 
     // calc sum of rects areas
     let summaryArea = rectangles.reduce( (acumulator, rect) => acumulator + rect.w*rect.h, 0 )
+    let maxWidth = rectangles.reduce( (acumulator, rect) => Math.max(acumulator, rect.w), 0 )
     // estimating width by square area
     // with golden cut
-    let estimateWidth = Math.sqrt(summaryArea)
+    let estimateWidth = Math.max(Math.sqrt(summaryArea), maxWidth)
 
     // algorithm
     let levels = []
