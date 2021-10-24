@@ -8,8 +8,6 @@ class Sprite {
         this._textureCoords = {x: 0, y:0, w:0, h:0}
 
         this._manager = manager;
-        this._p = this._manager.positionHandler.data;
-        this._t = this._manager.textureHandler.data;
 
         this.texture = texture;
         texture.addToTrace(this)
@@ -68,101 +66,129 @@ class Sprite {
      * @param {number} value
      */
     set sw(value) {
-        this._spriteCoords.w = value
+        if(this._spriteCoords.w != value){
+            this._spriteCoords.w = value
 
-        const idx = this._bufferIndexes.p
-        this._p[idx]     = this._p[idx + 3] = this._p[idx + 9]  = this.sx;
-        this._p[idx + 6] = this._p[idx + 12] = this._p[idx + 15] = this.sx + value;
-        this._manager.positionHandler.needUpdate = true
+            const _p = this._manager.positionHandler.data
+            const idx = this._bufferIndexes.p
+            _p[idx]     = _p[idx + 3] = _p[idx + 9]  = this.sx;
+            _p[idx + 6] = _p[idx + 12] = _p[idx + 15] = this.sx + value;
+            this._manager.positionHandler.needUpdate = true
+        }
     }
 
     /**
      * @param {number} value
      */
     set sh(value) {
-        this._spriteCoords.h = value
+        if(this._spriteCoords.h != value){
+            this._spriteCoords.h = value
 
-        const idx = this._bufferIndexes.p
-        this._p[idx + 1] = this._p[idx + 7] = this._p[idx + 13] = this.sy;
-        this._p[idx + 4] = this._p[idx + 10] = this._p[idx + 16] = this.sy + value;
-        this._manager.positionHandler.needUpdate = true
+            const _p = this._manager.positionHandler.data
+            const idx = this._bufferIndexes.p
+            _p[idx + 1] = _p[idx + 7] = _p[idx + 13] = this.sy;
+            _p[idx + 4] = _p[idx + 10] = _p[idx + 16] = this.sy + value;
+            this._manager.positionHandler.needUpdate = true
+        }
     }
     /**
      * @param {number} value
      */
     set sx(value) {
-        this._spriteCoords.x = value
+        if(this._spriteCoords.x != value){
+            this._spriteCoords.x = value
 
-        const idx = this._bufferIndexes.p
-        this._p[idx]     = this._p[idx + 3] = this._p[idx + 9]  = value;
-        this._p[idx + 6] = this._p[idx + 12] = this._p[idx + 15] = value + this.sw;
-        this._manager.positionHandler.needUpdate = true
+            const _p = this._manager.positionHandler.data
+            const idx = this._bufferIndexes.p
+            _p[idx]     = _p[idx + 3] = _p[idx + 9]  = value;
+            _p[idx + 6] = _p[idx + 12] = _p[idx + 15] = value + this.sw;
+            this._manager.positionHandler.needUpdate = true
+        }
     }
     /**
      * @param {number} value
      */
     set sy(value) {
-        this._spriteCoords.y = value
+        if(this._spriteCoords.y != value){
+            this._spriteCoords.y = value
 
-        const idx = this._bufferIndexes.p
-        this._p[idx + 1] = this._p[idx + 7] = this._p[idx + 13]  = value;
-        this._p[idx + 4] = this._p[idx + 10] = this._p[idx + 16] = value + this.sh;
-        this._manager.positionHandler.needUpdate = true
+            const _p = this._manager.positionHandler.data
+            const idx = this._bufferIndexes.p
+            _p[idx + 1] = _p[idx + 7] = _p[idx + 13]  = value;
+            _p[idx + 4] = _p[idx + 10] = _p[idx + 16] = value + this.sh;
+            this._manager.positionHandler.needUpdate = true
+        }
     }
     /**
      * @param {number} value
      */
      set sz(value) {
-        this._spriteCoords.z = value
+        if(this._spriteCoords.z != value){
+            this._spriteCoords.z = value
 
-        const idx = this._bufferIndexes.p
-        for(let i = 2; i < 18; i += 3) this._p[idx + i] = value;
-        this._manager.positionHandler.needUpdate = true
+            const _p = this._manager.positionHandler.data
+            const idx = this._bufferIndexes.p
+            for(let i = 2; i < 18; i += 3) _p[idx + i] = value;
+
+            this._manager.requestZSorting()
+        }
     }
 
     /**
      * @param {number} value
      */
     set tw(value) {
-        this._textureCoords.w = value
+        if(this._textureCoords.w != value){
+            this._textureCoords.w = value
 
-        const idx = this._bufferIndexes.t
-        this._t[idx]     = this._t[idx + 2] = this._t[idx + 6]  = this._textureCoords.x + this.texture.atlasCoords.x;
-        this._t[idx + 4] = this._t[idx + 8] = this._t[idx + 10] = this._textureCoords.x + this.texture.atlasCoords.x + value;
-        this._manager.textureHandler.needUpdate = true
+            const _t = this._manager.textureHandler.data
+            const idx = this._bufferIndexes.t
+            _t[idx]     = _t[idx + 2] = _t[idx + 6]  = this._textureCoords.x + this.texture.atlasCoords.x;
+            _t[idx + 4] = _t[idx + 8] = _t[idx + 10] = this._textureCoords.x + this.texture.atlasCoords.x + value;
+            this._manager.textureHandler.needUpdate = true
+        }
     }
     /**
      * @param {number} value
      */
     set th(value) {
-        this._textureCoords.h = value
+        if(this._textureCoords.w != value){
+            this._textureCoords.h = value
 
-        const idx = this._bufferIndexes.t
-        this._t[idx + 1] = this._t[idx + 5] = this._t[idx + 9]  = this._textureCoords.y + this.texture.atlasCoords.y;
-        this._t[idx + 3] = this._t[idx + 7] = this._t[idx + 11] = this._textureCoords.y + this.texture.atlasCoords.y + value;
-        this._manager.textureHandler.needUpdate = true
+            const _t = this._manager.textureHandler.data
+            const idx = this._bufferIndexes.t
+            _t[idx + 1] = _t[idx + 5] = _t[idx + 9]  = this._textureCoords.y + this.texture.atlasCoords.y;
+            _t[idx + 3] = _t[idx + 7] = _t[idx + 11] = this._textureCoords.y + this.texture.atlasCoords.y + value;
+            this._manager.textureHandler.needUpdate = true
+        }
     }
     /**
      * @param {number} value
      */
     set tx(value) {
-        this._textureCoords.x = value
+        if(this._textureCoords.x != value){
+            this._textureCoords.x = value
 
-        const idx = this._bufferIndexes.t
-        this._t[idx]     = this._t[idx + 2] = this._t[idx + 6]  = value + this.texture.atlasCoords.x;
-        this._t[idx + 4] = this._t[idx + 8] = this._t[idx + 10] = value + this.texture.atlasCoords.x +this._textureCoords.w;
-        this._manager.textureHandler.needUpdate = true
+            const _t = this._manager.textureHandler.data
+            const idx = this._bufferIndexes.t
+            _t[idx]     = _t[idx + 2] = _t[idx + 6]  = value + this.texture.atlasCoords.x;
+            _t[idx + 4] = _t[idx + 8] = _t[idx + 10] = value + this.texture.atlasCoords.x + this._textureCoords.w;
+            this._manager.textureHandler.needUpdate = true
+        }
     }
     /**
      * @param {number} value
      */
     set ty(value) {
-        this._textureCoords.y = value
+        if(this._textureCoords.y != value){
+            this._textureCoords.y = value
 
-        const idx = this._bufferIndexes.t
-        this._t[idx + 1] = this._t[idx + 5] = this._t[idx + 9]  = value + this.texture.atlasCoords.y;
-        this._t[idx + 3] = this._t[idx + 7] = this._t[idx + 11] = value + this.texture.atlasCoords.y + this._textureCoords.h;
-        this._manager.textureHandler.needUpdate = true
+            const _t = this._manager.textureHandler.data
+            const idx = this._bufferIndexes.t
+            _t[idx + 1] = _t[idx + 5] = _t[idx + 9]  = value + this.texture.atlasCoords.y;
+            _t[idx + 3] = _t[idx + 7] = _t[idx + 11] = value + this.texture.atlasCoords.y + this._textureCoords.h;
+            this._manager.textureHandler.needUpdate = true
+        }
     }
 
     get sx(){return this._spriteCoords.x}

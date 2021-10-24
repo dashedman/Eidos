@@ -33,7 +33,8 @@ class Renderer {
 		gl.clearColor(0.62, 0.81, 1.0, 1.0);
 		//gl.enable(gl.DEPTH_TEST);
 		//gl.enable( gl.CULL_FACE );
-		//gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+		gl.enable(gl.BLEND)
+		gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
 
 		this.waitInit = this.async_constructor();
 	}
@@ -47,6 +48,8 @@ class Renderer {
 		this.staticSpriteManager = new SpriteManager(this._state);
 		this.textureManager = new TextureManager(this._state);
 		await this.textureManager.waitInit;
+
+		this.camera = new Camera()
 	}
 	// run()
 	//
@@ -99,6 +102,7 @@ class Renderer {
 			sprtMngr.positionHandler.needUpdate = false
 		}
 		gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0);
+
 		// textures
 		gl.enableVertexAttribArray(locals.a_texture);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.tex);
@@ -109,6 +113,11 @@ class Renderer {
 		gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0);
 
 		// uniforms
+		if(this._state.camera.needUpdate){
+			gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
+			this._state.camera.needUpdate = false
+		}
+		
 		// textures
 		// let texture = this.textureManager.getTexture();
 		// gl.activeTexture(gl.TEXTURE0);
@@ -117,7 +126,7 @@ class Renderer {
 
 		// отрисовка геометрии
 		// console.log(sprtMngr.length, sprtMngr.positionHandler.data.length / 3, sprtMngr.textureHandler.data.length / 2)
-		gl.drawArrays(gl.TRIANGLES, 0, sprtMngr.length);
+		gl.drawArrays(gl.TRIANGLES, 0, sprtMngr.vertCount);
 
 		// effects
 		// gl.useProgram(this.programs.effects);
@@ -199,7 +208,8 @@ class Renderer {
 				a_position: gl.getAttribLocation(program, "a_position"),
 				a_texture: gl.getAttribLocation(program, "a_texture"),
 				u_texture_src: gl.getUniformLocation(program, "u_texture_src"),
-				u_texture_resolution: gl.getUniformLocation(program, "u_texture_resolution"),
+				u_texture_resolution: gl.getUniformLocation(program, "u_textureResolution"),
+				u_viewMatrix: gl.getUniformLocation(program, "u_viewMatrix")
 			};
 		});
 
@@ -220,28 +230,6 @@ class Renderer {
 
 		mat4.perspective(fov, gl.viewportWidth / gl.viewportHeight, min, max, this.projMatrix);
 		gl.uniformMatrix4fv(this.uProjMat, false, this.projMatrix);
-	}
-	// setCamera( pos, ang )
-	//
-	// Moves the camera to the specified orientation.
-	//
-	// pos - Position in world coordinates.
-	// ang - Pitch, yaw and roll.
-	setCamera() {
-		var gl = this.gl;
-
-		this.camPos = this._state.camera.position;
-		this.camDir = this._state.camera.direction;
-
-		mat4.identity(this.viewMatrix);
-
-		mat4.rotate(this.viewMatrix, -ang[0] - Math.PI / 2, [1, 0, 0], this.viewMatrix);
-		mat4.rotate(this.viewMatrix, ang[1], [0, 0, 1], this.viewMatrix);
-		mat4.rotate(this.viewMatrix, -ang[2], [0, 1, 0], this.viewMatrix);
-
-		mat4.translate(this.viewMatrix, [-pos[0], -pos[1], -pos[2]], this.viewMatrix);
-
-		gl.uniformMatrix4fv(this.uViewMat, false, this.viewMatrix);
 	}
 }
 

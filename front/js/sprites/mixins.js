@@ -3,7 +3,7 @@ const SpriteMixins = {
         // texture must be framed
         iAnimated: true,
         animationTime: 0,
-        animationFrameRate: 1000,
+        animationFrameRate: 100,
         currentFrame: 0,
 
         initAnimation(frameRate){

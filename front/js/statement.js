@@ -12,15 +12,18 @@ function Statement(canvas_el) {
     }
     this.time = new TimeManager()
 
-    this.dispatcher = new Dispatcher(this, canvas_el)
+    this.dispatcher = new Dispatcher(this, document)
     this.render = new Renderer(this, canvas_el)
     this.network = new Network(this)
     this.physics = new Physics(this)
+    this.logic = new Logic(this)
 
     // Set up entities and location
     this.player = new Player()
     this.entities = [this.player] // array of entities
     this.location = new Location()
+
+    this.camera = new Camera()
 }
 
 
@@ -33,6 +36,7 @@ Statement.prototype.run = function() {
         // Simulate world
         gameFrame()
         this.physics.update()
+        this.logic.update()
 
         // call next iteraction
         this.loop.id = setTimeout( 

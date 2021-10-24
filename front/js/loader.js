@@ -4,16 +4,16 @@ async function loadLibs(){
     // большая загрузка
     let load_chunks = [
         [
-            "js/glMatrix-1.2.min.js",
+            "js/gl-matrix-min.js",
             "js/glsl_math.js",
         ], [
             "js/utils/time.js",
             "js/utils/camera.js",
 
             "js/textures/base.js",
+        ], [
             "js/textures/color.js",
             "js/textures/getAtlas.js",
-        ], [
             "js/textures/manager.js",
             "js/sprites/base.js",
             "js/sprites/manager.js",
@@ -30,6 +30,7 @@ async function loadLibs(){
             "js/network.js",
             "js/render.js",
             "js/statement.js",
+            "js/logic.js",
         ]
     ]
     
@@ -43,7 +44,12 @@ async function loadLibs(){
         await Promise.all(load_process)
     }
 
+    initLibs()
     // крутилка офф
+}
+
+function initLibs(){
+    window.mat4 = glMatrix.mat4
 }
 
 async function allWithProgress(promises, callback){
