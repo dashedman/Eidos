@@ -28,45 +28,158 @@ class TextureManager {
 
     async createPlug(wait_resolve, wait_reject) {
         this.plug = new ColorTexture(
-            this, '_plug',
-            [
-                0, 0, 0, 255,
-                255, 0, 255, 255,
-                255, 0, 255, 255,
-                0, 0, 0, 255,
-            ], 
-            2, 2
+            this, 
+            -1,
+            '_plug',
+            {
+                colors: [
+                    0, 0, 0, 255,
+                    255, 0, 255, 255,
+                    255, 0, 255, 255,
+                    0, 0, 0, 255,
+                ], 
+                w: 2, 
+                h: 2
+            }
         )
-        this.textures.set(this.plug.name, this.plug)
+        this.textures.set(this.plug.id, this.plug)
         await this.compileAtlas()
         wait_resolve()
     }
 
-    createTexture(name, src){
-        let texture = new Texture(this, name, src)
+    createTexture(id, name, src, frameNumber, frameOffset){
+        if(this.textures.has(id)){
+            console.warn("WARNING: THIS ID TEXTURE ALREADY EXIST!!!")
+        }
+
+        let texture = new Texture(
+            this, id, name, 
+            {src: src},
+            {number: frameNumber, offset: frameOffset}
+        )
         this.push(texture)
         return texture
     }
 
-    createColorTexture(name, colors, w, h){
-        let texture = new ColorTexture(this, name, colors, w, h)
+    createColorTexture(id, name, colors, w, h){
+        if(this.textures.has(id)){
+            console.warn("WARNING: THIS ID TEXTURE ALREADY EXIST!!!")
+        }
+
+        let texture = new ColorTexture(
+            this, id, name, 
+            {colors: colors, w: w, h: h}
+        )
         this.push(texture)
         return texture
+    }
+
+    async fromTileset(tilesetInfo){
+        // load and init textures from 
+        // tileset created by tilemap editor
+        let canvas = utils.supportCanvas(tilesetInfo.tilewidth, tilesetInfo.tileheight)
+        let ctx = canvas.getContext('2d')
+        
+        let img = new Image()
+        img.src = tilesetInfo.image
+        await utils.getImageLoadPromise(img)
+
+        let tileArray = []
+        let realTileIndex = 0;
+        for(let tileIndex = 0; tileIndex < tilesetInfo.tilecount && realTileIndex < tilesetInfo.tiles.length;){
+            
+            let tileInfo = tilesetInfo.tiles[realTileIndex]
+            realTileIndex++;
+
+            // skip empty tile
+            if(tileInfo.type == "null") {
+                tileIndex++
+                continue
+            }
+            
+
+            let indexX = tileIndex % tilesetInfo.columns
+            let indexY = Math.floor(tileIndex / tilesetInfo.columns)
+            let coordX = indexX * tilesetInfo.tilewidth
+            let coordY = indexY * tilesetInfo.tileheight
+            
+            let frameNumber
+            let frameOffset
+            if(tileInfo.animation !== undefined){
+                // processing animations
+                frameNumber = tileInfo.animation.length;
+                frameOffset = tilesetInfo.tilewidth;
+                // resize canvas to contain all animation sequence
+                canvas.width = frameNumber*frameOffset
+                // draw frames
+                for(let [frameIndex, _] of tileInfo.animation.entries()){
+
+                    indexX = tileIndex % tilesetInfo.columns
+                    indexY = Math.floor(tileIndex / tilesetInfo.columns)
+                    coordX = indexX * tilesetInfo.tilewidth
+                    coordY = indexY * tilesetInfo.tileheight
+
+                    let frameXShift = frameIndex*frameOffset
+
+                    ctx.drawImage(
+                        img, // source 
+                        coordX, coordY, tilesetInfo.tilewidth, tilesetInfo.tileheight,  // coords in source
+                        frameXShift, 0, tilesetInfo.tilewidth, tilesetInfo.tileheight   //coords in canvas
+                    )
+
+                    tileIndex++
+                }    
+            }else{
+                // non animated tile
+
+                // resize canvas to contain one tile
+                canvas.width = tilesetInfo.tilewidth
+
+                ctx.drawImage(
+                    img, // source 
+                    coordX, coordY, tilesetInfo.tilewidth, tilesetInfo.tileheight,  // coords in source
+                    0, 0, tilesetInfo.tilewidth, tilesetInfo.tileheight   //coords in canvas
+                )
+
+                tileIndex++
+            }
+ 
+            // create new texture
+            let tileGID = tilesetInfo.firstgid + tileInfo.id
+            let tileName = `${tilesetInfo.name}#${tileInfo.id}`
+            let tileSrcData = canvas.toDataURL()
+
+            tileArray.push(
+                this.createTexture(
+                    tileGID,
+                    tileName,
+                    tileSrcData,
+                    frameNumber,
+                    frameOffset
+                )
+            )
+        }
+
+        return tileArray
     }
 
     push(texture) {
         // TODO
-        if (!this.textures.has(texture.name))
-            this.textures.set(texture.name, texture)
+        if (!this.textures.has(texture.id))
+            this.textures.set(texture.id, texture)
 
         texture.setAtlas(this.plug.coords)
         this.compileAtlas()
     }
 
-    pop(name) {
+    pop(id) {
         // TODO
-        this.textures.delete(name)
+        this.textures.delete(id)
         this.compileAtlas()
+    }
+
+    get(id){
+        return this.textures.get(id)
     }
 
     async compileAtlas() {
@@ -93,7 +206,7 @@ class TextureManager {
         // }
         // this.worker.postMessage({textures: [...this.textures]})
         // SYNC
-        let data = atlas.syncCompiling({ textures: [...this.textures.values()] })
+        let data = atlas.syncCompiling({ textures: [...this.textures.values()], extrude: true })
 
         await this.bindAtlas(data.atlas)
 
@@ -101,7 +214,7 @@ class TextureManager {
             let inverted_tile = Object.assign({}, tile)
             inverted_tile.y = this.atlas.naturalHeight - tile.h - tile.y
 
-            this.textures.get(tile.name).setAtlas({
+            this.textures.get(tile.id).setAtlas({
                 w: inverted_tile.w,
                 h: inverted_tile.h,
                 x: inverted_tile.x,

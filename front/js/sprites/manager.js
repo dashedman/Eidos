@@ -16,7 +16,7 @@ class SpriteManager {
         this.textureHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 2 * 6})
     }
 
-    createSprite(texture, ...mixins){
+    createSprite({texture, mixins=[]}){
         let bufferIndexes = this.allocate()
         let sprite = new Sprite(this, bufferIndexes, texture, ...mixins)
         this.sprites.push(sprite)
@@ -71,6 +71,7 @@ class SpriteManager {
     }
 
     requestZSorting(){
+        console.log('requestZ', this._needZSorting)
         if(!this._needZSorting){
             this._needZSorting = true
             this.deferredZSorting()
@@ -78,6 +79,7 @@ class SpriteManager {
     }
     
     async deferredZSorting(){
+        console.log('deffer', this._needZSorting)
         if(this._needZSorting){
             this._needZSorting = false;
             this.sortByZIndex()
@@ -85,6 +87,7 @@ class SpriteManager {
     }
 
     sortByZIndex(){
+        console.log('sort')
         // shake sorting items by z index of sprite 
         // perfect for sorting after inserting one item
         let poshand = this.positionHandler
@@ -96,8 +99,6 @@ class SpriteManager {
                 z: poshand.data[index*poshand.offset+2],
                 unsortIndex: index
             }
-            
-            console.log( index,  this.sprites[index]._bufferIndexes)
         }
 
         // shake sort
@@ -109,7 +110,7 @@ class SpriteManager {
             // up
             for(let index = floorIndex; index < ceilIndex; index++){
                 // compare z indexes
-                if(zIndexArray[index].z > zIndexArray[index + 1].z){
+                if(zIndexArray[index].z < zIndexArray[index + 1].z){ // desc
                     // swap
                     let tmp = zIndexArray[index];
                     zIndexArray[index] = zIndexArray[index + 1];
@@ -124,7 +125,7 @@ class SpriteManager {
             // down
             for(let index = ceilIndex; index > floorIndex; index--){
                 // compare z indexes
-                if(zIndexArray[index].z < zIndexArray[index - 1].z){
+                if(zIndexArray[index].z > zIndexArray[index - 1].z){ // desc
                     // swap
                     let tmp = zIndexArray[index];
                     zIndexArray[index] = zIndexArray[index - 1];
@@ -135,26 +136,38 @@ class SpriteManager {
             }
             floorIndex = lastSwapIndex;
         }
-
         // setting with positionhandler
         let newData = new Float32Array(poshand.data.length)
+        let newTexData = new Float32Array(this.textureHandler.data.length)
         let newSprites = new Array(this.sprites.length)
 
+
         for(let index = 0; index < zIndexArray.length; index++){
-            let oldIndex = zIndexArray[index].unsortIndex*poshand.offset
-            for(let shift=0; shift < poshand.offset; shift++)
+
+            // swap position vertcles
+            let oldIndex = zIndexArray[index].unsortIndex * poshand.offset
+            for(let shift = 0; shift < poshand.offset; shift++)
                 newData[index*poshand.offset + shift] = poshand.data[oldIndex + shift]
 
-            // swap
+            // swap texture verticles
+            oldIndex = zIndexArray[index].unsortIndex * this.textureHandler.offset
+            for(let shift = 0; shift < this.textureHandler.offset; shift++)
+                newTexData[index*this.textureHandler.offset + shift] = this.textureHandler.data[oldIndex + shift]
+
+            // swap sprites
             newSprites[index] = this.sprites[zIndexArray[index].unsortIndex]
+
             // update sprite indexes
             newSprites[index]._bufferIndexes.p = index*poshand.offset
             newSprites[index]._bufferIndexes.t = index*this.textureHandler.offset
-            console.log( zIndexArray[index].unsortIndex, index,  newSprites[index]._bufferIndexes)
         }
 
         poshand.data = newData
         poshand.needUpdate = true
+
+        this.textureHandler.data = newTexData
+        this.textureHandler.needUpdate = true
+
         this.sprites = newSprites
     }
 

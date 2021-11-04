@@ -1,22 +1,16 @@
 class Camera {
     constructor(target) {
-        this.setting = {
+        this.settings = {
             fovy: Math.radians(60),        // 	Vertical field of view in radians
             aspect: 1,      // 	Aspect ratio. typically viewport width/height
             near: 1,      //  Near bound of the frustum
-            far: 50, //Infinity,  //  Far bound of the frustum, can be null or Infinity
+            far: Infinity,  //  Far bound of the frustum, can be null or Infinity
         }
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // need to be normalize
         this.upAxis = [0, 1, 0]; //  orientation, do not to be changed
 
-        this._projMatrix = mat4.perspective(
-            mat4.create(),
-            this.setting.fovy,
-            this.setting.aspect,
-            this.setting.near,
-            this.setting.far,
-        )
+        this._projMatrix = this.calcProjMatrix()
         this.viewMatrix = mat4.create();
         this.needUpdate = false;
         this.recalcMatrix()
@@ -36,6 +30,20 @@ class Camera {
         this.direction[2] = raw_vector[2]
 
         this.recalcMatrix()
+    }
+    setRatio(ratio){
+        this.settings.aspect = ratio
+        this._projMatrix = this.calcProjMatrix()
+        this.recalcMatrix()
+    }
+    calcProjMatrix(){
+        return mat4.perspective(
+            mat4.create(),
+            this.settings.fovy,
+            this.settings.aspect,
+            this.settings.near,
+            this.settings.far,
+        )
     }
     recalcMatrix(){
         this.viewMatrix = mat4.mul(

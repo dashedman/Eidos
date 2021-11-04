@@ -1,5 +1,5 @@
 class ColorTexture extends Texture{
-    loadData(colors, w, h) {
+    loadData({colors, w, h}) {
         // render color pixels to image
         let canvas = utils.supportCanvas(w, h)
         let ctx = canvas.getContext('2d')
@@ -12,10 +12,7 @@ class ColorTexture extends Texture{
 
         this.image = new Image()
         this.image.src = canvas.toDataURL()
-        this.loadState = new Promise((resolve, reject) => {
-            this.image.onload = resolve
-            this.image.onerror = reject
-        })
+        this.loadState = utils.getImageLoadPromise(this.image)
     }
 }
 

@@ -4,52 +4,60 @@
 // To store and manage game elements
 // ==========================================
 
-function Statement(canvas_el) {
-    // id of the game loop to handle
-	this.loop = {
-        id: -1, 
-        interval: 0
+class Statement {
+    constructor(canvas_el) {
+        // id of the game loop to handle
+        this.loop = {
+            id: -1,
+            interval: 0
+        }
+        this.time = new TimeManager()
+
+        this.dispatcher = new Dispatcher(this, document)
+        this.render = new Renderer(this, canvas_el)
+        this.network = new Network(this)
+        this.physics = new Physics(this)
+        this.logic = new Logic(this)
+
+        // Set up entities and location
+        this.player = new Player()
+        this.entities = new Entities(this) // array of entities
+        this.terrain = new Terrain(this)
+
+        this.camera = new Camera()
     }
-    this.time = new TimeManager()
+    run() {
+        // Start a Render loops	
+        let gameIteraction = () => {
+            // calc time
+            this.time.calc()
 
-    this.dispatcher = new Dispatcher(this, document)
-    this.render = new Renderer(this, canvas_el)
-    this.network = new Network(this)
-    this.physics = new Physics(this)
-    this.logic = new Logic(this)
+            // Simulate world
+            gameFrame()
 
-    // Set up entities and location
-    this.player = new Player()
-    this.entities = [this.player] // array of entities
-    this.location = new Location()
+            // console.log(this.debugger.cameraCenter.sx, this.debugger.cameraCenter.sw)
+            this.debugger.cameraCenter.sx = this.camera.position[0] - this.debugger.cameraCenter.sw / 2
+            this.debugger.cameraCenter.sy = this.camera.position[1] - this.debugger.cameraCenter.sh / 2
 
-    this.camera = new Camera()
-}
+            this.physics.update()
+            this.logic.update()
 
+            // call next iteraction
+            this.loop.id = setTimeout(
+                gameIteraction,
+                this.time.toNext(this.loop.interval)
+            )
+        }
+        this.loop.id = setTimeout(gameIteraction, 0)
 
-Statement.prototype.run = function() {
-    // Start a Render loops	
-    let gameIteraction = () => {
-        // calc time
-        this.time.calc()
-
-        // Simulate world
-        gameFrame()
-        this.physics.update()
-        this.logic.update()
-
-        // call next iteraction
-        this.loop.id = setTimeout( 
-            gameIteraction, 
-            this.time.toNext(this.loop.interval) 
-        );
+        // start render loop
+        this.render.run()
     }
-    this.loop.id = setTimeout( gameIteraction, 0 );
-
-    // start render loop
-    this.render.run()
+    stop() {
+        clearTimeout(this.loop.id)
+    }
 }
 
-Statement.prototype.stop = function() {
-    clearTimeout(this.loop.id)
-}
+
+
+

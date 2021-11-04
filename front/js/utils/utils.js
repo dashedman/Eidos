@@ -23,6 +23,22 @@ var utils = {
       request.send()
     })
   },
+  loadJsonResources(url){
+    return new Promise(function(resolve, reject){
+      const request = new XMLHttpRequest()
+
+      request.open('GET', url, true)
+      request.onload = function(){
+          if (request.status >=200 && request.status < 300){
+            resolve(request.response)
+          }else{
+            reject("Error: HTTP-status - " + request.status + " on resource " + url)
+          }
+      }
+      request.responseType = 'json'
+      request.send()
+    })
+  },
   loadScript: function (src, params){
     // load and insert script
     // After load you need wait setTimeout zero
@@ -30,7 +46,7 @@ var utils = {
     //
     // modificators: defer, async
     return new Promise(function(resolve, reject){
-      console.log('Start load: '+src)
+      console.log('Start load: ' + src)
       let newScript = document.createElement('script');
       newScript.type = 'text/javascript';
       newScript.src = src;
@@ -41,11 +57,17 @@ var utils = {
       document.head.appendChild(newScript);
 
       newScript.onload = ()=>{
-        console.log('Finish load: '+src)
+        console.log('Finish load: ' + src)
         resolve(newScript)
       }
       newScript.onerror = (e) => reject('Failed to load script ['+src+']: '+e)
     })
+  },
+  getImageLoadPromise(img){
+    return new Promise((resolve, reject) => {
+      img.onload = resolve
+      img.onerror = reject
+    });
   },
   initScript: async function (src, params) {
     await utils.loadScript(src, params)
@@ -62,8 +84,5 @@ var utils = {
     //canvas.style = "display: none;"
     //document.body.appendChild(canvas)
     return canvas
-  },
-  removeCanvas: function (canvas){
-    document.body.removeChild(canvas)
   }
 }

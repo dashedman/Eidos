@@ -16,18 +16,14 @@ class Sprite {
 
         // add mixins
         Object.assign(this, ...mixins)
+
+        // z-sort
+        //this._manager.requestZSorting()
     }
     async async_constructor(resolve){
         await this.texture.loadState
 
-        this.sx = 0
-        this.sy = 0
-        this.sz = -1
-        this.sw = this.texture.image.naturalWidth
-        this.sh = this.texture.image.naturalHeight
-
         // texture coords
-        console.log(this.texture.image)
         this.tx = 0
         this.ty = 0
         this.tw = this.texture.image.naturalWidth
@@ -35,13 +31,13 @@ class Sprite {
     }
     forceUpdate(){
         // force update for verticles
-        forceUpdateSprite()
-        forceUpdateTexture()
+        this.forceUpdateSprite()
+        this.forceUpdateTexture()
     }
     forceUpdateTexture(){
         // force update for verticles
-        this.tx = this.tx
-        this.ty = this.ty
+        this.tx = null
+        this.ty = null
         this.tw = this.texture.frameOffset
         this.th = this.texture.atlasCoords.h
     }
@@ -138,8 +134,8 @@ class Sprite {
      * @param {number} value
      */
     set tw(value) {
-        if(this._textureCoords.w != value){
-            this._textureCoords.w = value
+        if(this._textureCoords.w != value || value === null){
+            if(value !== null) this._textureCoords.w = value
 
             const _t = this._manager.textureHandler.data
             const idx = this._bufferIndexes.t
@@ -152,8 +148,8 @@ class Sprite {
      * @param {number} value
      */
     set th(value) {
-        if(this._textureCoords.w != value){
-            this._textureCoords.h = value
+        if(this._textureCoords.h != value || value === null){
+            if(value !== null) this._textureCoords.h = value
 
             const _t = this._manager.textureHandler.data
             const idx = this._bufferIndexes.t
@@ -166,8 +162,8 @@ class Sprite {
      * @param {number} value
      */
     set tx(value) {
-        if(this._textureCoords.x != value){
-            this._textureCoords.x = value
+        if(this._textureCoords.x != value || value === null){
+            if(value !== null) this._textureCoords.x = value
 
             const _t = this._manager.textureHandler.data
             const idx = this._bufferIndexes.t
@@ -180,8 +176,8 @@ class Sprite {
      * @param {number} value
      */
     set ty(value) {
-        if(this._textureCoords.y != value){
-            this._textureCoords.y = value
+        if(this._textureCoords.y != value || value === null){
+            if(value !== null) this._textureCoords.y = value
 
             const _t = this._manager.textureHandler.data
             const idx = this._bufferIndexes.t

@@ -16,47 +16,91 @@ async function initGame(){
 
 async function loadGame(state){
     await state.render.waitInit
-    state.camera.setPosition(0, 0, -5)
+    const ratio = state.render.canvas.width / state.render.canvas.height
+    state.camera.setPosition(0, 0, -10)
+    state.camera.setRatio(ratio)
 
-    let texture1 = state.render.textureManager.createTexture('run', 'resources/dwarf_run.png')
-    texture1.frameNumber = 6
-    let texture2 = state.render.textureManager.createTexture('roll', 'resources/dwarf_roll.png')
-    texture2.frameNumber = 5
+    // debug map center
+    let red_pixel = state.render.createColorTexture(-2, "red", [255, 0, 0, 255], 1, 1)
+    let hline = state.render.createSprite({texture: red_pixel}, 'STATIC') // horizontal
+    hline.sx = -5
+    hline.sy = -0.05
+    hline.sz = 1.9
+    hline.sw = 10
+    hline.sh = 0.1
+    let vline = state.render.createSprite({texture: red_pixel}, 'STATIC') // vertical
+    vline.sx = -0.05
+    vline.sy = -5
+    vline.sz = 1.9
+    vline.sw = 0.1
+    vline.sh = 10
 
-    let test_sprite = await state.render.staticSpriteManager.as_createSprite(
-        texture1, 
-        SpriteMixins.iAnimated, 
-        SpriteMixins.iStated
-    )
-    test_sprite.addState(1, texture2)
-    // test_sprite.initAnimation()
-    test_sprite.sw = 0.5
-    test_sprite.sh = 0.5
+    // debug map chuncks
+    let blue_pixel = state.render.createColorTexture(-3, "blue", [0, 0, 255, 255], 1, 1)
+    for(let x = -128; x <= 128; x += 16){
+        let x = 0
+        vline = state.render.createSprite({texture: blue_pixel}, 'STATIC') // vertical
+        vline.sx = x - 0.025
+        vline.sy = -128
+        vline.sw = 0.05
+        vline.sh = 256
+        vline.sz = 2
+    }
+    for(let y = -128; y <= 128; y += 16){
+        let y = 0
+        hline = state.render.createSprite({texture: blue_pixel}, 'STATIC') // horizontal
+        hline.sx = -128
+        hline.sy = y - 0.025
+        hline.sw = 256
+        hline.sh = 0.05
+        hline.sz = 2
+    }
     
-    state.test = test_sprite
-    console.log(state.test)
+    let green_pixel = state.render.createColorTexture(-4, "green", [0, 255, 0, 255], 1, 1)
+    let greenBlock = state.render.createSprite({texture: green_pixel}, 'DYNAMIC')
+    greenBlock.sx = 0
+    greenBlock.sy = 0
+    greenBlock.sw = 1
+    greenBlock.sh = 1
+    greenBlock.sz = 0.9
+    state.debugger = {
+        cameraCenter: greenBlock
+    }
 
-    test_sprite = await state.render.staticSpriteManager.as_createSprite(
-        texture1, 
-        SpriteMixins.iAnimated, 
-        SpriteMixins.iStated
-    )
-    test_sprite.addState(1, texture2)
-    // test_sprite.initAnimation()
-    test_sprite.sw = -0.5
-    test_sprite.sh = 0.5
 
-    test_sprite.sz = 1
+    let mapConfig = await utils.loadJsonResources('resources/x0y0.json')
+    console.log(mapConfig)
+    for(let tileset of mapConfig.tilesets){
+        await state.render.textureManager.fromTileset(tileset)
+    }
+
+    state.terrain.fromLayers(mapConfig.layers)
     
-    state.test2 = test_sprite
-    console.log(state.test2)
-
+    // for(let layer of state.terrain.layers){
+    //     console.debug('layer', layer.name)
+    //     for(let chunk of layer.chunks.values()){
+    //         console.debug('chunk', chunk.x, chunk.y)
+    //         for(let column of chunk.grid){
+    //             for(let ceil of column){
+    //                 if(ceil !== null) console.debug(
+    //                     'ceil', 
+    //                     ceil.sprite.sx, 
+    //                     ceil.sprite.sy,
+    //                     ceil.sprite.sz, 
+    //                     ceil.sprite.sw,
+    //                     ceil.sprite.sh, 
+    //                     ceil
+    //                 )
+    //             }
+    //         }
+    //     }
+    // }
     //await state.netwotk.updatePlayer()
     //await state.network.updateLocation()
 }
 
 function gameFrame(){
-    state.test.doAnimation(state.time.time)
+    //state.test.doAnimation(state.time.time)
 }
 
 // start

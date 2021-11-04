@@ -9,22 +9,31 @@ async function loadLibs(){
         ], [
             "js/utils/time.js",
             "js/utils/camera.js",
+            "js/utils/map2d.js",
 
             "js/textures/base.js",
         ], [
             "js/textures/color.js",
             "js/textures/getAtlas.js",
             "js/textures/manager.js",
+            
             "js/sprites/base.js",
             "js/sprites/manager.js",
             "js/sprites/mixins.js",
         ], [
             "js/entities/base.js",
+            "js/entities/block.js",
             "js/entities/location.js",
             "js/entities/player.js",
+            "js/entities/entities.js",
+
+            "js/entities/enviroment/terrain.js",
+            "js/entities/enviroment/layer.js",
+            "js/entities/enviroment/chunk.js",
 
             "js/physics/base.js",
             "js/physics/box.js",
+            "js/physics/manager.js",
         ], [
             "js/dispatcher.js",
             "js/network.js",
