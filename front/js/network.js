@@ -1,16 +1,18 @@
-function Network(state) {
-    this._state = state
-    this.socket = null
+class Network {
+    constructor(state) {
+        this._state = state
+        this.socket = null
+    }
+    async updatePlayer() {
+        // TODO
+        state.player.updateFromNet({ x: 0, y: 0 })
+    }
+    async updateLocation() {
+        // TODO
+        state.location.updateFromNet([
+            new Block(-50, -10, 100, 5),
+        ])
+    }
 }
 
-Network.prototype.updatePlayer = async function(){
-    // TODO
-    state.player.updateFromNet({x: 0, y: 0})
-}
 
-Network.prototype.updateLocation = async function(){
-    // TODO
-    state.location.updateFromNet([
-        new Block(-50, -10, 100, 5),
-    ])
-}

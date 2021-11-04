@@ -27,7 +27,6 @@ class Layer {
                 const tileGID = chunkJson.data[tileIndex]
                 const texture = state.render.textureManager.get(tileGID)
 
-                console.log(tileIndex, tileGID, tileX, tileY)
                 const invertedY = chunk.height - tileY - 1
 
                 if(texture == undefined){

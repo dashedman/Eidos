@@ -19,30 +19,38 @@ class Renderer {
 	 * @param {HTMLCanvasElement} canvas_el 
 	 */
 	constructor(state, canvas_el) {
-		this._state = state;
-		this.frameId = -1;
+		this._state = state
+		this.frameId = -1
 
-		this.canvas = canvas_el;
-		this.canvas.renderer = this;
-		this.canvas.width = canvas_el.clientWidth;
-		this.canvas.height = canvas_el.clientHeight;
+		this.canvas = canvas_el
+		this.canvas.renderer = this
+		this.canvas.width = canvas_el.clientWidth
+		this.canvas.height = canvas_el.clientHeight
 
 		// Initialise WebGL
-		this.gl = canvas_el.getContext("webgl2");
-		let gl = this.gl;
+		this.gl = canvas_el.getContext("webgl")
+		const gl = this.gl
 		if (!gl)
-			throw "Your browser doesn't support WebGL!";
+			throw "Your browser doesn't support WebGL!"
 
-		gl.viewportWidth = canvas_el.width;
-		gl.viewportHeight = canvas_el.height;
+		if (!gl.getExtension('WEBGL_depth_texture'))
+			throw "Your browser doesn't support WEBGL_depth_texture extension!"
 
-		gl.clearColor(0.2, 0.31, 0.4, 1.0);
+		gl.viewportWidth = canvas_el.width
+		gl.viewportHeight = canvas_el.height
+
+		gl.clearColor(0.2, 0.31, 0.4, 1.0)
 		//gl.enable(gl.DEPTH_TEST);
 		//gl.enable( gl.CULL_FACE );
 		gl.enable(gl.BLEND)
-		gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+		gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA )
 
-		this.waitInit = this.async_constructor();
+		this.depth = {
+			framebuffer: gl.createFramebuffer(),
+			texture: gl.createTexture()
+		}
+
+		this.waitInit = this.async_constructor()
 	}
 
 	/**
@@ -52,7 +60,9 @@ class Renderer {
 		// Load shaders
 		this.buffers = {};
 		this.varLocals = {};
-		this.programs = {};
+		this.programs = {
+			sprites: null,
+		};
 		await this.loadShaders();
 		
 		this.staticSpriteManager = new SpriteManager(this._state);
@@ -127,38 +137,17 @@ class Renderer {
 	 * Render one frame of the world to the canvas.
 	 */
 	draw() {
-		let gl = this.gl;
+		const gl = this.gl
+		const locals = this.varLocals.sprites
 
 		// Initialise view
-		this.checkViewport();
-		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		this.checkViewport()
+		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight)
+		gl.clear(gl.COLOR_BUFFER_BIT) // | gl.DEPTH_BUFFER_BIT
 
 		// sprites render
-		gl.useProgram(this.programs.sprites);
-
-		// buffers
-		// static
-		let sprtMngr = this.staticSpriteManager;
-		let locals = this.varLocals.sprites;
-		
-		// positions
-		gl.enableVertexAttribArray(locals.a_position);
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.pos);
-		if (sprtMngr.positionHandler.needUpdate) {
-			gl.bufferData(gl.ARRAY_BUFFER, sprtMngr.positionHandler.data, gl.DYNAMIC_DRAW);
-			sprtMngr.positionHandler.needUpdate = false
-		}
-		gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0);
-
-		// textures
-		gl.enableVertexAttribArray(locals.a_texture);
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.static.tex);
-		if (sprtMngr.textureHandler.needUpdate) {
-			gl.bufferData(gl.ARRAY_BUFFER, sprtMngr.textureHandler.data, gl.DYNAMIC_DRAW);
-			sprtMngr.textureHandler.needUpdate = false
-		}
-		gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0);
+		gl.useProgram(this.programs.sprites)
+		//gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.framebuffer)
 
 		// uniforms
 		if(this._state.camera.needUpdate){
@@ -166,18 +155,61 @@ class Renderer {
 			this._state.camera.needUpdate = false
 		}
 		
+
+		/**
+		 * 
+		 * @param {SpriteManager} spriteManager - sprite manager that contains data about sprites
+		 * @param {WebGL2RenderingContext.GLenum} usage - a GLenum specifying the intended usage pattern of the data store for optimization purposes. 
+		 * Possible values:
+		 * - gl.STATIC_DRAW: The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
+    	 * - gl.DYNAMIC_DRAW: The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
+    	 * - gl.STREAM_DRAW: The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands. 
+		 * @param {Object} buffers - contaner for gl.buffers verticle position and texture
+		 * @param {Object} locals - container for varables with shader locations
+		 */
+		function drawSprites(spriteManager, usage, buffers, locals){
+			// buffers
+
+			// positions
+			gl.enableVertexAttribArray(locals.a_position);
+			gl.bindBuffer(gl.ARRAY_BUFFER, buffers.pos);
+			// update buffer
+			if (spriteManager.positionHandler.needUpdate) {
+				gl.bufferData(gl.ARRAY_BUFFER, spriteManager.positionHandler.data, usage);
+				spriteManager.positionHandler.needUpdate = false
+			}
+			gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0);
+
+			// textures
+			gl.enableVertexAttribArray(locals.a_texture);
+			gl.bindBuffer(gl.ARRAY_BUFFER, buffers.tex);
+			// update buffer
+			if (spriteManager.textureHandler.needUpdate) {
+				gl.bufferData(gl.ARRAY_BUFFER, spriteManager.textureHandler.data, usage);
+				spriteManager.textureHandler.needUpdate = false
+			}
+			gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0);
+
+			// draw
+			gl.drawArrays(gl.TRIANGLES, 0, spriteManager.vertCount);
+		}
+
+		drawSprites(this.staticSpriteManager, gl.STATIC_DRAW, this.buffers.static, locals)
+		drawSprites(this.dynamicSpriteManager, gl.DYNAMIC_DRAW, this.buffers.dynamic, locals)
+		drawSprites(this.streamSpriteManager, gl.STREAM_DRAW, this.buffers.stream, locals)
+
+		
 		// textures
 		// let texture = this.textureManager.getTexture();
 		// gl.activeTexture(gl.TEXTURE0);
 		// gl.bindTexture(gl.TEXTURE_2D, texture);
 		// gl.uniform1i(locals.u_texture_src, 0);
 
-		// отрисовка геометрии
-		// console.log(sprtMngr.length, sprtMngr.positionHandler.data.length / 3, sprtMngr.textureHandler.data.length / 2)
-		gl.drawArrays(gl.TRIANGLES, 0, sprtMngr.vertCount);
 
 		// effects
-		// gl.useProgram(this.programs.effects);
+		//gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.framebuffer)
+		//gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
+		gl.useProgram(this.programs.post);
 		// postFX
 		// gl.useProgram(this.programs.post);
 	}
@@ -189,8 +221,8 @@ class Renderer {
 	 * the render configuration if required.
 	 */
 	checkViewport() {
-		let gl = this.gl
-		let canvas = this.canvas
+		const gl = this.gl
+		const canvas = this.canvas
 
 		if (canvas.clientWidth != gl.viewportWidth || canvas.clientHeight != gl.viewportHeight) {
 			gl.viewportWidth = canvas.clientWidth
@@ -199,8 +231,28 @@ class Renderer {
 			canvas.width = canvas.clientWidth
 			canvas.height = canvas.clientHeight
 
+			// update camera
 			const ratio = canvas.width/canvas.height
 			this.state.camera.setRatio(ratio)
+
+			// update viewport
+			gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight)
+
+			// update frame buffers
+			gl.bindTexture(gl.TEXTURE_2D, this.depth.texture)
+			gl.texImage2D(
+				gl.TEXTURE_2D, 0,
+				gl.DEPTH_COMPONENT,
+				canvas.width, canvas.height,
+				0,
+				gl.DEPTH_COMPONENT,
+				gl.UNSIGNED_INT,
+				null
+			)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		}
 	}
 
@@ -253,6 +305,10 @@ class Renderer {
 				tex: gl.createBuffer(),
 			};
 			this.buffers.dynamic = {
+				pos: gl.createBuffer(),
+				tex: gl.createBuffer(),
+			};
+			this.buffers.stream = {
 				pos: gl.createBuffer(),
 				tex: gl.createBuffer(),
 			};
