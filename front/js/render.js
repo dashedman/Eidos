@@ -194,9 +194,9 @@ class Renderer {
 			gl.drawArrays(gl.TRIANGLES, 0, spriteManager.vertCount);
 		}
 
-		drawSprites(this.staticSpriteManager, gl.STATIC_DRAW, this.buffers.static, locals)
+		//drawSprites(this.staticSpriteManager, gl.STATIC_DRAW, this.buffers.static, locals)
 		drawSprites(this.dynamicSpriteManager, gl.DYNAMIC_DRAW, this.buffers.dynamic, locals)
-		drawSprites(this.streamSpriteManager, gl.STREAM_DRAW, this.buffers.stream, locals)
+		//drawSprites(this.streamSpriteManager, gl.STREAM_DRAW, this.buffers.stream, locals)
 
 		
 		// textures
@@ -233,7 +233,7 @@ class Renderer {
 
 			// update camera
 			const ratio = canvas.width/canvas.height
-			this.state.camera.setRatio(ratio)
+			this._state.camera.setRatio(ratio)
 
 			// update viewport
 			gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight)

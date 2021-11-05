@@ -1,5 +1,5 @@
 class Entities{
-    static _staticEntities = [Block, BackgroundBlock, Decoration]
+    static _staticEntities = [] // Block, BackgroundBlock, Decoration
     static _streamEntities = []
 
     constructor(state){

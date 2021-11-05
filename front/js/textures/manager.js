@@ -228,11 +228,9 @@ class TextureManager {
         this.atlas = new Image()
         this.atlas.src = atlas
 
-        await new Promise((resolve, reject) =>{
-            this.atlas.onload = () => resolve()
-        })
+        await utils.getImageLoadPromise(this.atlas)
 
-        let gl = this._state.render.gl
+        const gl = this._state.render.gl
         gl.useProgram(this._state.render.programs.sprites)
         
         // SET IMAGE
