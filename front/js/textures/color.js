@@ -1,4 +1,7 @@
-class ColorTexture extends Texture{
+import { utils } from "../utils/utils.js";
+import { Texture } from "./base.js";
+
+export class ColorTexture extends Texture{
     loadData({colors, w, h}) {
         // render color pixels to image
         let canvas = utils.supportCanvas(w, h)

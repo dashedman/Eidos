@@ -1,3 +1,5 @@
-function Location(el) {
-    this.hmm = null
+export class Location {
+    constructor(el) {
+        this.hmm = null;
+    }
 }

@@ -1,4 +1,4 @@
-class PhBox {
+export class PhBox {
     constructor(x, y, w, h) {
         this.x = x || 0;
         this.y = y || 0;

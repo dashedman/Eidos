@@ -1,3 +1,3 @@
-class RotathedBox{
+export class RotathedBox{
 
 }

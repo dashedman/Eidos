@@ -1,47 +1,50 @@
-if(this.document === undefined){
-    // FOR WORKER
-    onmessage = function(event){
-    
-        let textures = event.data.textures
-        let extrude = event.data.extrude || false
+import { utils } from "../utils/utils.js"
+export { atlas }
+
+
+
+var atlas = {
+    syncCompiling: function (data){
+        let textures = data.textures
+        let extrude = data.extrude || false
         // calc optimal positions
         let {size, tiling} = generateTiling(textures, extrude)
-    
+
         // draw atlas
-        let canvas = new OffscreenCanvas(size.w, size.h)
+        let canvas = utils.supportCanvas(size.w, size.h)
         let ctx = canvas.getContext('2d')
         for(let tile of tiling){
-            ctx.drawImage(
-                textures[tile.index].image, 
-                tile.x, tile.y, tile.w, tile.h
-            )
+            drawTile(ctx, tile, textures[tile.index].image, extrude)
         }
-    
+
         // send answer
-        postMessage({tiling: tiling, atlas: canvas.toDataUrl('png')})
-    }
-}else{
-    var atlas = {
-        syncCompiling: function (data){
-            let textures = data.textures
-            let extrude = data.extrude || false
-            // calc optimal positions
-            let {size, tiling} = generateTiling(textures, extrude)
-
-            // draw atlas
-            let canvas = utils.supportCanvas(size.w, size.h)
-            let ctx = canvas.getContext('2d')
-            for(let tile of tiling){
-                drawTile(ctx, tile, textures[tile.index].image, extrude)
-            }
-
-            // send answer
-            return {tiling: tiling, atlas: canvas.toDataURL()}
-        }
+        return {tiling: tiling, atlas: canvas.toDataURL()}
     }
 }
 
-
+// if(this !== undefined && this.document === undefined){
+//     // FOR WORKER
+//     onmessage = function(event){
+    
+//         let textures = event.data.textures
+//         let extrude = event.data.extrude || false
+//         // calc optimal positions
+//         let {size, tiling} = generateTiling(textures, extrude)
+    
+//         // draw atlas
+//         let canvas = new OffscreenCanvas(size.w, size.h)
+//         let ctx = canvas.getContext('2d')
+//         for(let tile of tiling){
+//             ctx.drawImage(
+//                 textures[tile.index].image, 
+//                 tile.x, tile.y, tile.w, tile.h
+//             )
+//         }
+    
+//         // send answer
+//         postMessage({tiling: tiling, atlas: canvas.toDataUrl('png')})
+//     }
+// }
 
 
 
@@ -113,7 +116,7 @@ function generateTiling(textures, extrude=false){
 
             // seek place on ceil
             tmpWidth = 0;
-            floorIndex = index - 1;
+            let floorIndex = index - 1;
             while(index < level.rects.length){
                 tmpWidth += level.rects[index].w
                 index++

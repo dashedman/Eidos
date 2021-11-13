@@ -1,10 +1,24 @@
+import { TimeManager } from './utils/time.js'
+import { Camera } from './utils/camera.js'
+
+import { Dispatcher } from './dispatcher.js'
+import { Logic } from './logic.js'
+import { Network } from './network.js'
+import { Renderer } from './render.js'
+import { Physics } from './physics/base.js'
+
+import { Entities } from './entities/entities.js'
+import { Terrain } from './entities/enviroment/terrain.js'
+import { Player } from './entities/player.js'
+
+
 // ==========================================
 // State of the game
 //
 // To store and manage game elements
 // ==========================================
 
-class Statement {
+export class Statement {
     constructor(canvas_el) {
         // id of the game loop to handle
         this.loop = {
@@ -32,20 +46,16 @@ class Statement {
             // calc time
             this.time.calc()
 
-            // Simulate world
-            gameFrame()
-
-            // console.log(this.debugger.cameraCenter.sx, this.debugger.cameraCenter.sw)
-            this.debugger.cameraCenter.sx = this.camera.position[0] - this.debugger.cameraCenter.sw / 2
-            this.debugger.cameraCenter.sy = this.camera.position[1] - this.debugger.cameraCenter.sh / 2
-
             this.physics.update()
             this.logic.update()
+
+            this.debugger.cameraCenter.sx = -this.camera.position[0]
+            this.debugger.cameraCenter.sy = -this.camera.position[1]
 
             // call next iteraction
             this.loop.id = setTimeout(
                 gameIteraction,
-                this.time.toNext(this.loop.interval)
+                this.time.toNext(this.loop.interval) * 1000
             )
         }
         this.loop.id = setTimeout(gameIteraction, 0)

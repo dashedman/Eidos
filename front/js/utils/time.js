@@ -1,4 +1,4 @@
-class TimeManager {
+export class TimeManager {
     constructor() {
         // Date.now() better to use than new Date().getTime()
         // to prevent instantiating unnecessary Date objects. 

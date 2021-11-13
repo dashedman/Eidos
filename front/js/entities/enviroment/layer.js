@@ -1,15 +1,35 @@
-class Layer {
+import { Map2D } from "../../utils/map2d.js";
+import { Chunk } from "./chunk.js";
+import { Block, BackgroundBlock } from "../block.js";
+
+import { Terrain } from "./terrain.js";
+
+/** */
+export class Layer {
+    /**
+     * 
+     * @param {Terrain} terrain 
+     * @param {*} name 
+     * @param {*} z 
+     * @param {*} isMain 
+     */
     constructor(terrain, name, z = 1, isMain=false){
+        /**
+         * @type {Terrain}
+         */
         this.terrain = terrain
         this.name = name
         this.z = z
         this.isMain = isMain
+        /**
+         * @type {Map2D}
+         */
         this.chunks = new Map2D()
     }
 
     /**
      * 
-     * @param {JSON} chunk  
+     * @param {JSON} chunkJson 
      */
      fromChunk(chunkJson){
         const state = this.terrain.state
@@ -19,6 +39,7 @@ class Layer {
         const chunk = new Chunk(chunkCoordX, chunkCoordY, chunkJson.width, chunkJson.height)
 
         const ClassOfTile = this.isMain ? Block : BackgroundBlock
+        const roleOnScene = this.isMain ? 'MAIN' : (this.z > 1 ? 'BACK' : 'FRONT')
 
         for(let tileY = 0; tileY < chunk.height; tileY++){
             for(let tileX = 0; tileX < chunk.width; tileX++){
@@ -37,6 +58,7 @@ class Layer {
                 chunk.grid[tileX][invertedY] = state.entities.create(
                     ClassOfTile,
                     texture,
+                    roleOnScene,
                     {
                         x: chunk.x*chunk.width + tileX, // global world coords
                         y: chunk.y*chunk.height + invertedY, // global world coords

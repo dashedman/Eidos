@@ -1,4 +1,4 @@
-class MultiLine {
+export class MultiLine {
     constructor(_manager, points, color){
         this.color = color || [255, 255, 255]
         this.points = new Float32Array(points.length * 3)

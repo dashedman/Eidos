@@ -1,7 +1,5 @@
-class ShapeManager {
+export class ShapeManager {
     constructor(){
         this.shapes = []
-    }
-
-    
+    } 
 }

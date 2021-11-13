@@ -1,29 +1,33 @@
-// TODO: BIG ATLAS GENERATOR
+import { atlas } from "./getAtlas.js";
+import { utils } from "../utils/utils.js"
 
-class TextureManager {
+import { Texture } from "./base.js";
+import { ColorTexture } from "./color.js";
+
+
+export class TextureManager {
     static STATUSES = {
         COMPILING: 0,
         READY: 1,
         INIT: 2
     }
 
-    constructor(state) {
-        this._state = state
+    constructor(render) {
+        const gl = render.gl
+        this._render = render
 
+        this.needUpdate = false
         this.status = TextureManager.STATUSES.INIT
-        this.worker = new Worker('js/textures/getAtlas.js')
 
         this.textures = new Map()
-        this.atlas
+        this.atlas = null
+        this._glTexture = gl.createTexture()
 
         this.waitInit = new Promise((resolve, reject) => {
             setTimeout(() => {
                 this.createPlug(resolve, reject)
             }, 0)
         })
-
-        let gl = this._state.render.gl
-        this.gl_texture = gl.createTexture()
     }
 
     async createPlug(wait_resolve, wait_reject) {
@@ -230,33 +234,35 @@ class TextureManager {
 
         await utils.getImageLoadPromise(this.atlas)
 
-        const gl = this._state.render.gl
-        gl.useProgram(this._state.render.programs.sprites)
-        
-        // SET IMAGE
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.bindTexture(gl.TEXTURE_2D, this.gl_texture)
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            this.atlas // image
-        )
-
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-
-        gl.uniform2f(
-            this._state.render.varLocals.sprites.u_texture_resolution, 
-            this.atlas.naturalWidth, this.atlas.naturalHeight
-        )
+        this.needUpdate = true
     }
-    getTexture() {
-        return this.gl_texture
+    draw(locals){
+        if(this.needUpdate){
+            const gl = this._render.gl
+            // SET IMAGE
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.bindTexture(gl.TEXTURE_2D, this._glTexture)
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                this.atlas // image
+            )
+    
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    
+            gl.uniform2f(
+                locals.u_texture_resolution, 
+                this.atlas.naturalWidth, this.atlas.naturalHeight
+            )
+    
+            this.needUpdate = false
+        }
     }
 }
 

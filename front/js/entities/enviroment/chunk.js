@@ -1,4 +1,4 @@
-class Chunk {
+export class Chunk {
     constructor(x, y, width, height){
         this.x = x
         this.y = y

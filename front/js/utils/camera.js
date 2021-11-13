@@ -1,4 +1,6 @@
-class Camera {
+const mat4 = glMatrix.mat4
+
+export class Camera {
     constructor(target) {
         this.settings = {
             fovy: Math.radians(60),        // 	Vertical field of view in radians

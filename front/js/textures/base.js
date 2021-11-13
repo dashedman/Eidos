@@ -1,4 +1,6 @@
-class Texture {
+import { utils } from "../utils/utils.js";
+
+export class Texture {
     constructor(manager, id, name, loadParams, frameParams={}) {
         // params is [src: str]
         this._manager = manager;

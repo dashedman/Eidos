@@ -1,6 +1,6 @@
 // Realize container for texture, with rect
 
-class Sprite {
+export class Sprite {
     constructor(manager, bufferIndexes, texture, ...mixins) {
         this._bufferIndexes = bufferIndexes;
 
@@ -126,7 +126,8 @@ class Sprite {
             const idx = this._bufferIndexes.p
             for(let i = 2; i < 18; i += 3) _p[idx + i] = value;
 
-            this._manager.requestZSorting()
+            if(this._manager._needZSorting !== undefined)
+                this._manager.requestZSorting()
         }
     }
 

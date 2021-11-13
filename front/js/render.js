@@ -1,3 +1,8 @@
+import { utils } from "./utils/utils.js";
+
+import { TextureManager } from "./textures/manager.js";
+import { SpriteManager, SortingSpriteManager } from "./sprites/manager.js";
+
 // ==========================================
 // Renderer
 //
@@ -11,7 +16,7 @@
 //
 // id - Identifier of the HTML canvas element to render to.
 
-class Renderer {
+export class Renderer {
 	/**
 	 * Constructor of render module
 	 * 
@@ -20,6 +25,7 @@ class Renderer {
 	 */
 	constructor(state, canvas_el) {
 		this._state = state
+
 		this.frameId = -1
 
 		this.canvas = canvas_el
@@ -50,6 +56,17 @@ class Renderer {
 			texture: gl.createTexture()
 		}
 
+		this.varLocals = {};
+		this.programs = {
+			sprites: null,
+		};
+
+		this.backgroundSpriteManager = new SortingSpriteManager(this, gl);
+		this.mainSpriteManager = new SpriteManager(this, gl);
+		this.foregroundSpriteManager = new SortingSpriteManager(this, gl);
+
+		this.textureManager = new TextureManager(this);
+
 		this.waitInit = this.async_constructor()
 	}
 
@@ -58,21 +75,8 @@ class Renderer {
 	 */
 	async async_constructor() {
 		// Load shaders
-		this.buffers = {};
-		this.varLocals = {};
-		this.programs = {
-			sprites: null,
-		};
 		await this.loadShaders();
-		
-		this.staticSpriteManager = new SpriteManager(this._state);
-		this.dynamicSpriteManager = new SpriteManager(this._state);
-		this.streamSpriteManager = new SpriteManager(this._state);
-
-		this.textureManager = new TextureManager(this._state);
 		await this.textureManager.waitInit;
-
-		this.camera = new Camera()
 	}
 
 	/**
@@ -114,17 +118,17 @@ class Renderer {
 	 */
 	updateAnimations(){
 		const time = performance.now()
-		for(const sprite of this.staticSpriteManager.sprites){
+		for(const sprite of this.backgroundSpriteManager.sprites){
 			if(sprite.iAnimated){
 				sprite.doAnimation(time)
 			}
 		}
-		for(const sprite of this.dynamicSpriteManager.sprites){
+		for(const sprite of this.mainSpriteManager.sprites){
 			if(sprite.iAnimated){
 				sprite.doAnimation(time)
 			}
 		}
-		for(const sprite of this.streamSpriteManager.sprites){
+		for(const sprite of this.foregroundSpriteManager.sprites){
 			if(sprite.iAnimated){
 				sprite.doAnimation(time)
 			}
@@ -154,56 +158,13 @@ class Renderer {
 			gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
 			this._state.camera.needUpdate = false
 		}
-		
 
-		/**
-		 * 
-		 * @param {SpriteManager} spriteManager - sprite manager that contains data about sprites
-		 * @param {WebGL2RenderingContext.GLenum} usage - a GLenum specifying the intended usage pattern of the data store for optimization purposes. 
-		 * Possible values:
-		 * - gl.STATIC_DRAW: The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
-    	 * - gl.DYNAMIC_DRAW: The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
-    	 * - gl.STREAM_DRAW: The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands. 
-		 * @param {Object} buffers - contaner for gl.buffers verticle position and texture
-		 * @param {Object} locals - container for varables with shader locations
-		 */
-		function drawSprites(spriteManager, usage, buffers, locals){
-			// buffers
-
-			// positions
-			gl.enableVertexAttribArray(locals.a_position);
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffers.pos);
-			// update buffer
-			if (spriteManager.positionHandler.needUpdate) {
-				gl.bufferData(gl.ARRAY_BUFFER, spriteManager.positionHandler.data, usage);
-				spriteManager.positionHandler.needUpdate = false
-			}
-			gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0);
-
-			// textures
-			gl.enableVertexAttribArray(locals.a_texture);
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffers.tex);
-			// update buffer
-			if (spriteManager.textureHandler.needUpdate) {
-				gl.bufferData(gl.ARRAY_BUFFER, spriteManager.textureHandler.data, usage);
-				spriteManager.textureHandler.needUpdate = false
-			}
-			gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0);
-
-			// draw
-			gl.drawArrays(gl.TRIANGLES, 0, spriteManager.vertCount);
-		}
-
-		//drawSprites(this.staticSpriteManager, gl.STATIC_DRAW, this.buffers.static, locals)
-		drawSprites(this.dynamicSpriteManager, gl.DYNAMIC_DRAW, this.buffers.dynamic, locals)
-		//drawSprites(this.streamSpriteManager, gl.STREAM_DRAW, this.buffers.stream, locals)
-
-		
 		// textures
-		// let texture = this.textureManager.getTexture();
-		// gl.activeTexture(gl.TEXTURE0);
-		// gl.bindTexture(gl.TEXTURE_2D, texture);
-		// gl.uniform1i(locals.u_texture_src, 0);
+		this.textureManager.draw(locals)
+		
+		this.backgroundSpriteManager.draw(gl.STATIC_DRAW, locals)
+		this.mainSpriteManager.draw(gl.DYNAMIC_DRAW, locals)
+		this.foregroundSpriteManager.draw(gl.STATIC_DRAW, locals)
 
 
 		// effects
@@ -300,18 +261,6 @@ class Renderer {
 		// COULD BE EDITED TO LOAD NEW PROGRAMS
 		let spritesPr = getProgram('sprites').then((program) => {
 			gl.useProgram(program);
-			this.buffers.static = {
-				pos: gl.createBuffer(),
-				tex: gl.createBuffer(),
-			};
-			this.buffers.dynamic = {
-				pos: gl.createBuffer(),
-				tex: gl.createBuffer(),
-			};
-			this.buffers.stream = {
-				pos: gl.createBuffer(),
-				tex: gl.createBuffer(),
-			};
 
 			this.varLocals.sprites = {
 				a_position: gl.getAttribLocation(program, "a_position"),
@@ -365,17 +314,17 @@ class Renderer {
 	 * @param {Object} settings - settings for sprite creation.
 	 * @param {Texture} settings.texture - texture that must be used in sprite.
 	 * @param {Array} settings.mixins - array of sprite mixins. Can be taked from SpriteMixins.
-	 * @param {String} renderType - type of render strategy for sprite. From enum {'STATIC', 'DYNAMIC', 'STREAM'}.
+	 * @param {String} role - role of sprite on scene. From enum {'BACK', 'MAIN', 'FRONT'}.
 	 * @returns {Sprite} - created sprite.
 	 */
-	createSprite({texture, mixins=[]}, renderType='DYNAMIC'){
-		switch (renderType) {
-			case 'DYNAMIC':
-				return this.dynamicSpriteManager.createSprite({texture, mixins})
-			case 'STATIC':
-				return this.staticSpriteManager.createSprite({texture, mixins})
-			case 'STREAM':
-				return this.streamSpriteManager.createSprite({texture, mixins})
+	createSprite({texture, mixins=[]}, role='MAIN'){
+		switch (role) {
+			case 'BACK':
+				return this.backgroundSpriteManager.createSprite({texture, mixins})
+			case 'MAIN':
+				return this.mainSpriteManager.createSprite({texture, mixins})
+			case 'FRONT':
+				return this.foregroundSpriteManager.createSprite({texture, mixins})
 			default:
 				throw 'Undefined render type of sprite'
 		}

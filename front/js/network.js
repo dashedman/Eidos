@@ -1,4 +1,4 @@
-class Network {
+export class Network {
     constructor(state) {
         this._state = state
         this.socket = null

@@ -1,5 +1,17 @@
-class Terrain {
+import { Layer } from "./layer.js";
+import { Decoration } from "../block.js";
+
+import { Statement } from "../../statement.js";
+
+export class Terrain {
+    /**
+     * 
+     * @param {Statement} state 
+     */
     constructor(state){
+        /**
+         * @type {Statement}
+         */
         this.state = state
         this.layers = []
         this.decorations = []
@@ -10,7 +22,7 @@ class Terrain {
 
     /**
      * 
-     * @param {[JSON]} layers 
+     * @param {[JSON]} jsonLayers 
      */
     fromLayers(jsonLayers){
         // load terrain from layers
@@ -45,13 +57,14 @@ class Terrain {
             for(const obj of jsonLayer.objects){
                 const texture = this.state.render.textureManager.get(obj.gid)
 
-                console.log(obj.gid, texture)
                 if(texture === undefined)
                     continue
                 
+                let roleOnScene = z > 1 ? 'BACK' : 'FRONT'
                 const decoration = this.state.entities.create(
                     Decoration, 
                     texture, 
+                    roleOnScene,
                     {
                         x: obj.x/32,
                         y: -obj.y/32,
@@ -70,7 +83,6 @@ class Terrain {
         const alpha = Math.atan(0.5 / z0)
         const zx = 0.5 / Math.tan(parallax * alpha) + camera.position[2]
         // magic formule )))
-        console.debug("PARALAX", parallax, "->", zx)
         return zx;
     }
 
@@ -79,7 +91,7 @@ class Terrain {
         for(const layer of this.layers){
             if(layer.z <= lastZ){
                 console.log("Found intersept z", layer.name)
-                layer.setZ(lastZ + 0.1)
+                layer.setZ(lastZ + 0.03)
             }
             lastZ = layer.z
         }

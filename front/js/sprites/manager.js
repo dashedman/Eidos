@@ -1,19 +1,31 @@
-class SpriteManager {
+import { Renderer } from "../render.js";
+import { Sprite } from "./base.js";
+
+
+export class SpriteManager {
     static handlerPattern = {
         data: new Float32Array(),
         offset: 1,
         needUpdate: false,
+        _glBuffer: null
     }
     
-    constructor(state) {
-        this._state = state
+    /**
+     * 
+     * @param {Renderer} render
+     * @param {WebGLRenderingContext} gl 
+     */
+    constructor(render) {
+        const gl = render.gl
+        this._render = render
         this.sprites = []
-        this._needZSorting = false
 
         // buffer of position of verticles
         this.positionHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 3 * 6})
+        this.positionHandler._glBuffer = gl.createBuffer()
         // buffer of uv texture coords
         this.textureHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 2 * 6})
+        this.textureHandler._glBuffer = gl.createBuffer()
     }
 
     createSprite({texture, mixins=[]}){
@@ -70,16 +82,68 @@ class SpriteManager {
         }
     }
 
+    get vertCount(){
+        // return number of verticles
+        return this.sprites.length * 6
+    }
+
+    /**
+     * 
+     * @param {WebGL2RenderingContext.GLenum} usage - a GLenum specifying the intended usage pattern of the data store for optimization purposes. 
+     * Possible values:
+     * - gl.STATIC_DRAW: The contents are intended to be specified once by the application, and used many times as the source for WebGL drawing and image specification commands.
+     * - gl.DYNAMIC_DRAW: The contents are intended to be respecified repeatedly by the application, and used many times as the source for WebGL drawing and image specification commands.
+     * - gl.STREAM_DRAW: The contents are intended to be specified once by the application, and used at most a few times as the source for WebGL drawing and image specification commands. 
+     * @param {Object} locals - container for varables with shader locations
+     */
+    draw(usage, locals){
+        const gl = this._render.gl
+
+        // positions
+        gl.enableVertexAttribArray(locals.a_position);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionHandler._glBuffer);
+        // update buffer
+        if (this.positionHandler.needUpdate) {
+            gl.bufferData(gl.ARRAY_BUFFER, this.positionHandler.data, usage);
+            this.positionHandler.needUpdate = false
+        }
+        gl.vertexAttribPointer(locals.a_position, 3, gl.FLOAT, false, 0, 0);
+
+        // textures
+        gl.enableVertexAttribArray(locals.a_texture);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.textureHandler._glBuffer);
+        // update buffer
+        if (this.textureHandler.needUpdate) {
+            gl.bufferData(gl.ARRAY_BUFFER, this.textureHandler.data, gl.DYNAMIC_DRAW);
+            this.textureHandler.needUpdate = false
+        }
+        gl.vertexAttribPointer(locals.a_texture, 2, gl.FLOAT, false, 0, 0);
+
+        // draw
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertCount);
+    }
+}
+
+/**
+ * Sprite Manager that automaticaly sorting sprites by Z coord(depth)
+ */
+export class SortingSpriteManager extends SpriteManager {
+    constructor(render){
+        super(render)
+        
+        this._needZSorting = false
+    }
+
     requestZSorting(){
         console.log('requestZ', this._needZSorting)
         if(!this._needZSorting){
             this._needZSorting = true
-            this.deferredZSorting()
+            setTimeout(() => {this.deferredZSorting()}, 0)
         }
     }
     
-    async deferredZSorting(){
-        console.log('deffer', this._needZSorting)
+    deferredZSorting(){
+        console.log('defer', this._needZSorting)
         if(this._needZSorting){
             this._needZSorting = false;
             this.sortByZIndex()
@@ -170,16 +234,5 @@ class SpriteManager {
 
         this.sprites = newSprites
     }
-
-    sortByZIndex_quick(){
-        // quick sorting items by z index of sprite 
-    }
-
-    get vertCount(){
-        // return number of verticles
-        return this.sprites.length * 6
-    }
 }
-
-
 

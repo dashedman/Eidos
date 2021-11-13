@@ -1,3 +1,3 @@
-class Entity {
+export class Entity {
     constructor() {}
 }

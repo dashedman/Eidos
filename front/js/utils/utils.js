@@ -1,3 +1,5 @@
+export { utils }
+
 var utils = {
   waitTick: () => new Promise( (resolve) => {
     setTimeout(()=>{

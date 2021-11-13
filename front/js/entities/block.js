@@ -1,4 +1,6 @@
-class BackgroundBlock extends Entity {
+import { Entity } from "./base.js";
+
+export class BackgroundBlock extends Entity {
     constructor(sprite, {x, y, z=1}) {
         super()
 
@@ -13,7 +15,7 @@ class BackgroundBlock extends Entity {
     }
 }
 
-class Block extends BackgroundBlock {
+export class Block extends BackgroundBlock {
     constructor(sprite, {x, y, z=1}) {
         super(sprite, {x, y, z})
 
@@ -21,7 +23,7 @@ class Block extends BackgroundBlock {
     }
 }
 
-class Decoration extends BackgroundBlock {
+export class Decoration extends BackgroundBlock {
     constructor(sprite, {x, y, z=1, width, height}) {
         super(sprite, {x, y, z})
 

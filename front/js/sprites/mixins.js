@@ -1,4 +1,4 @@
-const SpriteMixins = {
+export const SpriteMixins = {
     iAnimated: {
         // texture must be framed
         iAnimated: true,
@@ -8,13 +8,13 @@ const SpriteMixins = {
 
         initAnimation(frameRate){
             this.currentFrame = 0
-            this.animationTime = this._manager._state.time.time
+            this.animationTime = this._manager._render._state.time.time
             this.animationFrameRate = frameRate || this.animationFrameRate
             this.tw = this.texture.frameOffset
         },
         resetAnimation(){
             this.currentFrame = 0
-            this.animationTime = this._manager._state.time.time
+            this.animationTime = this._manager._render._state.time.time
         },
         doAnimation(time){
             this.currentFrame = (

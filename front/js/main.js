@@ -1,13 +1,14 @@
-// LOADER SCRIPT
+import { utils } from "./utils/utils.js"
+import { Statement } from "./statement.js"
+
+
 async function initGame(){
-    await utils.loadScript("js/loader.js")
-    await loadLibs()
 
     console.log("Game started...")
     let canvas = document.getElementById("viewport");
 
-    state = new Statement(canvas)
-    state.loop.interval = 0.016
+    window.state = new Statement(canvas)
+    state.loop.interval = 0.01
     
     await loadGame(state)
 
@@ -22,13 +23,13 @@ async function loadGame(state){
 
     // debug map center
     let red_pixel = state.render.createColorTexture(-2, "red", [255, 0, 0, 255], 1, 1)
-    let hline = state.render.createSprite({texture: red_pixel}, 'STATIC') // horizontal
+    let hline = state.render.createSprite({texture: red_pixel}, 'BACK') // horizontal
     hline.sx = -5
     hline.sy = -0.05
     hline.sz = 1.9
     hline.sw = 10
     hline.sh = 0.1
-    let vline = state.render.createSprite({texture: red_pixel}, 'STATIC') // vertical
+    let vline = state.render.createSprite({texture: red_pixel}, 'BACK') // vertical
     vline.sx = -0.05
     vline.sy = -5
     vline.sz = 1.9
@@ -39,7 +40,7 @@ async function loadGame(state){
     let blue_pixel = state.render.createColorTexture(-3, "blue", [0, 0, 255, 255], 1, 1)
     for(let x = -128; x <= 128; x += 16){
         let x = 0
-        vline = state.render.createSprite({texture: blue_pixel}, 'STATIC') // vertical
+        vline = state.render.createSprite({texture: blue_pixel}, 'BACK') // vertical
         vline.sx = x - 0.025
         vline.sy = -128
         vline.sw = 0.05
@@ -48,7 +49,7 @@ async function loadGame(state){
     }
     for(let y = -128; y <= 128; y += 16){
         let y = 0
-        hline = state.render.createSprite({texture: blue_pixel}, 'STATIC') // horizontal
+        hline = state.render.createSprite({texture: blue_pixel}, 'BACK') // horizontal
         hline.sx = -128
         hline.sy = y - 0.025
         hline.sw = 256
@@ -57,7 +58,7 @@ async function loadGame(state){
     }
     
     let green_pixel = state.render.createColorTexture(-4, "green", [0, 255, 0, 255], 1, 1)
-    let greenBlock = state.render.createSprite({texture: green_pixel}, 'DYNAMIC')
+    let greenBlock = state.render.createSprite({texture: green_pixel}, 'MAIN')
     greenBlock.sx = 0
     greenBlock.sy = 0
     greenBlock.sw = 1
@@ -97,10 +98,6 @@ async function loadGame(state){
     // }
     //await state.netwotk.updatePlayer()
     //await state.network.updateLocation()
-}
-
-function gameFrame(){
-    //state.test.doAnimation(state.time.time)
 }
 
 // start
