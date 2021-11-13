@@ -5,4 +5,11 @@ export class PhBox {
         this.w = w || 0;
         this.h = h || 0;
     }
+
+    getCenter(){
+        return {
+            x: this.x + this.w * 0.5,
+            y: this.y + this.h * 0.5,
+        }
+    }
 }

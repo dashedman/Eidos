@@ -1,7 +1,11 @@
 import { Dispatcher } from "./dispatcher.js";
+import { Statement } from "./statement.js";
 
 export class Logic {
     constructor(state) {
+        /**
+         * @type {Statement}
+         */
         this.state = state;
     }
 
@@ -9,26 +13,24 @@ export class Logic {
         let deltaTime = this.state.time.deltaTime * 0.01
 
         let disp = this.state.dispatcher
-        let newCamPos = state.camera.position
+        let newDummiePos = state.debugger.dummie.pb
         if(disp.pressedKeys[Dispatcher.KEY.A]){
-            newCamPos[0] -= deltaTime;
+            newDummiePos.x -= deltaTime;
         }
         if(disp.pressedKeys[Dispatcher.KEY.D]){
-            newCamPos[0] += deltaTime;
+            newDummiePos.x += deltaTime;
         }
         if(disp.pressedKeys[Dispatcher.KEY.S]){
-            newCamPos[1] -= deltaTime;
+            newDummiePos.y -= deltaTime;
         }
         if(disp.pressedKeys[Dispatcher.KEY.W]){
-            newCamPos[1] += deltaTime;
+            newDummiePos.y += deltaTime;
         }
-        if(disp.pressedKeys[Dispatcher.KEY.X]){
-            newCamPos[2] -= deltaTime;
-        }
-        if(disp.pressedKeys[Dispatcher.KEY.Z]){
-            newCamPos[2] += deltaTime;
-        }
-
-        state.camera.setPosition(...newCamPos)
+        // if(disp.pressedKeys[Dispatcher.KEY.X]){
+        //     newCamPos[2] -= deltaTime;
+        // }
+        // if(disp.pressedKeys[Dispatcher.KEY.Z]){
+        //     newCamPos[2] += deltaTime;
+        // }
     }
 }

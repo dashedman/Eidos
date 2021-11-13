@@ -135,7 +135,6 @@ export class SortingSpriteManager extends SpriteManager {
     }
 
     requestZSorting(){
-        console.log('requestZ', this._needZSorting)
         if(!this._needZSorting){
             this._needZSorting = true
             setTimeout(() => {this.deferredZSorting()}, 0)
@@ -143,7 +142,6 @@ export class SortingSpriteManager extends SpriteManager {
     }
     
     deferredZSorting(){
-        console.log('defer', this._needZSorting)
         if(this._needZSorting){
             this._needZSorting = false;
             this.sortByZIndex()
@@ -151,7 +149,6 @@ export class SortingSpriteManager extends SpriteManager {
     }
 
     sortByZIndex(){
-        console.log('sort')
         // shake sorting items by z index of sprite 
         // perfect for sorting after inserting one item
         let poshand = this.positionHandler

@@ -2,6 +2,7 @@ export class Dispatcher {
     constructor(state, el) {
         // id of the game loop to handle
         this._state = state;
+        this._target = null
 
         this.pressedKeys = new Uint8Array(128);
         this.pressedOnce = new Set();
@@ -38,6 +39,13 @@ export class Dispatcher {
             this.mouse.x = e.clientX;
             this.mouse.y = e.clientY;
         });
+    }
+
+    get target(){
+        return this._target
+    }
+    set target(new_target){
+        this._target = new_target
     }
 }
 

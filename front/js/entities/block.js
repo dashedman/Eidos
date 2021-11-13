@@ -1,4 +1,5 @@
 import { Entity } from "./base.js";
+import { PhBox } from "../physics/box.js";
 
 export class BackgroundBlock extends Entity {
     constructor(sprite, {x, y, z=1}) {

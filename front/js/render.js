@@ -3,6 +3,8 @@ import { utils } from "./utils/utils.js";
 import { TextureManager } from "./textures/manager.js";
 import { SpriteManager, SortingSpriteManager } from "./sprites/manager.js";
 
+import { Statement } from "./statement.js";
+
 // ==========================================
 // Renderer
 //
@@ -24,6 +26,9 @@ export class Renderer {
 	 * @param {HTMLCanvasElement} canvas_el 
 	 */
 	constructor(state, canvas_el) {
+		/**
+		 * @type {Statement}
+		 */
 		this._state = state
 
 		this.frameId = -1
@@ -92,7 +97,10 @@ export class Renderer {
 		// loop body
 		let renderFrame = () => {
 			// Draw world
-			//this.setCamera();
+			this._state.debugger.dummie.sprite.sx = this._state.debugger.dummie.pb.x
+			this._state.debugger.dummie.sprite.sy = this._state.debugger.dummie.pb.y
+			
+			this._state.camera.calculatePositionByTargets()
 			this.updateAnimations()
 			this.draw();
 
@@ -199,21 +207,21 @@ export class Renderer {
 			// update viewport
 			gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight)
 
-			// update frame buffers
-			gl.bindTexture(gl.TEXTURE_2D, this.depth.texture)
-			gl.texImage2D(
-				gl.TEXTURE_2D, 0,
-				gl.DEPTH_COMPONENT,
-				canvas.width, canvas.height,
-				0,
-				gl.DEPTH_COMPONENT,
-				gl.UNSIGNED_INT,
-				null
-			)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			// // update frame buffers
+			// gl.bindTexture(gl.TEXTURE_2D, this.depth.texture)
+			// gl.texImage2D(
+			// 	gl.TEXTURE_2D, 0,
+			// 	gl.DEPTH_COMPONENT,
+			// 	canvas.width, canvas.height,
+			// 	0,
+			// 	gl.DEPTH_COMPONENT,
+			// 	gl.UNSIGNED_INT,
+			// 	null
+			// )
+			// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		}
 	}
 

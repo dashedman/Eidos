@@ -1,5 +1,8 @@
 import { utils } from "./utils/utils.js"
+import { Camera } from "./utils/camera.js";
+
 import { Statement } from "./statement.js"
+import { Block } from "./entities/block.js";
 
 
 async function initGame(){
@@ -15,11 +18,16 @@ async function initGame(){
     state.run()
 }
 
+/**
+ * 
+ * @param {Statement} state 
+ */
 async function loadGame(state){
     await state.render.waitInit
     const ratio = state.render.canvas.width / state.render.canvas.height
     state.camera.setPosition(0, 0, -10)
     state.camera.setRatio(ratio)
+    state.camera.setMovingMode(Camera.MOVING_MODES.CONSTANT)
 
     // debug map center
     let red_pixel = state.render.createColorTexture(-2, "red", [255, 0, 0, 255], 1, 1)
@@ -58,15 +66,11 @@ async function loadGame(state){
     }
     
     let green_pixel = state.render.createColorTexture(-4, "green", [0, 255, 0, 255], 1, 1)
-    let greenBlock = state.render.createSprite({texture: green_pixel}, 'MAIN')
-    greenBlock.sx = 0
-    greenBlock.sy = 0
-    greenBlock.sw = 1
-    greenBlock.sh = 1
-    greenBlock.sz = 0.9
+    let greenBlock = state.entities.create(Block, green_pixel, 'MAIN', {x: 0, y: 0})
     state.debugger = {
-        cameraCenter: greenBlock
+        dummie: greenBlock
     }
+    state.camera.addTarget(greenBlock.pb)
 
 
     let mapConfig = await utils.loadJsonResources('resources/x0y0.json')

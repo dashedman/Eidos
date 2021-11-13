@@ -16,6 +16,13 @@ export class Camera {
         this.viewMatrix = mat4.create();
         this.needUpdate = false;
         this.recalcMatrix()
+
+        this.targets = []
+        this.movingMode = null
+        this._movingFunction = null
+        this.speed = 1
+
+        this.setMovingMode(Camera.MOVING_MODES.STATIC)
     }
 
     setPosition(x, y, z){
@@ -33,6 +40,11 @@ export class Camera {
 
         this.recalcMatrix()
     }
+    setFovy(fovy){
+        this.settings.fovy = fovy
+        this._projMatrix = this.calcProjMatrix()
+        this.recalcMatrix()
+    }
     setRatio(ratio){
         this.settings.aspect = ratio
         this._projMatrix = this.calcProjMatrix()
@@ -48,29 +60,152 @@ export class Camera {
         )
     }
     recalcMatrix(){
+        const invertedPos = [
+            -this.position[0],
+            -this.position[1],
+            this.position[2]
+        ]
+        
         this.viewMatrix = mat4.mul(
             this.viewMatrix,
             this._projMatrix,
             mat4.translate(
                 this.viewMatrix,
                 mat4.identity(this.viewMatrix),
-                this.position, 
+                invertedPos, 
             )
         )
         this.needUpdate = true;
     }
 
     // high level methods
-    setTarget(target){
-
+    addTarget(target){
+        this.targets.push(target)
     }
-    setMovingMode(mode){
-
+    delTarget(target){
+        const indexOfTarget = this.targets.indexOf(target)
+        if(indexOfTarget > -1){
+            this.targets.splice(indexOfTarget, 1)
+            return true
+        }
+        return false
     }
-    targetPositionListener(){
+    calculatePositionByTargets(){
+        const destinationPos = new Float32Array(2)
+        destinationPos[0] = 0
+        destinationPos[1] = 0
 
+        if(this.targets.length == 0){
+            this._movingFunction(destinationPos)
+            return
+        }
+
+        for(const target of this.targets){
+            const targetCenter = target.getCenter()
+
+            destinationPos[0] += targetCenter.x
+            destinationPos[1] += targetCenter.y
+        }
+
+        destinationPos[0] /= this.targets.length
+        destinationPos[1] /= this.targets.length
+        
+        this._movingFunction(destinationPos)
     }
+    setMovingMode(modeId){
+        let movingModeIsExist = false;
+        for(const modeName in Camera.MOVING_MODES){
+            if(Camera.MOVING_MODES[modeName] == modeId){
+                movingModeIsExist = true
+                break
+            }
+        }
+
+        if(movingModeIsExist){
+            this.movingMode = modeId
+
+            this._movingFunction = Camera.MOVING_FUNCTIONS[modeId].bind(this)
+        }else{
+            console.error(`[Camera] Mode '${modeId}' doesn't found`)
+        }
+    }
+
+
+    static MOVING_MODES = {
+        STATIC: 0,
+        CONSTANT: 1,
+        LINEAR: 2,
+        QUADRATIC: 3,
+        EXPANENTIAL: 4,
+    }
+    static MOVING_FUNCTIONS = [
+        // STATIC
+        function(destinationPos){
+            this.setPosition(
+                destinationPos[0],
+                destinationPos[1],
+                this.position[2],
+            )
+        },
+        // CONSTANT
+        function(destinationPos){
+            const position2D = this.position.slice(0, 2)
+
+            const distance = Math.distance(destinationPos, position2D)
+            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const stepLength = Math.min(this.speed, distance)
+            if(stepLength == 0) return
+
+            const x = this.position[0] + moveDirection[0]*stepLength
+            const y = this.position[1] + moveDirection[1]*stepLength
+            const z = this.position[2]
+
+            this.setPosition(x, y, z)
+        },
+        // LINEAR
+        function(destinationPos){
+            const position2D = this.position.slice(0, 2)
+
+            const distance = Math.distance(destinationPos, position2D)
+            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const stepLength = Math.min(this.speed * distance, distance)
+            if(stepLength == 0) return
+
+            const x = this.position[0] + moveDirection[0]*stepLength
+            const y = this.position[1] + moveDirection[1]*stepLength
+            const z = this.position[2]
+
+            this.setPosition(x, y, z)
+        },
+        // QUADRATIC
+        function(destinationPos){
+            const position2D = this.position.slice(0, 2)
+
+            const distance = Math.distance(destinationPos, position2D)
+            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const stepLength = Math.min(this.speed * distance * distance, distance)
+            if(stepLength == 0) return
+
+            const x = this.position[0] + moveDirection[0]*stepLength
+            const y = this.position[1] + moveDirection[1]*stepLength
+            const z = this.position[2]
+
+            this.setPosition(x, y, z)
+        },
+        // EXPANENTIAL
+        function(destinationPos){
+            const position2D = this.position.slice(0, 2)
+
+            const distance = Math.distance(destinationPos, position2D)
+            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const stepLength = Math.min(this.speed * Math.exp(distance), distance)
+            if(stepLength == 0) return
+
+            const x = this.position[0] + moveDirection[0]*stepLength
+            const y = this.position[1] + moveDirection[1]*stepLength
+            const z = this.position[2]
+
+            this.setPosition(x, y, z)
+        },
+    ]
 }
-
-
-

@@ -49,9 +49,6 @@ export class Statement {
             this.physics.update()
             this.logic.update()
 
-            this.debugger.cameraCenter.sx = -this.camera.position[0]
-            this.debugger.cameraCenter.sy = -this.camera.position[1]
-
             // call next iteraction
             this.loop.id = setTimeout(
                 gameIteraction,
