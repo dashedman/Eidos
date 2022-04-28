@@ -1,5 +1,5 @@
 import { atlas } from "./getAtlas.js";
-import { utils } from "../utils/utils.js"
+import { utils } from "../../utils/utils.js"
 
 import { Texture } from "./base.js";
 import { ColorTexture } from "./color.js";

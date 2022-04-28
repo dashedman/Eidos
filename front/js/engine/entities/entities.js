@@ -1,6 +1,22 @@
-import { SpriteMixins } from "../sprites/mixins.js";
+import enviroment from "./enviroment/enviroment.js";
+import { SpriteMixins } from "../graphics/sprites/mixins.js";
+import { Entity } from './base';
+import { BackgroundBlock, Block, Decoration } from './block';
+import { Location } from './location';
+import { Player } from './player';
 
-export class Entities{
+export default {
+    enviroment,
+    Entity,
+    BackgroundBlock,
+    Block,
+    Decoration,
+    Location,
+    Player,
+    Entities
+} 
+
+class Entities{
 
     constructor(state){
         this.state = state

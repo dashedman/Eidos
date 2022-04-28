@@ -2,7 +2,7 @@ import { TimeManager } from './utils/time.js'
 import { Camera } from './utils/camera.js'
 
 import { Dispatcher } from './dispatcher.js'
-import { Logic } from './logic.js'
+import { Logic } from '../game/logic.js'
 import { Network } from './network.js'
 import { Renderer } from './render.js'
 import { Physics } from './physics/base.js'

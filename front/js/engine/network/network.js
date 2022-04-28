@@ -1,4 +1,13 @@
-export class Network {
+import { WebRTCConnection } from './connection/webrtc_connection';
+import { WebSockConnection } from './connection/websock_connection';
+
+export default {
+    Network,
+    WebRTCConnection,
+    WebSockConnection
+}
+
+class Network {
     constructor(state) {
         this._state = state
         this.socket = null
@@ -14,5 +23,3 @@ export class Network {
         ])
     }
 }
-
-

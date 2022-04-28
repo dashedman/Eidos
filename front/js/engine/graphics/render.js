@@ -1,11 +1,12 @@
-import { utils } from "./utils/utils.js";
+import graphics from "./graphics";
+let TextureManager = graphics.textures.TextureManager
+let SpriteManager = graphics.sprites.SpriteManager
+let SortingSpriteManager = graphics.sprites.SortingSpriteManager
 
-import { TextureManager } from "./textures/manager.js";
-import { SpriteManager, SortingSpriteManager } from "./sprites/manager.js";
+import { Statement } from "../statement.js";
+import utils from "../utils/utils.js";
 
-import { Statement } from "./statement.js";
-
-// ==========================================
+// ==============================s============
 // Renderer
 //
 // This class contains the code that takes care of visualising the
