@@ -1,10 +1,10 @@
-import { utils } from "../../utils/utils.js";
+import { autils } from "../../utils/utils.js"
 
 export class Texture {
     constructor(manager, id, name, loadParams, frameParams={}) {
         // params is [src: str]
         this._manager = manager;
-        this._traced = new Set()
+        this._traced = new WeakSet()
 
         this.atlasCoords = {};
 
@@ -20,7 +20,7 @@ export class Texture {
         this.image = new Image();
         this.image.src = src;
 
-        this.loadState =  utils.getImageLoadPromise(this.image)
+        this.loadState =  autils.getImageLoadPromise(this.image)
     }
     delete() {
         // release memory buffer

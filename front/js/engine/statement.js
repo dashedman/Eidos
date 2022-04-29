@@ -14,27 +14,50 @@ import { Logic } from './logic.js'
 // To store and manage game elements
 // ==========================================
 
-export class Statement {
-    constructor(canvas_el) {
+export default class Statement {
+    /**
+     * getting extended classes
+     * 
+     * @param {Dispatcher} dispatcher 
+     * @param {Renderer} renderer 
+     * @param {Physics} physics 
+     * @param {Logic} logic 
+     * @param {Network} network 
+     * @param {Entities} entities 
+     */
+    constructor(dispatcher, renderer, physics, logic, network, entities) {
         // id of the game loop to handle
         this.loop = {
             id: -1,
-            interval: 0
+            interval: 60
         }
         this.time = new TimeManager()
 
-        this.dispatcher = new Dispatcher(this, document)
-        this.render = new Renderer(this, canvas_el)
-        this.network = new Network(this)
-        this.physics = new Physics(this)
-        this.logic = new Logic(this)
+        this.dispatcher = dispatcher
+        this.render = renderer
+        this.network = network
+        this.physics = physics
+        this.logic = logic
+        this.entities = entities // array of entities
 
-        // Set up entities and location
-        this.player = new Player()
-        this.entities = new Entities(this) // array of entities
-        this.terrain = new enviroment.Terrain(this)
-
-        this.camera = new Camera()
+        this.dispatcher._state = this
+        this.render._state = this
+        this.network._state = this
+        this.physics._state = this
+        this.logic._state = this
+        this.entities._state = this
+    }
+    async prepare() {
+        console.debug('Preparing Statement...')
+        await Promise.all([
+            this.dispatcher.prepare(),
+            this.render.prepare(),
+            this.network.prepare(),
+            this.physics.prepare(),
+            this.logic.prepare(),
+            this.entities.prepare(),
+        ])
+        console.debug('Statement prepeared.')
     }
     run() {
         // Start a Render loops	
@@ -58,6 +81,15 @@ export class Statement {
     }
     stop() {
         clearTimeout(this.loop.id)
+        this.render.stop()
+    }
+
+    /**
+     * 
+     * @param {Number} delay 
+     */
+    setLoopDelay(delay) {
+        this.loop.interval = delay
     }
 }
 

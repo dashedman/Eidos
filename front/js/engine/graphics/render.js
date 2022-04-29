@@ -1,13 +1,10 @@
-import graphics from "./graphics.js"
-
-let TextureManager = graphics.textures.TextureManager
-let SpriteManager = graphics.sprites.SpriteManager
-let SortingSpriteManager = graphics.sprites.SortingSpriteManager
+import { TextureManager } from './textures/manager.js';
+import { SpriteManager, SortingSpriteManager } from './sprites/manager.js';
 
 import { Statement } from "../statement.js";
-import utils from "../utils/utils.js";
+import { autils } from "../utils/utils.js";
 
-// ==============================s============
+// ==========================================
 // Renderer
 //
 // This class contains the code that takes care of visualising the
@@ -24,14 +21,13 @@ export class Renderer {
 	/**
 	 * Constructor of render module
 	 * 
-	 * @param {Statement} state 
 	 * @param {HTMLCanvasElement} canvas_el 
 	 */
-	constructor(state, canvas_el) {
+	constructor(canvas_el) {
 		/**
 		 * @type {Statement}
 		 */
-		this._state = state
+		this._state = null
 
 		this.frameId = -1
 
@@ -73,17 +69,17 @@ export class Renderer {
 		this.foregroundSpriteManager = new SortingSpriteManager(this, gl);
 
 		this.textureManager = new TextureManager(this);
-
-		this.waitInit = this.async_constructor()
 	}
 
 	/**
-	 * Asyncronious part of constructor
+	 * prepare()
+	 * 
+	 * Prepare renderer to run. Load some weight things. Must be overrided with super()
 	 */
-	async async_constructor() {
+	async prepare() {
 		// Load shaders
 		await this.loadShaders();
-		await this.textureManager.waitInit;
+		await this.textureManager.prepare();
 	}
 
 	/**
@@ -92,20 +88,13 @@ export class Renderer {
 	 * Start a render loop.
 	 * Return loop id.
 	 */
-	async run() {
-		await this.waitInit
-		// Some start actions...
-		// ...
+	run() {
 		// loop body
 		let renderFrame = () => {
 			// Draw world
-			this._state.debugger.dummie.sprite.sx = this._state.debugger.dummie.pb.x
-			this._state.debugger.dummie.sprite.sy = this._state.debugger.dummie.pb.y
-			
-			this._state.camera.calculatePositionByTargets()
+			this.update()
 			this.updateAnimations()
 			this.draw();
-
 			// call next frame
 			this.frameId = requestAnimationFrame(renderFrame);
 		};
@@ -117,8 +106,20 @@ export class Renderer {
 	 * 
 	 * Stop a render loop.
 	 */
-	close() {
+	stop() {
 		cancelAnimationFrame(this.loopId);
+	}
+
+	/**
+	 * update()
+	 * 
+	 * User update sprites. Must be overrided
+	 */
+	update() {
+		// TODO: remove dummie
+		this._state.debugger.dummie.sprite.sx = this._state.debugger.dummie.pb.x
+		this._state.debugger.dummie.sprite.sy = this._state.debugger.dummie.pb.y
+		this._state.camera.calculatePositionByTargets()
 	}
 
 	/**
@@ -156,7 +157,6 @@ export class Renderer {
 
 		// Initialise view
 		this.checkViewport()
-		gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight)
 		gl.clear(gl.COLOR_BUFFER_BIT) // | gl.DEPTH_BUFFER_BIT
 
 		// sprites render
@@ -175,7 +175,6 @@ export class Renderer {
 		this.backgroundSpriteManager.draw(gl.STATIC_DRAW, locals)
 		this.mainSpriteManager.draw(gl.DYNAMIC_DRAW, locals)
 		this.foregroundSpriteManager.draw(gl.STATIC_DRAW, locals)
-
 
 		// effects
 		//gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.framebuffer)
@@ -239,7 +238,7 @@ export class Renderer {
 			console.log(`Load '${name}' programm`)
 
 			let getShader = async (name, shader_type) => {
-				let shaderSource = await utils.loadTextResources(`shaders/${name}`);
+				let shaderSource = await autils.loadTextResources(`shaders/${name}`);
 
 				let shader = gl.createShader(shader_type);
 				gl.shaderSource(shader, shaderSource);

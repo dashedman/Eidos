@@ -1,7 +1,7 @@
 import { Statement } from "./statement.js";
 import { Dispatcher } from './interactions/interactions.js';
 
-export class Logic {
+export default class Logic {
     constructor(state) {
         /**
          * @type {Statement}

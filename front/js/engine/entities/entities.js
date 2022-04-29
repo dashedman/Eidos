@@ -5,27 +5,6 @@ import { BackgroundBlock, Block, Decoration } from './block.js';
 import { Location } from './location.js';
 import { Player } from './player.js';
 
-export default {
-    enviroment,
-    Entity,
-    BackgroundBlock,
-    Block,
-    Decoration,
-    Location,
-    Player,
-    Entities
-} 
-
-export {
-    enviroment,
-    Entity,
-    BackgroundBlock,
-    Block,
-    Decoration,
-    Location,
-    Player,
-    Entities
-} 
 
 class Entities{
 
@@ -44,3 +23,16 @@ class Entities{
         return new ClassOfEntity(sprite, entityParams)
     }
 }
+
+
+export default Entities
+export {
+    enviroment,
+    Entity,
+    BackgroundBlock,
+    Block,
+    Decoration,
+    Location,
+    Player,
+    Entities
+} 

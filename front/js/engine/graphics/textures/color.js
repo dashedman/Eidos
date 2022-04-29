@@ -1,10 +1,10 @@
-import { utils } from "../../utils/utils.js";
+import { autils } from "../../utils/utils.js";
 import { Texture } from "./base.js";
 
 export class ColorTexture extends Texture{
     loadData({colors, w, h}) {
         // render color pixels to image
-        let canvas = utils.supportCanvas(w, h)
+        let canvas = autils.supportCanvas(w, h)
         let ctx = canvas.getContext('2d')
         let pixels = ctx.createImageData(w, h)
         for (let i = 0; i < pixels.data.length; i++) {
@@ -15,7 +15,7 @@ export class ColorTexture extends Texture{
 
         this.image = new Image()
         this.image.src = canvas.toDataURL()
-        this.loadState = utils.getImageLoadPromise(this.image)
+        this.loadState = autils.getImageLoadPromise(this.image)
     }
 }
 

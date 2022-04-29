@@ -1,4 +1,4 @@
-import { utils } from "../../utils/utils.js"
+import { autils } from "../../utils/utils.js"
 export { atlas }
 
 
@@ -11,7 +11,7 @@ var atlas = {
         let {size, tiling} = generateTiling(textures, extrude)
 
         // draw atlas
-        let canvas = utils.supportCanvas(size.w, size.h)
+        let canvas = autils.supportCanvas(size.w, size.h)
         let ctx = canvas.getContext('2d')
         for(let tile of tiling){
             drawTile(ctx, tile, textures[tile.index].image, extrude)

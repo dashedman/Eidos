@@ -1,20 +1,29 @@
 import engine from "../engine/engine.js"
-let Statement = engine.Statement
+import { entities } from "../engine/engine.js"
 let utils = engine.utils.autils
 let Camera = engine.utils.Camera
-let Block = engine.entities.Block
+let Block = entities.Block
 
 
 async function initGame(){
-
     console.log("Game started...")
     let canvas = document.getElementById("viewport");
 
-    window.state = new Statement(canvas)
-    state.loop.interval = 0.01
-    
-    await loadGame(state)
+    let dispatcher = new engine.Dispatcher()
+    let renderer = new engine.Renderer(canvas)
+    let physics = new engine.Physics()
+    let logic = new engine.Logic()
+    let network = new engine.Network()
+    let entities = new engine.Entities()
 
+    let state = window.state = new engine.Statement(
+        dispatcher, renderer,
+        physics, logic,
+        network, entities
+    )
+    state.setLoopDelay(0.01)
+    await state.prepare()
+    await loadGame(state)
     state.run()
 }
 
@@ -23,7 +32,6 @@ async function initGame(){
  * @param {Statement} state 
  */
 async function loadGame(state){
-    await state.render.waitInit
     const ratio = state.render.canvas.width / state.render.canvas.height
     state.camera.setPosition(0, 0, -10)
     state.camera.setRatio(ratio)

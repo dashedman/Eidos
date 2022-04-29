@@ -1,17 +1,6 @@
 import { WebRTCConnection } from './connection/webrtc_connection.js';
 import { WebSockConnection } from './connection/websock_connection.js';
 
-export default {
-    Network,
-    WebRTCConnection,
-    WebSockConnection
-}
-export {
-    Network,
-    WebRTCConnection,
-    WebSockConnection
-}
-
 class Network {
     constructor(state) {
         this._state = state
@@ -27,4 +16,12 @@ class Network {
             new Block(-50, -10, 100, 5),
         ])
     }
+}
+
+
+export default Network
+export {
+    Network,
+    WebRTCConnection,
+    WebSockConnection
 }

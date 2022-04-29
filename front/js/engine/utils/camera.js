@@ -1,4 +1,4 @@
-const mat4 = glMatrix.mat4
+import { mat4 } from "./gl_matrix/index.js"
 
 export class Camera {
     constructor(target) {

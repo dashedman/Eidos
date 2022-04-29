@@ -1,7 +1,7 @@
 export class Dispatcher {
-    constructor(state, el) {
+    constructor(el) {
         // id of the game loop to handle
-        this._state = state;
+        this._state = null;
         this._target = null
 
         this.pressedKeys = new Uint8Array(128);
@@ -39,6 +39,11 @@ export class Dispatcher {
             this.mouse.x = e.clientX;
             this.mouse.y = e.clientY;
         });
+    }
+
+    async prepare() {
+        console.debug('Preparing Dispatcher...')
+        console.debug('Dispatcher prepeared.')
     }
 
     get target(){

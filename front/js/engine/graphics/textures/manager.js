@@ -1,5 +1,5 @@
 import { atlas } from "./getAtlas.js";
-import { utils } from "../../utils/utils.js"
+import { autils } from "../../utils/utils.js"
 
 import { Texture } from "./base.js";
 import { ColorTexture } from "./color.js";
@@ -51,42 +51,45 @@ export class TextureManager {
         wait_resolve()
     }
 
-    createTexture(id, name, src, frameNumber, frameOffset){
+    /**
+     * 
+     * @param {*} id 
+     * @param {Texture} texture 
+     */
+    __safeAddT(id, texture) {
         if(this.textures.has(id)){
             console.warn("WARNING: THIS ID TEXTURE ALREADY EXIST!!!")
         }
+        this.addT(texture)
+        return texture
+    }
 
+    createTexture(id, name, src, frameNumber, frameOffset){
         let texture = new Texture(
             this, id, name, 
             {src: src},
             {number: frameNumber, offset: frameOffset}
         )
-        this.push(texture)
-        return texture
+        return this.__safeAddT(id, texture)
     }
-
+    
     createColorTexture(id, name, colors, w, h){
-        if(this.textures.has(id)){
-            console.warn("WARNING: THIS ID TEXTURE ALREADY EXIST!!!")
-        }
-
         let texture = new ColorTexture(
             this, id, name, 
             {colors: colors, w: w, h: h}
         )
-        this.push(texture)
-        return texture
+        return this.__safeAddT(id, texture)
     }
 
     async fromTileset(tilesetInfo){
         // load and init textures from 
         // tileset created by tilemap editor
-        let canvas = utils.supportCanvas(tilesetInfo.tilewidth, tilesetInfo.tileheight)
+        let canvas = autils.supportCanvas(tilesetInfo.tilewidth, tilesetInfo.tileheight)
         let ctx = canvas.getContext('2d')
         
         let img = new Image()
         img.src = tilesetInfo.image
-        await utils.getImageLoadPromise(img)
+        await autils.getImageLoadPromise(img)
 
         let tileArray = []
         let realTileIndex = 0;
@@ -167,7 +170,7 @@ export class TextureManager {
         return tileArray
     }
 
-    push(texture) {
+    addT(texture) {
         // TODO
         if (!this.textures.has(texture.id))
             this.textures.set(texture.id, texture)
@@ -176,13 +179,13 @@ export class TextureManager {
         this.compileAtlas()
     }
 
-    pop(id) {
+    delT(id) {
         // TODO
         this.textures.delete(id)
         this.compileAtlas()
     }
 
-    get(id){
+    getT(id){
         return this.textures.get(id)
     }
 
@@ -190,7 +193,7 @@ export class TextureManager {
         if (this.status == TextureManager.STATUSES.COMPILING)
             return
         this.status = TextureManager.STATUSES.COMPILING
-        console.log('Start compile texture altas')
+        console.debug('Start compile texture altas')
 
         for (const tex of this.textures.values()) {
             await tex.loadState
@@ -225,14 +228,14 @@ export class TextureManager {
                 y: inverted_tile.y,
             })
         }
-        console.log('Texture altas compile done')
+        console.debug('Texture altas compile done')
         this.status = TextureManager.STATUSES.READY
     }
     async bindAtlas(atlas) {
         this.atlas = new Image()
         this.atlas.src = atlas
 
-        await utils.getImageLoadPromise(this.atlas)
+        await autils.getImageLoadPromise(this.atlas)
 
         this.needUpdate = true
     }
