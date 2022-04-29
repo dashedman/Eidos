@@ -1,7 +1,12 @@
-import { WebRTCConnection } from './connection/webrtc_connection';
-import { WebSockConnection } from './connection/websock_connection';
+import { WebRTCConnection } from './connection/webrtc_connection.js';
+import { WebSockConnection } from './connection/websock_connection.js';
 
 export default {
+    Network,
+    WebRTCConnection,
+    WebSockConnection
+}
+export {
     Network,
     WebRTCConnection,
     WebSockConnection

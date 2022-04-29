@@ -32,10 +32,6 @@ async function loadTextResources(url){
 }
 
 async function loadJsonResources(url){
-    return (await loadRowResources(url)).response
-}
-
-async function loadJsonResources(url){
     return new Promise(function(resolve, reject){
         const request = new XMLHttpRequest()
 

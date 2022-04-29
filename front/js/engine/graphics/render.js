@@ -1,4 +1,5 @@
-import graphics from "./graphics";
+import graphics from "./graphics.js"
+
 let TextureManager = graphics.textures.TextureManager
 let SpriteManager = graphics.sprites.SpriteManager
 let SortingSpriteManager = graphics.sprites.SortingSpriteManager

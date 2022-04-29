@@ -1,5 +1,8 @@
-import { Texture } from "./base";
-import { ColorTexture } from "./color";
-import { TextureManager } from "./manager";
+import { Texture } from "./base.js"
+
+import { ColorTexture } from "./color.js"
+
+import { TextureManager } from "./manager.js"
+
 
 export { Texture, ColorTexture, TextureManager }

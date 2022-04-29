@@ -1,15 +1,11 @@
-import { TimeManager } from './utils/time.js'
-import { Camera } from './utils/camera.js'
-
-import { Dispatcher } from './dispatcher.js'
-import { Logic } from '../game/logic.js'
-import { Network } from './network.js'
-import { Renderer } from './render.js'
+import { Dispatcher } from './interactions/dispatcher.js'
+import { Renderer } from './graphics/render.js'
+import { Network } from './network/network.js'
 import { Physics } from './physics/base.js'
+import { Entities, Player, enviroment } from './entities/entities.js'
+import { TimeManager, Camera } from './utils/utils.js'
 
-import { Entities } from './entities/entities.js'
-import { Terrain } from './entities/enviroment/terrain.js'
-import { Player } from './entities/player.js'
+import { Logic } from './logic.js'
 
 
 // ==========================================
@@ -36,7 +32,7 @@ export class Statement {
         // Set up entities and location
         this.player = new Player()
         this.entities = new Entities(this) // array of entities
-        this.terrain = new Terrain(this)
+        this.terrain = new enviroment.Terrain(this)
 
         this.camera = new Camera()
     }

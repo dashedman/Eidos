@@ -1,5 +1,5 @@
-import { Dispatcher } from "./dispatcher.js";
 import { Statement } from "./statement.js";
+import { Dispatcher } from './interactions/interactions.js';
 
 export class Logic {
     constructor(state) {

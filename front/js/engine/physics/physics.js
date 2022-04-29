@@ -1,5 +1,5 @@
-import colliders from './colliders/colliders';
-import { Physics } from './base';
+import colliders from './colliders/colliders.js';
+import { Physics } from './base.js';
 
 export default {
     Physics,

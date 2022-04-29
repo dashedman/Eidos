@@ -1,5 +1,8 @@
-import { Sprite } from "./base";
-import { SpriteMixins } from "./mixins";
-import { SpriteManager, SortingSpriteManager } from "./manager";
+import { Sprite } from "./base.js"
+
+import { SpriteMixins } from "./mixins.js"
+
+import { SpriteManager, SortingSpriteManager } from "./manager.js"
+
 
 export { Sprite, SpriteManager, SortingSpriteManager, SpriteMixins }

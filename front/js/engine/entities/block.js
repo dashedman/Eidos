@@ -1,5 +1,5 @@
 import { Entity } from "./base.js";
-import { PhBox } from "../physics/box.js";
+import ph from "../physics/physics.js"
 
 export class BackgroundBlock extends Entity {
     constructor(sprite, {x, y, z=1}) {
@@ -20,7 +20,7 @@ export class Block extends BackgroundBlock {
     constructor(sprite, {x, y, z=1}) {
         super(sprite, {x, y, z})
 
-        this.pb = new PhBox(x, y, 1, 1)
+        this.pb = new ph.colliders.PhBox(x, y, 1, 1)
     }
 }
 

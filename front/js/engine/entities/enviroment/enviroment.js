@@ -1,5 +1,9 @@
-import { Chunk } from "./chunk";
-import { Layer } from "./layer";
-import { Terrain } from "./terrain";
+import { Chunk } from "./chunk.js"
 
-export default { Chunk, Layer, Terrain}
+import { Layer } from "./layer.js"
+
+import { Terrain } from "./terrain.js"
+
+
+export default { Chunk, Layer, Terrain }
+export { Chunk, Layer, Terrain }

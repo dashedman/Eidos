@@ -1,5 +1,5 @@
-import { PhBox } from './box';
-import { RotatedBox } from './RotatedBox';
+import { PhBox } from './box.js';
+import { RotatedBox } from './RotatedBox.js';
 
 export default {
     PhBox,

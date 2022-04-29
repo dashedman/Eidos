@@ -15,3 +15,12 @@ export default {
     utils,
     Statement
 }
+export {
+    graphics, 
+    entities, 
+    network, 
+    physics, 
+    interactions, 
+    utils,
+    Statement
+}

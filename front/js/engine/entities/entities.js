@@ -1,11 +1,22 @@
 import enviroment from "./enviroment/enviroment.js";
 import { SpriteMixins } from "../graphics/sprites/mixins.js";
-import { Entity } from './base';
-import { BackgroundBlock, Block, Decoration } from './block';
-import { Location } from './location';
-import { Player } from './player';
+import { Entity } from './base.js';
+import { BackgroundBlock, Block, Decoration } from './block.js';
+import { Location } from './location.js';
+import { Player } from './player.js';
 
 export default {
+    enviroment,
+    Entity,
+    BackgroundBlock,
+    Block,
+    Decoration,
+    Location,
+    Player,
+    Entities
+} 
+
+export {
     enviroment,
     Entity,
     BackgroundBlock,
