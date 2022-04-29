@@ -1,4 +1,4 @@
-export class Map2D{ 
+export default class Map2D{ 
     /**
      * 
      * @param {Iterable<readonly [K1, K2, V]>} [iterable]

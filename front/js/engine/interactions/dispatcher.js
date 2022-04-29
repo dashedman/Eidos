@@ -1,4 +1,4 @@
-export class Dispatcher {
+export default class Dispatcher {
     constructor(el) {
         // id of the game loop to handle
         this._state = null;

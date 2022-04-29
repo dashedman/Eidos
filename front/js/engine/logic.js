@@ -1,19 +1,19 @@
-import { Statement } from "./statement.js";
-import { Dispatcher } from './interactions/interactions.js';
+import Statement from "./statement.js";
+import Dispatcher from './interactions/interactions.js';
 
 export default class Logic {
-    constructor(state) {
+    constructor() {
         /**
          * @type {Statement}
          */
-        this.state = state;
+        this._state = null;
     }
 
     update(){
-        let deltaTime = this.state.time.deltaTime * 0.01
+        let deltaTime = this._state.time.deltaTime * 0.01
 
-        let disp = this.state.dispatcher
-        let newDummiePos = state.debugger.dummie.pb
+        let disp = this._state.dispatcher
+        let newDummiePos = this._state.debugger.dummie.pb
         if(disp.pressedKeys[Dispatcher.KEY.A]){
             newDummiePos.x -= deltaTime;
         }
@@ -26,11 +26,16 @@ export default class Logic {
         if(disp.pressedKeys[Dispatcher.KEY.W]){
             newDummiePos.y += deltaTime;
         }
-        // if(disp.pressedKeys[Dispatcher.KEY.X]){
-        //     newCamPos[2] -= deltaTime;
-        // }
-        // if(disp.pressedKeys[Dispatcher.KEY.Z]){
-        //     newCamPos[2] += deltaTime;
-        // }
+        if(disp.pressedKeys[Dispatcher.KEY.X]){
+            newCamPos[2] -= deltaTime;
+        }
+        if(disp.pressedKeys[Dispatcher.KEY.Z]){
+            newCamPos[2] += deltaTime;
+        }
+    }
+
+    async prepare() {
+        console.debug('Preparing Logic...')
+        console.debug('Logic prepeared.')
     }
 }

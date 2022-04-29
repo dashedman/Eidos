@@ -1,6 +1,6 @@
 import { mat4 } from "./gl_matrix/index.js"
 
-export class Camera {
+export default class Camera {
     constructor(target) {
         this.settings = {
             fovy: Math.radians(60),        // 	Vertical field of view in radians

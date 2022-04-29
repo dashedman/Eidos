@@ -1,7 +1,7 @@
 import { TextureManager } from './textures/manager.js';
 import { SpriteManager, SortingSpriteManager } from './sprites/manager.js';
 
-import { Statement } from "../statement.js";
+import Statement from "../statement.js";
 import { autils } from "../utils/utils.js";
 
 // ==========================================
@@ -78,8 +78,10 @@ export class Renderer {
 	 */
 	async prepare() {
 		// Load shaders
+		console.debug('Preparing Renderer...')
 		await this.loadShaders();
 		await this.textureManager.prepare();
+        console.debug('Renderer prepeared.')
 	}
 
 	/**

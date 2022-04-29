@@ -1,5 +1,6 @@
 import engine from "../engine/engine.js"
-import { entities } from "../engine/engine.js"
+import * as entities from "../engine/entities/entities.js"
+import { Terrain } from "../engine/entities/enviroment/terrain.js"
 let utils = engine.utils.autils
 let Camera = engine.utils.Camera
 let Block = entities.Block
@@ -9,7 +10,7 @@ async function initGame(){
     console.log("Game started...")
     let canvas = document.getElementById("viewport");
 
-    let dispatcher = new engine.Dispatcher()
+    let dispatcher = new engine.Dispatcher(document)
     let renderer = new engine.Renderer(canvas)
     let physics = new engine.Physics()
     let logic = new engine.Logic()
@@ -29,7 +30,7 @@ async function initGame(){
 
 /**
  * 
- * @param {Statement} state 
+ * @param {engine.Statement} state 
  */
 async function loadGame(state){
     const ratio = state.render.canvas.width / state.render.canvas.height
@@ -81,12 +82,13 @@ async function loadGame(state){
     state.camera.addTarget(greenBlock.pb)
 
 
-    let mapConfig = await utils.loadJsonResources('resources/x0y0.json')
+    let mapConfig = await utils.loadJsonResources('resources/Test ph  (4).json')
     console.log(mapConfig)
     for(let tileset of mapConfig.tilesets){
         await state.render.textureManager.fromTileset(tileset)
     }
 
+    state.terrain = new Terrain(state)
     state.terrain.fromLayers(mapConfig.layers)
     
     // for(let layer of state.terrain.layers){

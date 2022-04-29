@@ -1,7 +1,7 @@
 import { Layer } from "./layer.js";
 import { Decoration } from "../block.js";
 
-import { Statement } from "../../statement.js";
+import Statement from "../../statement.js";
 
 export class Terrain {
     /**
@@ -41,7 +41,15 @@ export class Terrain {
     fromLayer(jsonLayer){
         let z = this.ZfromParallax(jsonLayer.parallaxx || 1)
         if(jsonLayer.type == "tilelayer"){
-            let layer = new Layer(this, jsonLayer.name, z, jsonLayer.isMain)
+            // check that layer is main layer
+            // and they have physicaly 
+            let isMain = (jsonLayer.properties || []).find((layer_prop) => {
+                if(layer_prop.name === "isMain" && layer_prop.value === true) 
+                    return true
+                return false
+            }) !== undefined
+
+            let layer = new Layer(this, jsonLayer.name, z, isMain)
 
             this.layers.push(layer)
             if(layer.isMain){
@@ -55,7 +63,7 @@ export class Terrain {
 
         if(jsonLayer.type == "objectgroup"){
             for(const obj of jsonLayer.objects){
-                const texture = this.state.render.textureManager.get(obj.gid)
+                const texture = this.state.render.textureManager.getT(obj.gid)
 
                 if(texture === undefined)
                     continue

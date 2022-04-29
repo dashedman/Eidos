@@ -1,4 +1,4 @@
-import { Map2D } from "../../utils/map2d.js";
+import Map2D from "../../utils/map2d.js";
 import { Chunk } from "./chunk.js";
 import { Block, BackgroundBlock } from "../block.js";
 
@@ -46,7 +46,7 @@ export class Layer {
             
                 const tileIndex = tileY*chunk.width + tileX
                 const tileGID = chunkJson.data[tileIndex]
-                const texture = state.render.textureManager.get(tileGID)
+                const texture = state.render.textureManager.getT(tileGID)
 
                 const invertedY = chunk.height - tileY - 1
 

@@ -22,15 +22,13 @@ export class TextureManager {
         this.textures = new Map()
         this.atlas = null
         this._glTexture = gl.createTexture()
-
-        this.waitInit = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                this.createPlug(resolve, reject)
-            }, 0)
-        })
     }
 
-    async createPlug(wait_resolve, wait_reject) {
+    async prepare() {
+        await this.createPlug()
+    }
+
+    async createPlug() {
         this.plug = new ColorTexture(
             this, 
             -1,
@@ -48,7 +46,6 @@ export class TextureManager {
         )
         this.textures.set(this.plug.id, this.plug)
         await this.compileAtlas()
-        wait_resolve()
     }
 
     /**
@@ -88,7 +85,7 @@ export class TextureManager {
         let ctx = canvas.getContext('2d')
         
         let img = new Image()
-        img.src = tilesetInfo.image
+        img.src = `./resources/${tilesetInfo.image}`
         await autils.getImageLoadPromise(img)
 
         let tileArray = []

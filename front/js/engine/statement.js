@@ -1,11 +1,12 @@
-import { Dispatcher } from './interactions/dispatcher.js'
-import { Renderer } from './graphics/render.js'
-import { Network } from './network/network.js'
-import { Physics } from './physics/base.js'
-import { Entities, Player, enviroment } from './entities/entities.js'
-import { TimeManager, Camera } from './utils/utils.js'
+import Dispatcher from './interactions/interactions.js'
+import Renderer from './graphics/graphics.js'
+import Network from './network/network.js'
+import Physics from './physics/physics.js'
+import Entities from './entities/entities.js'
+import Logic from './logic.js'
 
-import { Logic } from './logic.js'
+import Camera from './utils/camera.js';
+import TimeManager from './utils/time.js'
 
 
 // ==========================================
@@ -32,6 +33,8 @@ export default class Statement {
             interval: 60
         }
         this.time = new TimeManager()
+
+        this.camera = new Camera()
 
         this.dispatcher = dispatcher
         this.render = renderer

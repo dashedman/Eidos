@@ -4,7 +4,7 @@ export class Texture {
     constructor(manager, id, name, loadParams, frameParams={}) {
         // params is [src: str]
         this._manager = manager;
-        this._traced = new WeakSet()
+        this._traced = new Set()
 
         this.atlasCoords = {};
 
