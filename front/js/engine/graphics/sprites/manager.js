@@ -1,3 +1,4 @@
+"use strict"
 import { Renderer } from "../render.js";
 import { Sprite } from "./base.js";
 
@@ -130,7 +131,7 @@ export class SpriteManager {
 export class SortingSpriteManager extends SpriteManager {
     constructor(render){
         super(render)
-        
+        /** @type {Boolean} */
         this._needZSorting = false
     }
 

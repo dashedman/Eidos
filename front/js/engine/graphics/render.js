@@ -1,3 +1,4 @@
+"use strict"
 import { TextureManager } from './textures/manager.js';
 import { SpriteManager, SortingSpriteManager } from './sprites/manager.js';
 
@@ -325,16 +326,16 @@ export class Renderer {
 	 * @param {Object} settings - settings for sprite creation.
 	 * @param {Texture} settings.texture - texture that must be used in sprite.
 	 * @param {Array} settings.mixins - array of sprite mixins. Can be taked from SpriteMixins.
-	 * @param {String} role - role of sprite on scene. From enum {'BACK', 'MAIN', 'FRONT'}.
+	 * @param {SPRITE_ROLES} role - role of sprite on scene. From enum SPRITE_ROLES.
 	 * @returns {Sprite} - created sprite.
 	 */
-	createSprite({texture, mixins=[]}, role='MAIN'){
+	createSprite({texture, mixins=[]}, role=SPRITE_ROLES.MAIN){
 		switch (role) {
-			case 'BACK':
+			case SPRITE_ROLES.BACK:
 				return this.backgroundSpriteManager.createSprite({texture, mixins})
-			case 'MAIN':
+			case SPRITE_ROLES.MAIN:
 				return this.mainSpriteManager.createSprite({texture, mixins})
-			case 'FRONT':
+			case SPRITE_ROLES.FRONT:
 				return this.foregroundSpriteManager.createSprite({texture, mixins})
 			default:
 				throw 'Undefined render type of sprite'

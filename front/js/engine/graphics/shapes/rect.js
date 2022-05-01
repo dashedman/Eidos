@@ -1,3 +1,4 @@
+"use strict"
 export class MultiLine {
     constructor(_manager, points, color){
         this.color = color || [255, 255, 255]

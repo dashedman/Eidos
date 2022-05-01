@@ -1,3 +1,4 @@
+"use strict"
 import Map2D from "../../utils/map2d.js";
 import { Chunk } from "./chunk.js";
 import { Block, BackgroundBlock } from "../block.js";
@@ -30,16 +31,16 @@ export class Layer {
     /**
      * 
      * @param {JSON} chunkJson 
+     * @param {SPRITE_ROLES} layerRole
      */
-     fromChunk(chunkJson){
+     fromChunk(chunkJson, layerRole){
         const state = this.terrain.state
         // create entities from chunk
         const chunkCoordX = Math.floor(chunkJson.x/chunkJson.width)
-        const chunkCoordY = Math.floor(-1-chunkJson.y/chunkJson.height) // inverted Y
+        const chunkCoordY = Math.floor(-1 - chunkJson.y/chunkJson.height) // inverted Y
         const chunk = new Chunk(chunkCoordX, chunkCoordY, chunkJson.width, chunkJson.height)
 
         const ClassOfTile = this.isMain ? Block : BackgroundBlock
-        const roleOnScene = this.isMain ? 'MAIN' : (this.z > 1 ? 'BACK' : 'FRONT')
 
         for(let tileY = 0; tileY < chunk.height; tileY++){
             for(let tileX = 0; tileX < chunk.width; tileX++){
@@ -58,7 +59,7 @@ export class Layer {
                 chunk.grid[tileX][invertedY] = state.entities.create(
                     ClassOfTile,
                     texture,
-                    roleOnScene,
+                    layerRole,
                     {
                         x: chunk.x*chunk.width + tileX, // global world coords
                         y: chunk.y*chunk.height + invertedY, // global world coords
@@ -72,7 +73,7 @@ export class Layer {
 
     setZ(z){
         this.z = z
-        for(const chunk of this.chunks){
+        for(const chunk of this.chunks.values()){
             for(const column of chunk.grid){
                 for(const ceil of column){
                     if(ceil !== null){

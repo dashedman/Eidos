@@ -1,3 +1,4 @@
+"use strict"
 export const SpriteMixins = {
     iAnimated: {
         // texture must be framed

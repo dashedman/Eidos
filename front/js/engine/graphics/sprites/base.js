@@ -1,12 +1,23 @@
+"use strict"
 // Realize container for texture, with rect
+import { Texture } from '../textures/base.js';
+import { SortingSpriteManager, SpriteManager } from './manager.js';
 
 export class Sprite {
+    /**
+     * 
+     * @param { SpriteManager | SortingSpriteManager } manager 
+     * @param {*} bufferIndexes 
+     * @param { Texture } texture 
+     * @param  {...any} mixins 
+     */
     constructor(manager, bufferIndexes, texture, ...mixins) {
         this._bufferIndexes = bufferIndexes;
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, w:0, h:0}
 
+        /** @type { SortingSpriteManager | SpriteManager } */
         this._manager = manager;
 
         this.texture = texture;

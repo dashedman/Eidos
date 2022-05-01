@@ -1,3 +1,4 @@
+"use strict"
 import { Chunk } from "./chunk.js"
 
 import { Layer } from "./layer.js"

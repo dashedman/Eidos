@@ -1,3 +1,4 @@
+"use strict"
 export default class TimeManager {
     constructor() {
         // Date.now() better to use than new Date().getTime()

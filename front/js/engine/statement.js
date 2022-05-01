@@ -1,3 +1,4 @@
+"use strict"
 import Dispatcher from './interactions/interactions.js'
 import Renderer from './graphics/graphics.js'
 import Network from './network/network.js'
@@ -95,7 +96,3 @@ export default class Statement {
         this.loop.interval = delay
     }
 }
-
-
-
-

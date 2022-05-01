@@ -1,3 +1,4 @@
+"use strict"
 export class PhBox {
     constructor(x, y, w, h) {
         this.x = x || 0;

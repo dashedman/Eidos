@@ -1,3 +1,4 @@
+"use strict"
 import { mat4 } from "./gl_matrix/index.js"
 
 export default class Camera {

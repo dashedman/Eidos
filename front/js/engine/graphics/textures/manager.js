@@ -1,3 +1,4 @@
+"use strict"
 import { atlas } from "./getAtlas.js";
 import { autils } from "../../utils/utils.js"
 
@@ -102,8 +103,10 @@ export class TextureManager {
             }
             
 
-            let indexX = tileIndex % tilesetInfo.columns
-            let indexY = Math.floor(tileIndex / tilesetInfo.columns)
+            // let indexX = tileIndex % tilesetInfo.columns
+            let fullId = (tilesetInfo.firstgid + tileInfo.id)
+            let indexX = fullId % tilesetInfo.columns
+            let indexY = Math.floor(fullId / tilesetInfo.columns)
             let coordX = indexX * tilesetInfo.tilewidth
             let coordY = indexY * tilesetInfo.tileheight
             
@@ -116,10 +119,14 @@ export class TextureManager {
                 // resize canvas to contain all animation sequence
                 canvas.width = frameNumber*frameOffset
                 // draw frames
-                for(let [frameIndex, _] of tileInfo.animation.entries()){
+                for(let [frameIndex, animData] of tileInfo.animation.entries()){
 
-                    indexX = tileIndex % tilesetInfo.columns
-                    indexY = Math.floor(tileIndex / tilesetInfo.columns)
+                    
+                    let fullId = (tilesetInfo.firstgid + animData.id)
+                    indexX = fullId % tilesetInfo.columns
+                    // indexX = tileIndex % tilesetInfo.columns
+                    indexY = Math.floor(fullId / tilesetInfo.columns)
+                    // indexY = Math.floor(tileIndex / tilesetInfo.columns)
                     coordX = indexX * tilesetInfo.tilewidth
                     coordY = indexY * tilesetInfo.tileheight
 

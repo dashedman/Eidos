@@ -1,3 +1,4 @@
+"use strict"
 import { PhBox } from './box.js';
 import { RotatedBox } from './RotatedBox.js';
 

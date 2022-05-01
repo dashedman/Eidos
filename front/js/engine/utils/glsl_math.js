@@ -1,3 +1,4 @@
+"use strict"
 Math.radians = function(degrees){
     //Convert a quantity in degrees to radians
     return Math.PI*degrees/180.0;

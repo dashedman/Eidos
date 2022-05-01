@@ -1,3 +1,4 @@
+"use strict"
 import "./glsl_math.js";
 import autils from "./async_utils.js";
 import * as glm from "./gl_matrix/index.js";

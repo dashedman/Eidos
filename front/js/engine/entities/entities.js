@@ -1,14 +1,17 @@
+"use strict"
 import enviroment from "./enviroment/enviroment.js";
 import { SpriteMixins } from "../graphics/sprites/mixins.js";
 import { Entity } from './base.js';
 import { BackgroundBlock, Block, Decoration } from './block.js';
 import { Location } from './location.js';
 import { Player } from './player.js';
+import Statement from "../statement.js";
 
 
 export default class Entities{
 
     constructor(){
+        /** @type {Statement} */
         this._state = null
     }
 

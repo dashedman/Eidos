@@ -1,3 +1,4 @@
+"use strict"
 import { WebRTCConnection } from './connection/webrtc_connection.js';
 import { WebSockConnection } from './connection/websock_connection.js';
 

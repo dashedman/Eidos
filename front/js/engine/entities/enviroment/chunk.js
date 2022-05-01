@@ -1,3 +1,4 @@
+"use strict"
 export class Chunk {
     constructor(x, y, width, height){
         this.x = x

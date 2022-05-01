@@ -1,7 +1,9 @@
+"use strict"
 import { Layer } from "./layer.js";
 import { Decoration } from "../block.js";
 
 import Statement from "../../statement.js";
+import { SPRITE_ROLES } from "../../graphics/graphics.js"
 
 export class Terrain {
     /**
@@ -13,6 +15,9 @@ export class Terrain {
          * @type {Statement}
          */
         this.state = state
+        /**
+         * @type {Array<Layer>}
+         */
         this.layers = []
         this.decorations = []
         this.mainLayer = null
@@ -22,32 +27,47 @@ export class Terrain {
 
     /**
      * 
-     * @param {[JSON]} jsonLayers 
+     * @param {Array<[JSON]>} jsonLayers 
      */
     fromLayers(jsonLayers){
         // load terrain from layers
         // created by tilemap editor
-        for(let jsonLayer of jsonLayers){
-            this.fromLayer(jsonLayer)
+        let mainIsWas = false
+        for(let jsonLayer of jsonLayers.reverse()){
+            let isMain = (jsonLayer.properties || []).find((layer_prop) => {
+                if(layer_prop.name === "isMain" && layer_prop.value === true) 
+                    return true
+                return false
+            }) !== undefined
+
+            /** @type {SPRITE_ROLES} */
+            let ground_plan;
+            if(isMain){
+                ground_plan = SPRITE_ROLES.MAIN
+                mainIsWas = true
+            } else {
+                if (mainIsWas)
+                    ground_plan = SPRITE_ROLES.BACK
+                else ground_plan = SPRITE_ROLES.FRONT
+            }
+
+            this.fromLayer(jsonLayer, groundPlan)
         }
 
-        //this.recalcZforLayers()
+        // this.fromLayer(jsonLayers[1])
+
+        this.recalcZforLayers()
     }
 
     /**
      * 
      * @param {JSON} jsonLayer 
      */
-    fromLayer(jsonLayer){
+    fromLayer(jsonLayer, groundPlan){
         let z = this.ZfromParallax(jsonLayer.parallaxx || 1)
         if(jsonLayer.type == "tilelayer"){
             // check that layer is main layer
             // and they have physicaly 
-            let isMain = (jsonLayer.properties || []).find((layer_prop) => {
-                if(layer_prop.name === "isMain" && layer_prop.value === true) 
-                    return true
-                return false
-            }) !== undefined
 
             let layer = new Layer(this, jsonLayer.name, z, isMain)
 

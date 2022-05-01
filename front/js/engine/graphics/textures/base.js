@@ -1,3 +1,4 @@
+"use strict"
 import { autils } from "../../utils/utils.js"
 
 export class Texture {

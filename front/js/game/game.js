@@ -1,3 +1,4 @@
+"use strict"
 import engine from "../engine/engine.js"
 import * as entities from "../engine/entities/entities.js"
 import { Terrain } from "../engine/entities/enviroment/terrain.js"
@@ -29,8 +30,8 @@ async function initGame(){
 }
 
 /**
- * 
- * @param {engine.Statement} state 
+ * @typedef {(engine.Statement)} Statement
+ * @param {Statement} state 
  */
 async function loadGame(state){
     const ratio = state.render.canvas.width / state.render.canvas.height

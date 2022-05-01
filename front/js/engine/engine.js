@@ -1,3 +1,7 @@
+"use strict"
+/**
+ * @module
+ */
 import Renderer from "./graphics/graphics.js"
 import Entities from "./entities/entities.js"
 import Network from "./network/network.js"

@@ -1,3 +1,4 @@
+"use strict"
 export default class Dispatcher {
     constructor(el) {
         // id of the game loop to handle
