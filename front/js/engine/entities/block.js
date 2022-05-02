@@ -1,7 +1,8 @@
 "use strict"
+
 import { Entity } from "./base.js";
 import { Sprite } from "../graphics/sprites/base.js";
-import PhBox from './../physics/colliders/box';
+import PhBox from './../physics/colliders/box.js';
 
 export class BackgroundBlock extends Entity {
     /**

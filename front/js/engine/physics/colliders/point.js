@@ -1,14 +1,11 @@
 "use strict"
 
 import { COLLIDER_TYPES } from "./constants.js";
-import PhBox from './box.js';
-import PhCircle from './circle.js';
-import PhRotatedBox from './RotatedBox.js';
+import { PhCircle, PhBox, PhRotatedBox } from "./colliders.js";
 import { NotImplementedError } from "../../exceptions.js";
 
-
 export default class PhPoint {
-    static colliderType = COLLIDER_TYPES.POINT
+    colliderType = COLLIDER_TYPES.POINT
 
     constructor(x, y) {
         this.x = x || 0;

@@ -11,3 +11,9 @@ export default {
     PhBox,
     PhRotatedBox,
 }
+export {
+    PhPoint,
+    PhCircle,
+    PhBox,
+    PhRotatedBox,
+}

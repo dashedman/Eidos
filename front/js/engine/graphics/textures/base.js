@@ -1,7 +1,16 @@
 "use strict"
 import { autils } from "../../utils/utils.js"
+import { TextureManager } from "./manager.js";
 
 export class Texture {
+    /**
+     * 
+     * @param {TextureManager} manager 
+     * @param {*} id 
+     * @param {String} name 
+     * @param {*} loadParams 
+     * @param {*} frameParams 
+     */
     constructor(manager, id, name, loadParams, frameParams={}) {
         // params is [src: str]
         this._manager = manager;

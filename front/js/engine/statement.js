@@ -77,10 +77,10 @@ export default class Statement {
         let gameIteraction = () => {
             // calc time
             this.time.calc()
-            const deltaTime = this.time.deltaTime
+            const deltaTimeSec = this.time.deltaTime / 1000
 
-            this.physics.update(deltaTime)
-            this.logic.update(deltaTime)
+            this.physics.update(deltaTimeSec)
+            this.logic.update(deltaTimeSec)
 
             // call next iteraction
             this.loop.id = setTimeout(

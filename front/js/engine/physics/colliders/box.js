@@ -1,12 +1,10 @@
 "use strict"
 
-import PhCircle from "./circle.js";
+import { PhCircle, PhPoint, PhRotatedBox } from "./colliders.js";
 import { COLLIDER_TYPES } from "./constants.js";
-import PhPoint from "./point.js";
-import PhRotatedBox from "./RotatedBox.js";
 
 export default class PhBox extends PhPoint {
-    static colliderType = COLLIDER_TYPES.BOX
+    colliderType = COLLIDER_TYPES.BOX
 
     constructor(x, y, w, h) {
         super(x, y)
@@ -37,6 +35,7 @@ export default class PhBox extends PhPoint {
                 throw new NotImplementedError()
             case COLLIDER_TYPES.BOX:
                 // TODO: KNF optimization???
+
                 return (
                     this.x >= phCollider.x && this.x <= phCollider.x + phCollider.w
                     || this.x + this.w >= phCollider.x && this.x + this.w <= phCollider.x + phCollider.w

@@ -33,6 +33,7 @@ export default class World {
      * @param {Array<[JSON]>} jsonLayers 
      */
     fromLayers(jsonLayers){
+        console.debug('Load layers from json...')
         // load World from layers
         // created by tilemap editor
         let mainIsWas = false
@@ -78,6 +79,8 @@ export default class World {
             if(layer.isMain){
                 this.mainLayer = layer
                 this.settings.chunkSize = jsonLayer.chunks[0].width
+
+
             }
 
             for(let chunk of jsonLayer.chunks){
@@ -126,5 +129,87 @@ export default class World {
             }
             lastZ = layer.z
         }
+    }
+
+    /**
+     * 
+     * @param {number} startX 
+     * @param {number} startY 
+     * @param {number} endX 
+     * @param {number} endY 
+     */
+    *sliceGridGen(startX, startY, endX, endY) {
+        const chunkSize = this.settings.chunkSize
+
+        // get chunk
+        const startChunkX = Math.floor(startX / chunkSize)
+        const endChunkX = Math.floor(endX / chunkSize)
+        const startChunkY = Math.floor(startY / chunkSize)
+        const endChunkY = Math.floor(endY / chunkSize)
+
+        for(let chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
+            for(let chunkY = startChunkY; chunkY <= endChunkY; chunkY++) {
+                const chunk = this.mainLayer.chunks.get(chunkX, chunkY)
+                if(chunk === undefined) continue 
+
+                // get grid from chunck
+                const startGridX = Math.max(Math.floor(startX - (chunkX * chunkSize)), 0)
+                const endGridX = Math.min(Math.floor(endX - (chunkX * chunkSize)), chunkSize - 1)
+                const startGridY = Math.max(Math.floor(startY - (chunkY * chunkSize)), 0)
+                const endGridY = Math.min(Math.floor(endY - (chunkY * chunkSize)), chunkSize - 1)
+
+                for(let gridX = startGridX; gridX <= endGridX; gridX++)
+                    for(let gridY = startGridY; gridY <= endGridY; gridY++)
+                        yield chunk.grid[gridX][gridY]
+            }
+    }
+
+    *sliceGridGenDirected(startX, startY, endX, endY, dirX, dirY) {
+        const chunkSize = this.settings.chunkSize
+
+        // get chunk
+        let startChunkX = Math.floor(startX / chunkSize)
+        let endChunkX = Math.floor(endX / chunkSize)
+        let startChunkY = Math.floor(startY / chunkSize)
+        let endChunkY = Math.floor(endY / chunkSize)
+
+        //swap in directon
+        if(dirX < 0) {
+            [startChunkX, endChunkX] = [endChunkX, startChunkX + dirX]
+        } else {
+            endChunkX += dirX
+        }
+        if(dirY < 0) {
+            [startChunkY, endChunkY] = [endChunkY, startChunkY + dirY]
+        } else {
+            endChunkY += dirY
+        }
+
+        for(let chunkX = startChunkX; chunkX != endChunkX; chunkX += dirX)
+            for(let chunkY = startChunkY; chunkY != endChunkY; chunkY += dirY) {
+                const chunk = this.mainLayer.chunks.get(chunkX, chunkY)
+                if(chunk === undefined) continue 
+
+                // get grid from chunck
+                let startGridX = Math.max(Math.floor(startX - (chunkX * chunkSize)), 0)
+                let endGridX = Math.min(Math.floor(endX - (chunkX * chunkSize)), chunkSize - 1)
+                let startGridY = Math.max(Math.floor(startY - (chunkY * chunkSize)), 0)
+                let endGridY = Math.min(Math.floor(endY - (chunkY * chunkSize)), chunkSize - 1)
+
+                if(dirX < 0) {
+                    [startGridX, endGridX] = [endGridX, startGridX + dirX]
+                } else {
+                    endGridX += dirX
+                }
+                if(dirY < 0) {
+                    [startGridY, endGridY] = [endGridY, startGridY + dirY]
+                } else {
+                    endGridY += dirY
+                }
+
+                for(let gridX = startGridX; gridX != endGridX; gridX += dirX)
+                    for(let gridY = startGridY; gridY != endGridY; gridY += dirY)
+                        yield chunk.grid[gridX][gridY]
+            }
     }
 }

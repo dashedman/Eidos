@@ -35,16 +35,6 @@ export class Rect {
      * @param {Number} obj.w - width
      * @param {Number} obj.h - height
      */
-    watchFor(obj) {
-        this.mimicTarget = obj
-    }
-
-    update() {
-        this.rx = this.mimicTarget.x
-        this.ry = this.mimicTarget.y
-        this.rw = this.mimicTarget.w
-        this.rh = this.mimicTarget.h
-    }
 
     updateColor() {
         const _c = this._manager.colorHandler.data

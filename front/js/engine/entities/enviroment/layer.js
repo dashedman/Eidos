@@ -34,9 +34,8 @@ export class Layer {
     /**
      * 
      * @param {JSON} chunkJson 
-     * @param {DRAW_GROUND_PLAN} layerRole
      */
-     fromChunk(chunkJson, layerRole){
+     fromChunk(chunkJson){
         const state = this.world.state
         // create entities from chunk
         const chunkCoordX = Math.floor(chunkJson.x/chunkJson.width)

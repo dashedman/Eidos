@@ -9,6 +9,7 @@ import Statement from "../statement.js";
 import { Texture } from './../graphics/textures/base.js';
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
 import u from "../utils/async_utils.js"
+import Creature from "./creatures/base.js";
 
 
 export default class Entities{
@@ -37,7 +38,12 @@ export default class Entities{
             }, role)
 
             if(u.extendsfrom(ClassOfEntity, Block)) {
-                let physBox = this._state.physics.createPhysicBox()
+                let physBox;
+                if(u.extendsfrom(ClassOfEntity, Creature)) {
+                    physBox = this._state.physics.createInertedBox()
+                } else {
+                    physBox = this._state.physics.createPhysicBox()
+                }
                 return new ClassOfEntity(sprite, physBox, entityParams)
             }
             return new ClassOfEntity(sprite, entityParams)

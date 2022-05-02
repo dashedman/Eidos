@@ -33,6 +33,10 @@ export class Renderer {
 		 */
 		this._state = null
 		this.debugMode = debugMode
+		
+        if(this.debugMode) {
+            this.debugShapes = new Map()
+        }
 
 		this.frameId = -1
 
@@ -80,6 +84,8 @@ export class Renderer {
 		
 		this.debugLineManager = new LineManager(this, gl);
 		this.textureManager = new TextureManager(this);
+
+		this._prepeared = false
 	}
 
 	/**
@@ -90,13 +96,20 @@ export class Renderer {
 	async prepare({tilesets}) {
 		// Load shaders
 		console.debug('Preparing Renderer...')
+		await this.textureManager.prepare();
 		for(let tileset of tilesets){
-			await state.render.textureManager.fromTileset(tileset)
+			await this.textureManager.fromTileset(tileset)
 		}
 		await this.loadShaders();
-		await this.textureManager.prepare();
+		this._prepeared = true
         console.debug('Renderer prepeared.')
 	}
+
+    async getPrepareIndicator() {
+        while(!this._prepeared) {
+            await autils.waitTick()
+        }
+    }
 
 	/**
 	 * run()
@@ -109,6 +122,7 @@ export class Renderer {
 		let renderFrame = (timeStamp) => {
 			// Draw world
 			this.update()
+			// TODO: rework animations
 			this.updateAnimations()
 			this.draw();
 			// call next frame
@@ -366,6 +380,13 @@ export class Renderer {
 				return this.foregroundSpriteManager.createSprite({texture, mixins})
 			default:
 				throw 'Undefined render type of sprite'
+		}
+	}
+
+	addToHighlight(obj, color=[255, 255, 255]) {
+		if(this.debugMode){
+			let rect = this.debugLineManager.createRect(color)
+			this.debugShapes.set(obj, rect)
 		}
 	}
 }

@@ -1,10 +1,12 @@
 "use strict"
+
+import GMath from "./glsl_math.js";
 import { mat4 } from "./gl_matrix/index.js"
 
 export default class Camera {
     constructor(target) {
         this.settings = {
-            fovy: Math.radians(60),        // 	Vertical field of view in radians
+            fovy: GMath.radians(60),        // 	Vertical field of view in radians
             aspect: 1,      // 	Aspect ratio. typically viewport width/height
             near: 1,      //  Near bound of the frustum
             far: Infinity,  //  Far bound of the frustum, can be null or Infinity
@@ -34,7 +36,7 @@ export default class Camera {
         this.recalcMatrix()
     }
     setDirection(x, y, z){
-        let raw_vector = Math.normalize([x, y, z])
+        let raw_vector = GMath.normalize([x, y, z])
         this.direction[0] = raw_vector[0]
         this.direction[1] = raw_vector[1]
         this.direction[2] = raw_vector[2]
@@ -154,8 +156,8 @@ export default class Camera {
         function(destinationPos){
             const position2D = this.position.slice(0, 2)
 
-            const distance = Math.distance(destinationPos, position2D)
-            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const distance = GMath.distance(destinationPos, position2D)
+            const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
             const stepLength = Math.min(this.speed, distance)
             if(stepLength == 0) return
 
@@ -169,8 +171,8 @@ export default class Camera {
         function(destinationPos){
             const position2D = this.position.slice(0, 2)
 
-            const distance = Math.distance(destinationPos, position2D)
-            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const distance = GMath.distance(destinationPos, position2D)
+            const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
             const stepLength = Math.min(this.speed * distance, distance)
             if(stepLength == 0) return
 
@@ -184,8 +186,8 @@ export default class Camera {
         function(destinationPos){
             const position2D = this.position.slice(0, 2)
 
-            const distance = Math.distance(destinationPos, position2D)
-            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const distance = GMath.distance(destinationPos, position2D)
+            const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
             const stepLength = Math.min(this.speed * distance * distance, distance)
             if(stepLength == 0) return
 
@@ -199,8 +201,8 @@ export default class Camera {
         function(destinationPos){
             const position2D = this.position.slice(0, 2)
 
-            const distance = Math.distance(destinationPos, position2D)
-            const moveDirection = Math.normalize(Math.vecsub(destinationPos, position2D))
+            const distance = GMath.distance(destinationPos, position2D)
+            const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
             const stepLength = Math.min(this.speed * Math.exp(distance), distance)
             if(stepLength == 0) return
 

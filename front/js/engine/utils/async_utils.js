@@ -1,8 +1,9 @@
 "use strict"
+
 async function waitTick () {
     return new Promise( (resolve) => {
         setTimeout(()=>{
-        resolve()
+            resolve()
         }, 0)
     })
 }

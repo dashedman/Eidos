@@ -45,6 +45,9 @@ export class TextureManager {
                 h: 2
             }
         )
+        this.plug.atlasCoords = {
+            x: 0, y: 0, w: 1, h: 1
+        }
         this.textures.set(this.plug.id, this.plug)
         await this.compileAtlas()
     }
@@ -171,12 +174,16 @@ export class TextureManager {
         return tileArray
     }
 
+    /**
+     * 
+     * @param {Texture} texture 
+     */
     addT(texture) {
         // TODO
         if (!this.textures.has(texture.id))
             this.textures.set(texture.id, texture)
 
-        texture.setAtlas(this.plug.coords)
+        texture.setAtlas(this.plug.atlasCoords)
         this.compileAtlas()
     }
 

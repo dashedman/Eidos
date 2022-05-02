@@ -3,11 +3,12 @@ import Statement from "./statement.js";
 import { NotImplementedError } from "./exceptions.js";
 
 export default class Logic {
-    constructor() {
+    constructor(debugMode=false) {
         /**
          * @type {Statement}
          */
         this._state = null;
+        this.debugMode = debugMode
     }
 
     update(){

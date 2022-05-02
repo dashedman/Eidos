@@ -4,7 +4,7 @@ import PhBox from './box.js';
 import { COLLIDER_TYPES } from './constants.js';
 
 export default class PhRotatedBox extends PhBox{
-    static colliderType = COLLIDER_TYPES.ROTATED_BOX
+    colliderType = COLLIDER_TYPES.ROTATED_BOX
 
     /**
      * 
