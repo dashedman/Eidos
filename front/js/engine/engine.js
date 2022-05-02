@@ -9,6 +9,7 @@ import Physics from "./physics/physics.js"
 import Dispatcher from "./interactions/interactions.js"
 import Logic from "./logic.js"
 import utils from "./utils/utils.js"
+import * as exceptions from "./exceptions.js"
 import Statement from "./statement.js"
 
 export default {
@@ -20,4 +21,16 @@ export default {
     Logic,
     Statement,
     utils,
+    exceptions
+}
+export {
+    Renderer,
+    Entities,
+    Network,
+    Physics,
+    Dispatcher,
+    Logic,
+    Statement,
+    utils,
+    exceptions
 }

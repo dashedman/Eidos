@@ -4,12 +4,13 @@
  * @readonly
  * @enum {Number}
  */
-const SPRITE_ROLES = Object.freeze({
-    BACK: 2, 
-    MAIN: 1, 
-    FRONT: 0
+const DRAW_GROUND_PLAN = Object.freeze({
+    DEBUG: 0,
+    FRONT: 1,
+    MAIN: 2, 
+    BACK: 3, 
 })
 
 export {
-    SPRITE_ROLES
+    DRAW_GROUND_PLAN
 }

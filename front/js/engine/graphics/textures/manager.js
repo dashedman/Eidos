@@ -104,9 +104,8 @@ export class TextureManager {
             
 
             // let indexX = tileIndex % tilesetInfo.columns
-            let fullId = (tilesetInfo.firstgid + tileInfo.id)
-            let indexX = fullId % tilesetInfo.columns
-            let indexY = Math.floor(fullId / tilesetInfo.columns)
+            let indexX = tileInfo.id % tilesetInfo.columns
+            let indexY = Math.floor(tileInfo.id / tilesetInfo.columns)
             let coordX = indexX * tilesetInfo.tilewidth
             let coordY = indexY * tilesetInfo.tileheight
             
@@ -121,11 +120,9 @@ export class TextureManager {
                 // draw frames
                 for(let [frameIndex, animData] of tileInfo.animation.entries()){
 
-                    
-                    let fullId = (tilesetInfo.firstgid + animData.id)
-                    indexX = fullId % tilesetInfo.columns
+                    indexX = animData.id % tilesetInfo.columns
                     // indexX = tileIndex % tilesetInfo.columns
-                    indexY = Math.floor(fullId / tilesetInfo.columns)
+                    indexY = Math.floor(animData.id / tilesetInfo.columns)
                     // indexY = Math.floor(tileIndex / tilesetInfo.columns)
                     coordX = indexX * tilesetInfo.tilewidth
                     coordY = indexY * tilesetInfo.tileheight

@@ -51,15 +51,24 @@ export default class Statement {
         this.logic._state = this
         this.entities._state = this
     }
-    async prepare() {
+
+    /**
+     * 
+     * @param {Object} param0 
+     */
+    async prepare({
+        dispatcherSettings, renderSettings, 
+        networkSettings, physicsSettings, 
+        logicSettings, entitesSettings
+    }) {
         console.debug('Preparing Statement...')
         await Promise.all([
-            this.dispatcher.prepare(),
-            this.render.prepare(),
-            this.network.prepare(),
-            this.physics.prepare(),
-            this.logic.prepare(),
-            this.entities.prepare(),
+            this.dispatcher.prepare(dispatcherSettings),
+            this.render.prepare(renderSettings),
+            this.network.prepare(networkSettings),
+            this.physics.prepare(physicsSettings),
+            this.logic.prepare(logicSettings),
+            this.entities.prepare(entitesSettings),
         ])
         console.debug('Statement prepeared.')
     }
@@ -68,9 +77,10 @@ export default class Statement {
         let gameIteraction = () => {
             // calc time
             this.time.calc()
+            const deltaTime = this.time.deltaTime
 
-            this.physics.update()
-            this.logic.update()
+            this.physics.update(deltaTime)
+            this.logic.update(deltaTime)
 
             // call next iteraction
             this.loop.id = setTimeout(

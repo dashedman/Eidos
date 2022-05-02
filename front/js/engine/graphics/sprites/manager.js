@@ -14,7 +14,6 @@ export class SpriteManager {
     /**
      * 
      * @param {Renderer} render
-     * @param {WebGLRenderingContext} gl 
      */
     constructor(render) {
         const gl = render.gl

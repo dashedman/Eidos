@@ -97,6 +97,10 @@ function supportCanvas (width, height){
     return canvas
 }
 
+function extendsfrom(extendedCls, checkCls) {
+    return extendedCls === checkCls || extendedCls.prototype instanceof checkCls
+}
+
 export default {
     waitAfter,
     waitTick,
@@ -106,5 +110,6 @@ export default {
     loadScript,
     getImageLoadPromise,
     initScript,
-    supportCanvas
+    supportCanvas,
+    extendsfrom
 }

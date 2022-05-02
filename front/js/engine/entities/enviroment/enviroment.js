@@ -3,8 +3,8 @@ import { Chunk } from "./chunk.js"
 
 import { Layer } from "./layer.js"
 
-import { Terrain } from "./terrain.js"
+import World from "./world.js"
 
 
-export default { Chunk, Layer, Terrain }
-export { Chunk, Layer, Terrain }
+export default { Chunk, Layer, World }
+export { Chunk, Layer, World }

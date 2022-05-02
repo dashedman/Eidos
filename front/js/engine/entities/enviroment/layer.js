@@ -3,38 +3,41 @@ import Map2D from "../../utils/map2d.js";
 import { Chunk } from "./chunk.js";
 import { Block, BackgroundBlock } from "../block.js";
 
-import { Terrain } from "./terrain.js";
+import World from "./world.js";
+import { DRAW_GROUND_PLAN } from "../../graphics/constants.js";
 
 /** */
 export class Layer {
     /**
      * 
-     * @param {Terrain} terrain 
-     * @param {*} name 
-     * @param {*} z 
-     * @param {*} isMain 
+     * @param {World} World 
+     * @param {String} name 
+     * @param {Number} z 
+     * @param {DRAW_GROUND_PLAN} groundPlan
      */
-    constructor(terrain, name, z = 1, isMain=false){
-        /**
-         * @type {Terrain}
-         */
-        this.terrain = terrain
+    constructor(world, name, z = 1, groundPlan=DRAW_GROUND_PLAN.BACK){
+        /** @type {World} */
+        this.world = world
+        /** @type {String} */
         this.name = name
+        /** @type {Number} */
         this.z = z
-        this.isMain = isMain
-        /**
-         * @type {Map2D}
-         */
+        /** @type {DRAW_GROUND_PLAN} */
+        this.groundPlan = groundPlan
+
+        /** @type {Map2D<number, number, Chunk>} */
         this.chunks = new Map2D()
     }
+
+    get isMain() {return this.groundPlan === DRAW_GROUND_PLAN.MAIN}
 
     /**
      * 
      * @param {JSON} chunkJson 
-     * @param {SPRITE_ROLES} layerRole
+     * @param {DRAW_GROUND_PLAN} layerRole
      */
      fromChunk(chunkJson, layerRole){
-        const state = this.terrain.state
+        const state = this.world.state
         // create entities from chunk
         const chunkCoordX = Math.floor(chunkJson.x/chunkJson.width)
         const chunkCoordY = Math.floor(-1 - chunkJson.y/chunkJson.height) // inverted Y
@@ -59,7 +62,7 @@ export class Layer {
                 chunk.grid[tileX][invertedY] = state.entities.create(
                     ClassOfTile,
                     texture,
-                    layerRole,
+                    this.groundPlan,
                     {
                         x: chunk.x*chunk.width + tileX, // global world coords
                         y: chunk.y*chunk.height + invertedY, // global world coords

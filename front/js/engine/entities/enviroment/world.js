@@ -3,18 +3,18 @@ import { Layer } from "./layer.js";
 import { Decoration } from "../block.js";
 
 import Statement from "../../statement.js";
-import { SPRITE_ROLES } from "../../graphics/graphics.js"
+import { DRAW_GROUND_PLAN } from "../../graphics/graphics.js"
 
-export class Terrain {
+export default class World {
     /**
      * 
      * @param {Statement} state 
      */
-    constructor(state){
+    constructor(){
         /**
          * @type {Statement}
          */
-        this.state = state
+        this.state = null
         /**
          * @type {Array<Layer>}
          */
@@ -22,7 +22,10 @@ export class Terrain {
         this.decorations = []
         this.mainLayer = null
 
-        this.settings = {}
+        this.settings = {
+            /** @type {number} */
+            chunkSize: null
+        }
     }
 
     /**
@@ -30,7 +33,7 @@ export class Terrain {
      * @param {Array<[JSON]>} jsonLayers 
      */
     fromLayers(jsonLayers){
-        // load terrain from layers
+        // load World from layers
         // created by tilemap editor
         let mainIsWas = false
         for(let jsonLayer of jsonLayers.reverse()){
@@ -40,15 +43,15 @@ export class Terrain {
                 return false
             }) !== undefined
 
-            /** @type {SPRITE_ROLES} */
-            let ground_plan;
+            /** @type {DRAW_GROUND_PLAN} */
+            let groundPlan;
             if(isMain){
-                ground_plan = SPRITE_ROLES.MAIN
+                groundPlan = DRAW_GROUND_PLAN.MAIN
                 mainIsWas = true
             } else {
                 if (mainIsWas)
-                    ground_plan = SPRITE_ROLES.BACK
-                else ground_plan = SPRITE_ROLES.FRONT
+                groundPlan = DRAW_GROUND_PLAN.BACK
+                else groundPlan = DRAW_GROUND_PLAN.FRONT
             }
 
             this.fromLayer(jsonLayer, groundPlan)
@@ -69,11 +72,12 @@ export class Terrain {
             // check that layer is main layer
             // and they have physicaly 
 
-            let layer = new Layer(this, jsonLayer.name, z, isMain)
+            let layer = new Layer(this, jsonLayer.name, z, groundPlan)
 
             this.layers.push(layer)
             if(layer.isMain){
                 this.mainLayer = layer
+                this.settings.chunkSize = jsonLayer.chunks[0].width
             }
 
             for(let chunk of jsonLayer.chunks){
@@ -87,12 +91,11 @@ export class Terrain {
 
                 if(texture === undefined)
                     continue
-                
-                let roleOnScene = z > 1 ? 'BACK' : 'FRONT'
+
                 const decoration = this.state.entities.create(
                     Decoration, 
                     texture, 
-                    roleOnScene,
+                    groundPlan,
                     {
                         x: obj.x/32,
                         y: -obj.y/32,

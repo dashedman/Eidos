@@ -7,20 +7,18 @@ export class Sprite {
     /**
      * 
      * @param { SpriteManager | SortingSpriteManager } manager 
-     * @param {*} bufferIndexes 
+     * @param {*} bufferIndexes
      * @param { Texture } texture 
      * @param  {...any} mixins 
      */
     constructor(manager, bufferIndexes, texture, ...mixins) {
         this._bufferIndexes = bufferIndexes;
+        this._manager = manager;
+        this.texture = texture;
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, w:0, h:0}
-
-        /** @type { SortingSpriteManager | SpriteManager } */
-        this._manager = manager;
-
-        this.texture = texture;
+    
         texture.addToTrace(this)
         // async constructor
         this.waitInit = this.async_constructor()

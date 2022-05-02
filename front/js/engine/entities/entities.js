@@ -6,6 +6,9 @@ import { BackgroundBlock, Block, Decoration } from './block.js';
 import { Location } from './location.js';
 import { Player } from './player.js';
 import Statement from "../statement.js";
+import { Texture } from './../graphics/textures/base.js';
+import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
+import u from "../utils/async_utils.js"
 
 
 export default class Entities{
@@ -15,15 +18,32 @@ export default class Entities{
         this._state = null
     }
 
-    create(ClassOfEntity=Entity, texture, role='MAIN', entityParams){
+    /**
+     * 
+     * @param {Entity} ClassOfEntity 
+     * @param {Texture} texture 
+     * @param {DRAW_GROUND_PLAN} role 
+     * @param {Object} entityParams 
+     * @returns 
+     */
+    create(ClassOfEntity=Entity, texture, role=DRAW_GROUND_PLAN.MAIN, entityParams){
         let mixins = []
         if(texture.frameNumber > 1) mixins.push(SpriteMixins.iAnimated)
     
-        let sprite = this._state.render.createSprite({
-            texture: texture, 
-            mixins: mixins
-        }, role)
-        return new ClassOfEntity(sprite, entityParams)
+        if(u.extendsfrom(ClassOfEntity, BackgroundBlock)){
+            let sprite = this._state.render.createSprite({
+                texture: texture, 
+                mixins: mixins
+            }, role)
+
+            if(u.extendsfrom(ClassOfEntity, Block)) {
+                let physBox = this._state.physics.createPhysicBox()
+                return new ClassOfEntity(sprite, physBox, entityParams)
+            }
+            return new ClassOfEntity(sprite, entityParams)
+        }
+        return new ClassOfEntity(entityParams)
+        
     }
 
     async prepare() {

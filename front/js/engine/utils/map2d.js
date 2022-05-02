@@ -1,7 +1,9 @@
 "use strict"
+
+/** @template K1, K2, V */
 export default class Map2D{ 
     /**
-     * 
+     * @interface Iterable
      * @param {Iterable<readonly [K1, K2, V]>} [iterable]
      */
     constructor(iterable){
@@ -17,6 +19,10 @@ export default class Map2D{
         this._majorMap.clear()
         this.size = 0
     }
+    /**
+     * 
+     * @returns {IterableIterator<[K1, K2, V]>}
+     */
     entries(){
         const majorIter = this._majorMap.entries()
         let minorMap
@@ -53,8 +59,17 @@ export default class Map2D{
             [Symbol.iterator]: function(){return this}
         }
     }
+
+    /**
+     * 
+     * @returns {IterableIterator<[K1, K2, V]>}
+     */
     [Symbol.iterator] = this.entries
 
+    /**
+     * 
+     * @returns {IterableIterator<[K1, K2]>}
+     */
     keys(){
         const iter = this[Symbol.iterator]()
         return {
@@ -70,6 +85,11 @@ export default class Map2D{
             [Symbol.iterator]: function(){return this}
         }
     }
+
+    /**
+     * 
+     * @returns {IterableIterator<V>}
+     */
     values(){
         const iter = this[Symbol.iterator]()
         return {
@@ -84,11 +104,17 @@ export default class Map2D{
             [Symbol.iterator]: function(){return this}
         }
     }
+
     forEach(callback, thisArg){
         for(const [key1, key2, val] of this){
             callback.call(thisArg, val, key1, key2, this)
         }
     }
+
+    /**
+     * @param {[K1, K2]}
+     * @returns {V}
+     */
     get(key1, key2){
         const minorMap = this._majorMap.get(key1)
         if(minorMap !== undefined){
@@ -96,6 +122,11 @@ export default class Map2D{
         }
         return undefined
     }
+
+    /**
+     * @param {[K1, K2]}
+     * @returns {Boolean}
+     */
     has(key1, key2){
         const minorMap = this._majorMap.get(key1)
         if(minorMap !== undefined){
@@ -103,6 +134,11 @@ export default class Map2D{
         }
         return false
     }
+
+    /**
+     * @param {[K1, K2, V]}
+     * @returns {Map2D<K1, K2, V>}
+     */
     set(key1, key2, value){
         const minorMap = this._majorMap.get(key1)
         if(minorMap !== undefined){
@@ -118,6 +154,11 @@ export default class Map2D{
         }
         return this
     }
+
+    /**
+     * @param {[K1, K2]}
+     * @returns {Boolean}
+     */
     delete(key1, key2){
         const minorMap = this._majorMap.get(key1)
         if(minorMap !== undefined){

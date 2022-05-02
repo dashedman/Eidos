@@ -4,6 +4,9 @@ import { SpriteManager, SortingSpriteManager } from './sprites/manager.js';
 
 import Statement from "../statement.js";
 import { autils } from "../utils/utils.js";
+import { DRAW_GROUND_PLAN } from './constants.js';
+import LineManager from './shapes/manager.js';
+import { NotImplementedError } from '../exceptions.js';
 
 // ==========================================
 // Renderer
@@ -24,11 +27,12 @@ export class Renderer {
 	 * 
 	 * @param {HTMLCanvasElement} canvas_el 
 	 */
-	constructor(canvas_el) {
+	constructor(canvas_el, debugMode=false) {
 		/**
 		 * @type {Statement}
 		 */
 		this._state = null
+		this.debugMode = debugMode
 
 		this.frameId = -1
 
@@ -60,15 +64,21 @@ export class Renderer {
 			texture: gl.createTexture()
 		}
 
-		this.varLocals = {};
+		this.varLocals = {
+			sprites: null,
+			colors: null
+		};
 		this.programs = {
 			sprites: null,
+			colors: null
 		};
 
 		this.backgroundSpriteManager = new SortingSpriteManager(this, gl);
 		this.mainSpriteManager = new SpriteManager(this, gl);
 		this.foregroundSpriteManager = new SortingSpriteManager(this, gl);
 
+		
+		this.debugLineManager = new LineManager(this, gl);
 		this.textureManager = new TextureManager(this);
 	}
 
@@ -77,9 +87,12 @@ export class Renderer {
 	 * 
 	 * Prepare renderer to run. Load some weight things. Must be overrided with super()
 	 */
-	async prepare() {
+	async prepare({tilesets}) {
 		// Load shaders
 		console.debug('Preparing Renderer...')
+		for(let tileset of tilesets){
+			await state.render.textureManager.fromTileset(tileset)
+		}
 		await this.loadShaders();
 		await this.textureManager.prepare();
         console.debug('Renderer prepeared.')
@@ -93,7 +106,7 @@ export class Renderer {
 	 */
 	run() {
 		// loop body
-		let renderFrame = () => {
+		let renderFrame = (timeStamp) => {
 			// Draw world
 			this.update()
 			this.updateAnimations()
@@ -119,10 +132,7 @@ export class Renderer {
 	 * User update sprites. Must be overrided
 	 */
 	update() {
-		// TODO: remove dummie
-		this._state.debugger.dummie.sprite.sx = this._state.debugger.dummie.pb.x
-		this._state.debugger.dummie.sprite.sy = this._state.debugger.dummie.pb.y
-		this._state.camera.calculatePositionByTargets()
+		throw new NotImplementedError()
 	}
 
 	/**
@@ -156,21 +166,18 @@ export class Renderer {
 	 */
 	draw() {
 		const gl = this.gl
-		const locals = this.varLocals.sprites
 
 		// Initialise view
 		this.checkViewport()
 		gl.clear(gl.COLOR_BUFFER_BIT) // | gl.DEPTH_BUFFER_BIT
 
 		// sprites render
+		let locals = this.varLocals.sprites
 		gl.useProgram(this.programs.sprites)
 		//gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.framebuffer)
 
 		// uniforms
-		if(this._state.camera.needUpdate){
-			gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
-			this._state.camera.needUpdate = false
-		}
+		gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
 
 		// textures
 		this.textureManager.draw(locals)
@@ -182,9 +189,16 @@ export class Renderer {
 		// effects
 		//gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.framebuffer)
 		//gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
-		gl.useProgram(this.programs.post);
 		// postFX
 		// gl.useProgram(this.programs.post);
+
+		
+		if(this.debugMode) {
+			locals = this.varLocals.colors
+			gl.useProgram(this.programs.colors)
+			gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
+			this.debugLineManager.draw(gl.STREAM_DRAW, locals)
+		}
 	}
 
 	/**
@@ -237,12 +251,14 @@ export class Renderer {
 	async loadShaders() {
 		let gl = this.gl
 
-		let getProgram = async (name) => {
-			console.log(`Load '${name}' programm`)
+		let getProgram = async (name, debugMode) => {
+			console.debug(`Load '${name}' shader programm...`)
 
 			let getShader = async (name, shader_type) => {
+				console.debug(`Load "${name}" shader source...`)
 				let shaderSource = await autils.loadTextResources(`shaders/${name}`);
 
+				console.debug(`Create "${name}" shader...`)
 				let shader = gl.createShader(shader_type);
 				gl.shaderSource(shader, shaderSource);
 				gl.compileShader(shader);
@@ -254,9 +270,10 @@ export class Renderer {
 
 			let program = gl.createProgram();
 
+			const fragmenShaderName = debugMode ? name + 'Debug' : name
 			await Promise.all([
 				getShader(name + '.vert', gl.VERTEX_SHADER),
-				getShader(name + '.frag', gl.FRAGMENT_SHADER) // Compile fragment shader
+				getShader(fragmenShaderName + '.frag', gl.FRAGMENT_SHADER) // Compile fragment shader
 			]);
 			// Finish program
 			gl.linkProgram(program);
@@ -265,13 +282,13 @@ export class Renderer {
 				throw "Could not link the shader program!";
 
 			// bind program to renderer
-			console.log(`Programm '${name}' ready.`)
+			console.debug(`Programm '${name}' ready.`)
 			this.programs[name] = program;
 			return program;
 		}
 
 		// COULD BE EDITED TO LOAD NEW PROGRAMS
-		let spritesPr = getProgram('sprites').then((program) => {
+		let spritesPr = getProgram('sprites', this.debugMode).then((program) => {
 			gl.useProgram(program);
 
 			this.varLocals.sprites = {
@@ -282,9 +299,19 @@ export class Renderer {
 				u_viewMatrix: gl.getUniformLocation(program, "u_viewMatrix")
 			};
 		});
+		let colorPr = getProgram('colors').then((program) => {
+			gl.useProgram(program);
+
+			this.varLocals.colors = {
+				a_position: gl.getAttribLocation(program, "a_position"),
+				a_color: gl.getAttribLocation(program, "a_color"),
+				u_viewMatrix: gl.getUniformLocation(program, "u_viewMatrix")
+			};
+		});
 
 		await Promise.all([
-			spritesPr
+			spritesPr,
+			colorPr
 		]);
 		console.log('Shaders loaded.')
 	}
@@ -326,16 +353,16 @@ export class Renderer {
 	 * @param {Object} settings - settings for sprite creation.
 	 * @param {Texture} settings.texture - texture that must be used in sprite.
 	 * @param {Array} settings.mixins - array of sprite mixins. Can be taked from SpriteMixins.
-	 * @param {SPRITE_ROLES} role - role of sprite on scene. From enum SPRITE_ROLES.
+	 * @param {DRAW_GROUND_PLAN} role - role of sprite on scene. From enum DRAW_GROUND_PLAN.
 	 * @returns {Sprite} - created sprite.
 	 */
-	createSprite({texture, mixins=[]}, role=SPRITE_ROLES.MAIN){
+	createSprite({texture, mixins=[]}, role=DRAW_GROUND_PLAN.MAIN){
 		switch (role) {
-			case SPRITE_ROLES.BACK:
+			case DRAW_GROUND_PLAN.BACK:
 				return this.backgroundSpriteManager.createSprite({texture, mixins})
-			case SPRITE_ROLES.MAIN:
+			case DRAW_GROUND_PLAN.MAIN:
 				return this.mainSpriteManager.createSprite({texture, mixins})
-			case SPRITE_ROLES.FRONT:
+			case DRAW_GROUND_PLAN.FRONT:
 				return this.foregroundSpriteManager.createSprite({texture, mixins})
 			default:
 				throw 'Undefined render type of sprite'

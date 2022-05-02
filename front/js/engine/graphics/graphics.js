@@ -2,7 +2,7 @@
 import { Renderer } from "./render.js"
 import * as textures from "./textures/textures.js"
 import * as sprites from "./sprites/sprites.js"
-import { SPRITE_ROLES } from "./constants.js"
+import { DRAW_GROUND_PLAN } from "./constants.js"
 
 export default Renderer
 export {
@@ -10,4 +10,4 @@ export {
     textures,
     sprites,
 }
-export { SPRITE_ROLES };
+export { DRAW_GROUND_PLAN };

@@ -76,20 +76,22 @@ export default class Camera {
                 invertedPos, 
             )
         )
-        this.needUpdate = true;
     }
 
     // high level methods
-    addTarget(target){
+    addTarget(target) {
         this.targets.push(target)
     }
-    delTarget(target){
+    delTarget(target) {
         const indexOfTarget = this.targets.indexOf(target)
         if(indexOfTarget > -1){
             this.targets.splice(indexOfTarget, 1)
             return true
         }
         return false
+    }
+    clearTargets() {
+        this.targets.length = 0
     }
     calculatePositionByTargets(){
         const destinationPos = new Float32Array(2)
