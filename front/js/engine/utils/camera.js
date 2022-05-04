@@ -95,13 +95,12 @@ export default class Camera {
     clearTargets() {
         this.targets.length = 0
     }
-    calculatePositionByTargets(){
+    calculatePositionByTargets(timeDelta){
         const destinationPos = new Float32Array(2)
         destinationPos[0] = 0
         destinationPos[1] = 0
 
         if(this.targets.length == 0){
-            this._movingFunction(destinationPos)
             return
         }
 
@@ -115,7 +114,7 @@ export default class Camera {
         destinationPos[0] /= this.targets.length
         destinationPos[1] /= this.targets.length
         
-        this._movingFunction(destinationPos)
+        this._movingFunction(destinationPos, timeDelta)
     }
     setMovingMode(modeId){
         let movingModeIsExist = false;
@@ -153,13 +152,20 @@ export default class Camera {
             )
         },
         // CONSTANT
-        function(destinationPos){
+        function(destinationPos, timeDelta){
             const position2D = this.position.slice(0, 2)
 
             const distance = GMath.distance(destinationPos, position2D)
             const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
-            const stepLength = Math.min(this.speed, distance)
+            const stepLength = Math.min(this.speed * timeDelta, distance)
             if(stepLength == 0) return
+            if(stepLength < 1e-5) {
+                return this.setPosition(
+                    destinationPos[0],
+                    destinationPos[1],
+                    this.position[2],
+                )
+            }
 
             const x = this.position[0] + moveDirection[0]*stepLength
             const y = this.position[1] + moveDirection[1]*stepLength
@@ -168,13 +174,20 @@ export default class Camera {
             this.setPosition(x, y, z)
         },
         // LINEAR
-        function(destinationPos){
+        function(destinationPos, timeDelta){
             const position2D = this.position.slice(0, 2)
 
             const distance = GMath.distance(destinationPos, position2D)
             const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
-            const stepLength = Math.min(this.speed * distance, distance)
+            const stepLength = Math.min(this.speed * distance * timeDelta, distance)
             if(stepLength == 0) return
+            if(stepLength < 1e-5) {
+                return this.setPosition(
+                    destinationPos[0],
+                    destinationPos[1],
+                    this.position[2],
+                )
+            }
 
             const x = this.position[0] + moveDirection[0]*stepLength
             const y = this.position[1] + moveDirection[1]*stepLength
@@ -183,13 +196,20 @@ export default class Camera {
             this.setPosition(x, y, z)
         },
         // QUADRATIC
-        function(destinationPos){
+        function(destinationPos, timeDelta){
             const position2D = this.position.slice(0, 2)
 
             const distance = GMath.distance(destinationPos, position2D)
             const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
-            const stepLength = Math.min(this.speed * distance * distance, distance)
+            const stepLength = Math.min(this.speed * distance * distance * timeDelta, distance)
             if(stepLength == 0) return
+            if(stepLength < 1e-5) {
+                return this.setPosition(
+                    destinationPos[0],
+                    destinationPos[1],
+                    this.position[2],
+                )
+            }
 
             const x = this.position[0] + moveDirection[0]*stepLength
             const y = this.position[1] + moveDirection[1]*stepLength
@@ -198,13 +218,20 @@ export default class Camera {
             this.setPosition(x, y, z)
         },
         // EXPANENTIAL
-        function(destinationPos){
+        function(destinationPos, timeDelta){
             const position2D = this.position.slice(0, 2)
 
             const distance = GMath.distance(destinationPos, position2D)
             const moveDirection = GMath.normalize(GMath.vecsub(destinationPos, position2D))
-            const stepLength = Math.min(this.speed * Math.exp(distance), distance)
+            const stepLength = Math.min(this.speed * Math.exp(distance) * timeDelta, distance)
             if(stepLength == 0) return
+            if(stepLength < 1e-5) {
+                return this.setPosition(
+                    destinationPos[0],
+                    destinationPos[1],
+                    this.position[2],
+                )
+            }
 
             const x = this.position[0] + moveDirection[0]*stepLength
             const y = this.position[1] + moveDirection[1]*stepLength

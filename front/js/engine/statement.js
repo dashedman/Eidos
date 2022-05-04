@@ -72,26 +72,45 @@ export default class Statement {
         ])
         console.debug('Statement prepeared.')
     }
-    run() {
-        // Start a Render loops	
-        let gameIteraction = () => {
-            // calc time
-            this.time.calc()
-            const deltaTimeSec = this.time.deltaTime / 1000
+    run(syncPhysics=false) {
+        if(!syncPhysics){
+            // Start a Render loops	
+            let gameIteraction = () => {
+                // calc time
+                this.time.calc()
+                const deltaTimeSec = this.time.deltaTime / 1000
 
-            this.physics.update(deltaTimeSec)
-            this.logic.update(deltaTimeSec)
+                this.physics.update(deltaTimeSec)
+                this.logic.update(deltaTimeSec)
 
-            // call next iteraction
-            this.loop.id = setTimeout(
-                gameIteraction,
-                this.time.toNext(this.loop.interval) * 1000
-            )
+                // call next iteraction
+                this.loop.id = setTimeout(
+                    gameIteraction,
+                    this.time.toNext(this.loop.interval) * 1000
+                )
+            }
+            this.loop.id = setTimeout(gameIteraction, 0)
+            // start render loop
+            this.render.run()
+        } else {
+            let renderFrame = (timeStamp) => {
+                // calc timeDelta in seconds
+                const timeDelta = (timeStamp - this.prevTimeStamp) / 1000
+
+                this.physics.update(timeDelta)
+                this.logic.update(timeDelta)
+                // Draw world
+                this.render.update(timeDelta)
+                // TODO: rework animations
+                this.render.updateAnimations()
+                this.render.draw();
+                // call next frame
+                this.frameId = requestAnimationFrame(renderFrame);
+                this.prevTimeStamp = timeStamp
+            };
+            this.frameId = requestAnimationFrame(renderFrame);
+            this.prevTimeStamp = performance.now()
         }
-        this.loop.id = setTimeout(gameIteraction, 0)
-
-        // start render loop
-        this.render.run()
     }
     stop() {
         clearTimeout(this.loop.id)

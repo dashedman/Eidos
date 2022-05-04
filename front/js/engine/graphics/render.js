@@ -39,6 +39,7 @@ export class Renderer {
         }
 
 		this.frameId = -1
+		this.prevTimeStamp = 0
 
 		this.canvas = canvas_el
 		this.canvas.renderer = this
@@ -120,15 +121,19 @@ export class Renderer {
 	run() {
 		// loop body
 		let renderFrame = (timeStamp) => {
+			// calc timeDelta in seconds
+			const timeDelta = (timeStamp - this.prevTimeStamp) / 1000
 			// Draw world
-			this.update()
+			this.update(timeDelta)
 			// TODO: rework animations
 			this.updateAnimations()
 			this.draw();
 			// call next frame
 			this.frameId = requestAnimationFrame(renderFrame);
+			this.prevTimeStamp = timeStamp
 		};
 		this.frameId = requestAnimationFrame(renderFrame);
+		this.prevTimeStamp = performance.now()
 	}
 
 	/**

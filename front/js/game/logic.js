@@ -24,6 +24,7 @@ export default class Logic extends EngineLogic {
         this.camera = this._state.camera
         this.camera.setRatio(ratio)
         this.camera.setPosition(0, 0, -10)
+        this.camera.speed = 5
         this.camera.setMovingMode(Camera.MOVING_MODES.LINEAR)
 
         await this._state.render.getPrepareIndicator()
@@ -61,17 +62,18 @@ export default class Logic extends EngineLogic {
 
     updateControl(deltaTimeSec) {
         let disp = this._state.dispatcher
+        const mp = 6
         if(disp.pressedKeys[Dispatcher.KEY.A]){
-            this.player.pbox.vx -= deltaTimeSec;
+            this.player.pbox.vx -= deltaTimeSec * mp;
         }
         if(disp.pressedKeys[Dispatcher.KEY.D]){
-            this.player.pbox.vx += deltaTimeSec;
+            this.player.pbox.vx += deltaTimeSec * mp;
         }
         if(disp.pressedKeys[Dispatcher.KEY.S]){
-            this.player.pbox.vy -= deltaTimeSec;
+            this.player.pbox.vy -= deltaTimeSec * mp;
         }
         if(disp.pressedKeys[Dispatcher.KEY.W]){
-            this.player.pbox.vy += deltaTimeSec;
+            this.player.pbox.vy += deltaTimeSec * mp;
         }
         if(disp.pressedKeys[Dispatcher.KEY.SPACE]){
             this.player.pbox.vx = 0;
