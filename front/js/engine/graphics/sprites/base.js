@@ -1,9 +1,10 @@
 "use strict"
 // Realize container for texture, with rect
-import { Texture } from '../textures/base.js';
-import { SortingSpriteManager, SpriteManager } from './manager.js';
+import Texture from '../textures/base.js';
+// import SpriteManager from './managers/base.js';
+// import SortingSpriteManager from './managers/sorting.js';
 
-export class Sprite {
+export default class Sprite {
     /**
      * 
      * @param { SpriteManager | SortingSpriteManager } manager 
@@ -19,7 +20,7 @@ export class Sprite {
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, w:0, h:0}
     
-        texture.addToTrace(this)
+        this.texture.addToTrace(this)
         // async constructor
         this.waitInit = this.async_constructor()
 
@@ -61,10 +62,10 @@ export class Sprite {
             this.forceUpdateTexture()
         }
     }
-    delete() {
+    release() {
         // release memory buffer
         this.texture.removeFromTrace(this)
-        this._manager.release(this._bufferIndexes);
+        this._manager.release(this);
     }
 
     /**

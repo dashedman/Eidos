@@ -1,8 +1,8 @@
 "use strict"
 import { autils } from "../../utils/utils.js"
-import { TextureManager } from "./manager.js";
+import TextureManager from "./manager.js";
 
-export class Texture {
+export default class Texture {
     /**
      * 
      * @param {TextureManager} manager 
@@ -32,7 +32,7 @@ export class Texture {
 
         this.loadState =  autils.getImageLoadPromise(this.image)
     }
-    delete() {
+    release() {
         // release memory buffer
         this._manager.pop(this.id);
     }

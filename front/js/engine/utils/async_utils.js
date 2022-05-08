@@ -6,7 +6,7 @@ async function waitTick () {
 
 async function waitTicks (ticks = 1) {
     for(let i=0; i<ticks; i++){
-        await utils.waitTick()
+        await waitTick()
     }
 }
 
@@ -77,9 +77,16 @@ async function getImageLoadPromise(img){
     });
 }
 
+async function loadImage(url) {
+    let img = new Image()
+    img.src = url
+    await getImageLoadPromise(img)
+    return img
+}
+
 async function initScript(src, params) {
-    await utils.loadScript(src, params)
-    await utils.waitTick()
+    await loadScript(src, params)
+    await waitTick()
 }
 async function waitAfter (target, tasks){
     await target
@@ -105,6 +112,7 @@ export default {
     loadTextResources,
     loadJsonResources,
     loadScript,
+    loadImage,
     getImageLoadPromise,
     initScript,
     supportCanvas,

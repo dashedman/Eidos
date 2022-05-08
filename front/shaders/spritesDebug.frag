@@ -15,5 +15,8 @@ varying vec2 v_texture;
 //MAIN
 void main(){
 	vec4 texture_col = texture2D(u_texture_src, v_texture);
-	gl_FragColor = mix(texture_col, vec4(0., 0., 1., 1.), 0.2);
+	if(texture_col.a == 0.) {
+		texture_col = vec4(0.5, 0, 1, 0.5);
+	}
+	gl_FragColor = texture_col;
 }

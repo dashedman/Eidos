@@ -6,10 +6,11 @@ import { BackgroundBlock, Block, Decoration } from './block.js';
 import { Location } from './location.js';
 import { Player } from './player.js';
 import Statement from "../statement.js";
-import { Texture } from './../graphics/textures/base.js';
+import Texture from './../graphics/textures/base.js';
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
 import u from "../utils/async_utils.js"
 import Creature from "./creatures/base.js";
+import TextBox from './../graphics/text/text.js';
 
 
 export default class Entities{
@@ -49,7 +50,36 @@ export default class Entities{
             return new ClassOfEntity(sprite, entityParams)
         }
         return new ClassOfEntity(entityParams)
-        
+    }
+    
+    /**
+     * 
+     * @param {String} text 
+     * @param {{x: number, y: number, z: number, width: number, height: number}} param1 
+     * @param {DRAW_GROUND_PLAN} role 
+     * @returns 
+     */
+    createText(text, {x, y, z, width=null, height=null}, role=DRAW_GROUND_PLAN.MAIN){
+        let signWidth, signHeight;
+        if(width !== null || height !== null){
+            let line_breaks_count = 0
+            let max_line_length = 0
+            let line_length = 0
+            for(const char of text){
+                if(char === '\n') {
+                    line_breaks_count++
+                    max_line_length = Math.max(line_length, max_line_length)
+                    line_length = 0
+                } else {
+                    line_length++
+                }
+            }
+
+            if(line_breaks_count == 0) line_breaks_count = 1;
+            if (width !== null && max_line_length != 0) signWidth = width / max_line_length
+            if (height !== null) signHeight = height / line_breaks_count
+        }
+        return this._state.render.textManager.createTextBox(text, x, y, z, signWidth, signHeight)
     }
 
     async prepare() {

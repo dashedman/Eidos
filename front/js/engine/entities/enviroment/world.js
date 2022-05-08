@@ -39,7 +39,7 @@ export default class World {
         let mainIsWas = false
         for(let jsonLayer of jsonLayers.reverse()){
             let isMain = (jsonLayer.properties || []).find((layer_prop) => {
-                if(layer_prop.name === "isMain" && layer_prop.value === true) 
+                if(layer_prop.name === "main" && layer_prop.value === true) 
                     return true
                 return false
             }) !== undefined
@@ -79,8 +79,6 @@ export default class World {
             if(layer.isMain){
                 this.mainLayer = layer
                 this.settings.chunkSize = jsonLayer.chunks[0].width
-
-
             }
 
             for(let chunk of jsonLayer.chunks){
@@ -90,23 +88,36 @@ export default class World {
 
         if(jsonLayer.type == "objectgroup"){
             for(const obj of jsonLayer.objects){
-                const texture = this.state.render.textureManager.getT(obj.gid)
+                if (obj.gid !== undefined) {
+                    const texture = this.state.render.textureGIDRegistry.get(obj.gid)
+                    if(texture === undefined)
+                        continue
 
-                if(texture === undefined)
-                    continue
-
-                const decoration = this.state.entities.create(
-                    Decoration, 
-                    texture, 
-                    groundPlan,
-                    {
-                        x: obj.x/32,
-                        y: -obj.y/32,
-                        width: obj.width/32,
-                        height: obj.height/32
-                    }
-                )
-                this.decorations.push(decoration)
+                    const decoration = this.state.entities.create(
+                        Decoration, 
+                        texture, 
+                        groundPlan,
+                        {
+                            x: obj.x/32,
+                            y: -obj.y/32,
+                            width: obj.width/32,
+                            height: obj.height/32,
+                        }
+                    )
+                    this.decorations.push(decoration)
+                } else if (obj.text !== undefined) {
+                    const text_decoration = this.state.entities.createText(
+                        obj.text.text,
+                        {
+                            x: obj.x/32,
+                            y: -obj.y/32,
+                            width: obj.width/32,
+                            height: obj.height/32,
+                        },
+                        groundPlan,
+                    )
+                    this.decorations.push(text_decoration)
+                }
             }
         }
     }
@@ -121,8 +132,18 @@ export default class World {
     }
 
     recalcZforLayers(){
-        let lastZ = -Infinity;
-        for(const layer of this.layers){
+        let mainLayerIndex = this.layers.findIndex((l) => l.isMain)
+
+        let lastZ = +Infinity;
+        for(const layer of this.layers.slice(0, mainLayerIndex + 1).reverse()){
+            if(layer.z >= lastZ){
+                console.log("Found intersept z", layer.name)
+                layer.setZ(lastZ - 0.03)
+            }
+            lastZ = layer.z
+        }
+        lastZ = -Infinity;
+        for(const layer of this.layers.slice(mainLayerIndex)){
             if(layer.z <= lastZ){
                 console.log("Found intersept z", layer.name)
                 layer.setZ(lastZ + 0.03)

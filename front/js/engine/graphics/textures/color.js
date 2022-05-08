@@ -1,8 +1,8 @@
 "use strict"
 import { autils } from "../../utils/utils.js";
-import { Texture } from "./base.js";
+import Texture from "./base.js";
 
-export class ColorTexture extends Texture{
+export default class ColorTexture extends Texture{
     loadData({colors, w, h}) {
         // render color pixels to image
         let canvas = autils.supportCanvas(w, h)

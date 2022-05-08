@@ -17,7 +17,9 @@ class LevelUpperBoundFilter(logging.Filter):
 
 
 def get_logger(logger_config: LoggingConfig) -> logging.Logger:
-
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)7s [%(name)s]: %(message)s'
+    )
     _logger = logging.getLogger(logger_config.name)
     _logger.setLevel(logger_config.level)
 
@@ -46,33 +48,5 @@ def get_logger(logger_config: LoggingConfig) -> logging.Logger:
                 handler.addFilter(one_level_filter)
 
             handler.setLevel(handler_config.level)
-        
-
-    formatter_str = '%(asctime)s %(levelname)7s [%(name)s]: %(message)s'
-    level_style = coloredlogs.parse_encoded_styles(
-        'debug=blue;'
-        'warning=red;'
-        'error=red; '
-        'critical=background=red;'
-        'info=cyan'
-    )
-
-    field_styles = coloredlogs.parse_encoded_styles(
-        'asctime=green;'
-        'levelname=cyan;'
-        'name=yellow'
-    )
-
-    formatter = Formatter(formatter_str)
-    handler.setFormatter(formatter)
-
-    coloredlogs.install(
-        level=INFO,
-        level_styles=level_style,
-        field_styles=field_styles,
-        fmt=formatter_str,
-        milliseconds=True
-    )
-
-    _logger.addHandler(handler)
+        _logger.addHandler(handler)
     return _logger

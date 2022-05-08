@@ -1,2 +1,3 @@
 from .server import Server
-from .config import ServerConfig
+from .game_app import GameApplication
+from .config import ServerConfig, GameConfig

@@ -9,12 +9,14 @@ export default class TimeManager {
         this.time = performance.now()
         this.deltaTime = null
     }
+
     calc() {
         // time difference between iterations 
         this.lastTime = this.time
         this.time = performance.now()
         this.deltaTime = this.time - this.lastTime
     }
+    
     toNext(interval) {
         // remaining time until the start of the next iteraction
         return Math.max(0, interval - (performance.now() - this.time))

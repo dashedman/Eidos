@@ -1,12 +1,13 @@
 "use strict"
-import { TextureManager } from './textures/manager.js';
-import { SpriteManager, SortingSpriteManager } from './sprites/manager.js';
+import TextureManager from './textures/manager.js';
+import {SpriteManager, SortingSpriteManager} from './sprites/sprites.js';
 
 import Statement from "../statement.js";
 import { autils } from "../utils/utils.js";
 import { DRAW_GROUND_PLAN } from './constants.js';
 import LineManager from './shapes/manager.js';
 import { NotImplementedError } from '../exceptions.js';
+import TextManager from './text/manager.js';
 
 // ==========================================
 // Renderer
@@ -71,20 +72,26 @@ export class Renderer {
 
 		this.varLocals = {
 			sprites: null,
-			colors: null
+			colors: null,
+			fixed_sprites: null,
 		};
 		this.programs = {
 			sprites: null,
-			colors: null
+			colors: null,
+			fixed_sprites: null,
 		};
 
-		this.backgroundSpriteManager = new SortingSpriteManager(this, gl);
-		this.mainSpriteManager = new SpriteManager(this, gl);
-		this.foregroundSpriteManager = new SortingSpriteManager(this, gl);
+		this.backgroundSpriteManager = new SortingSpriteManager(this);
+		this.mainSpriteManager = new SpriteManager(this);
+		this.foregroundSpriteManager = new SortingSpriteManager(this);
+		this.fixedSpriteManager = new SpriteManager(this);
 
-		
-		this.debugLineManager = new LineManager(this, gl);
+		this.debugLineManager = new LineManager(this);
 		this.textureManager = new TextureManager(this);
+		this.textManager = new TextManager(this, true)
+
+		/** @type {Map<number, Texture>} */
+		this.textureGIDRegistry = new Map()
 
 		this._prepeared = false
 	}
@@ -94,13 +101,16 @@ export class Renderer {
 	 * 
 	 * Prepare renderer to run. Load some weight things. Must be overrided with super()
 	 */
-	async prepare({tilesets}) {
+	async prepare({tilesets, glyphInfo}) {
 		// Load shaders
 		console.debug('Preparing Renderer...')
 		await this.textureManager.prepare();
 		for(let tileset of tilesets){
-			await this.textureManager.fromTileset(tileset)
+			let textureRegistry = await this.textureManager.fromTileset(tileset)
+			for(let [GID, texture] of Object.entries(textureRegistry))
+				this.textureGIDRegistry.set(Number.parseInt(GID), texture)
 		}
+		await this.textManager.prepare(glyphInfo)
 		await this.loadShaders();
 		this._prepeared = true
         console.debug('Renderer prepeared.')
@@ -193,11 +203,8 @@ export class Renderer {
 		// sprites render
 		let locals = this.varLocals.sprites
 		gl.useProgram(this.programs.sprites)
-		//gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.framebuffer)
-
 		// uniforms
 		gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
-
 		// textures
 		this.textureManager.draw(locals)
 		
@@ -218,6 +225,11 @@ export class Renderer {
 			gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
 			this.debugLineManager.draw(gl.STREAM_DRAW, locals)
 		}
+
+		
+		locals = this.varLocals.fixed_sprites
+		gl.useProgram(this.programs.fixed_sprites)
+		this.fixedSpriteManager.draw(gl.STATIC_DRAW, locals)
 	}
 
 	/**
@@ -327,10 +339,19 @@ export class Renderer {
 				u_viewMatrix: gl.getUniformLocation(program, "u_viewMatrix")
 			};
 		});
+		let fixedPr = getProgram('fixed_sprites').then((program) => {
+			gl.useProgram(program);
+
+			this.varLocals.fixed_sprites = {
+				a_position: gl.getAttribLocation(program, "a_position"),
+				a_color: gl.getAttribLocation(program, "a_color"),
+			};
+		});
 
 		await Promise.all([
 			spritesPr,
-			colorPr
+			colorPr,
+			fixedPr
 		]);
 		console.log('Shaders loaded.')
 	}
@@ -338,22 +359,20 @@ export class Renderer {
 	/**
 	 * Load texture to manager, by source.
 	 * 
-	 * @param {Number} id - unique id of texture.
 	 * @param {String} name - name.
 	 * @param {String} src - source link to downloading by Image().
 	 * @param {Number} frameNumber - Integer number of frames if texture represent the animation.
 	 * @param {Number} frameOffset - Integer number of frame width if texture represent the animation.
 	 * @returns {Texture} - loaded texture.
 	 */
-	createTexture(id, name, src, frameNumber, frameOffset){
-		return this.textureManager.createTexture(id, name, src, frameNumber, frameOffset)
+	createTexture(name, src, frameNumber, frameOffset){
+		return this.textureManager.createTexture(name, src, frameNumber, frameOffset)
 	}
 
 	/**
 	 * Load texture to manager, by color.
 	 * Colors specified in `colors` fill the texture in rotated.
 	 * 
-	 * @param {Number} id - unique id of texture.
 	 * @param {String} name - name.
 	 * @param {Array} colors - Array of colors in 8bit RGBA format. 
 	 * 	Example [255, 0, 0, 255]  - red pixel.
@@ -362,8 +381,8 @@ export class Renderer {
 	 * @param {Number} h - height of texture in pixels.
 	 * @returns {Texture} - loaded texture.
 	 */
-	createColorTexture(id, name, colors, w, h){
-		return this.textureManager.createColorTexture(id, name, colors, w, h)
+	createColorTexture(name, colors, w, h){
+		return this.textureManager.createColorTexture(name, colors, w, h)
 	}
 
 	/**

@@ -1,15 +1,24 @@
 import asyncio
+import json
 import logging
 import os
 from dataclasses import dataclass
 from urllib.parse import unquote
 
+import websockets
+import websockets.server
+
 import sanic
 import sanic.response
 import sanic.server
+from sanic.server.protocols.websocket_protocol import WebsocketImplProtocol
 from sanic.request import Request
 
+from . import logger
+from .game_app import GameApplication
 from .config import ServerConfig
+from .exceptions import BadWebsocketRequest
+from .session import SessionInfo
 
 
 @dataclass
@@ -23,11 +32,14 @@ class FrontendInfo:
 
 class Server:
     loop: asyncio.AbstractEventLoop
-    app: sanic.Sanic
-    app_server: sanic.server.AsyncioServer
+
+    app: GameApplication
+    http_app: sanic.Sanic
+    http_server: sanic.server.AsyncioServer
+    ws_server: websockets.server.WebSocketServer
 
     def __init__(self, config: ServerConfig):
-        self.logger = logging.getLogger('main')
+        self.logger = logger.get_logger(config.logger)
         self.logger.setLevel(logging.INFO)
         self.config = config
 
@@ -39,28 +51,47 @@ class Server:
             os.path.join(self.config.path_to_front, 'js'),
             os.path.join(self.config.path_to_front, 'css'),
         )
-        self.app = sanic.Sanic("GameServerApp")
+
+        self.http_app = sanic.Sanic("GameServerApp")
+        self.app = GameApplication(self.config.game)
+
 
     async def run(self):
         self.loop = asyncio.get_running_loop()
         # add handler to route
-        self.app.static("/", self.front_info.index)
+        self.http_app.static("/", self.front_info.index)
 
         def add_routers(handler, suffix, depth=1):
             uri = suffix
             for i in range(depth):
                 uri += f'/<path{i}>'
-                self.app.add_route(handler, uri)
+                self.http_app.add_route(handler, uri)
 
         add_routers(self.http_handler, '/js', 10)
         add_routers(self.http_handler, '/css', 3)
         add_routers(self.http_handler, '/resources', 3)
         add_routers(self.http_handler, '/shaders', 3)
+        self.http_app.add_websocket_route(self.ws_handler, '/ws', strict_slashes=True)
 
-        self.app_server = await self.app.create_server('127.0.0.1', 8000, return_asyncio_server=True)
-        await self.app_server.startup()
-        await self.app_server.serve_forever()
+        conn_conf = self.config.connection
+        self.http_server = await self.http_app.create_server(conn_conf.host, conn_conf.port, return_asyncio_server=True)
+        # self.ws_server = await websockets.serve(self.ws_handler, conn_conf.host, conn_conf.ws_port)
 
-    async def http_handler(self, request: Request, **pathes):
+        await self.http_server.startup()
+
+        await asyncio.gather(
+            self.http_server.serve_forever(),
+            # self.ws_server.serve_forever(),
+            self.app.serve()
+        )
+
+    async def http_handler(self, request: Request, **__):
         dynamic_path = self.front_info.folder + unquote(request.path.replace('/', '\\'))
-        return await sanic.response.file( dynamic_path )
+        return await sanic.response.file(dynamic_path)
+
+    # async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):
+    async def ws_handler(self, request, websocket: WebsocketImplProtocol):
+        first_msg_json = await websocket.recv()
+        session_info = SessionInfo.from_json(json.loads(first_msg_json))
+        user = await self.app.register_session(session_info, websocket)
+        await user.listen()

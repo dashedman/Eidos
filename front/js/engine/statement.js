@@ -50,6 +50,8 @@ export default class Statement {
         this.physics._state = this
         this.logic._state = this
         this.entities._state = this
+
+        this.is_running = false
     }
 
     /**
@@ -57,64 +59,54 @@ export default class Statement {
      * @param {Object} param0 
      */
     async prepare({
-        dispatcherSettings, renderSettings, 
-        networkSettings, physicsSettings, 
-        logicSettings, entitesSettings
+        dispatcher_config, render_config, 
+        network_config, physics_config, 
+        logic_config, entites_config
     }) {
         console.debug('Preparing Statement...')
         await Promise.all([
-            this.dispatcher.prepare(dispatcherSettings),
-            this.render.prepare(renderSettings),
-            this.network.prepare(networkSettings),
-            this.physics.prepare(physicsSettings),
-            this.logic.prepare(logicSettings),
-            this.entities.prepare(entitesSettings),
+            this.dispatcher.prepare(dispatcher_config),
+            this.render.prepare(render_config),
+            this.network.prepare(network_config),
+            this.physics.prepare(physics_config),
+            this.logic.prepare(logic_config),
+            this.entities.prepare(entites_config),
         ])
         console.debug('Statement prepeared.')
     }
-    run(syncPhysics=false) {
-        if(!syncPhysics){
-            // Start a Render loops	
-            let gameIteraction = () => {
-                // calc time
-                this.time.calc()
-                const deltaTimeSec = this.time.deltaTime / 1000
-
-                this.physics.update(deltaTimeSec)
-                this.logic.update(deltaTimeSec)
-
-                // call next iteraction
-                this.loop.id = setTimeout(
-                    gameIteraction,
-                    this.time.toNext(this.loop.interval) * 1000
-                )
-            }
-            this.loop.id = setTimeout(gameIteraction, 0)
-            // start render loop
-            this.render.run()
-        } else {
-            let renderFrame = (timeStamp) => {
-                // calc timeDelta in seconds
-                const timeDelta = (timeStamp - this.prevTimeStamp) / 1000
-
-                this.physics.update(timeDelta)
-                this.logic.update(timeDelta)
-                // Draw world
-                this.render.update(timeDelta)
-                // TODO: rework animations
-                this.render.updateAnimations()
-                this.render.draw();
-                // call next frame
-                this.frameId = requestAnimationFrame(renderFrame);
-                this.prevTimeStamp = timeStamp
-            };
-            this.frameId = requestAnimationFrame(renderFrame);
-            this.prevTimeStamp = performance.now()
+    run() {
+        if(this.is_running) {
+            console.warn('Loop already running')
+            return
         }
+        let renderFrame = (timeStamp) => {
+            // calc timeDelta in seconds
+            const timeDelta = (timeStamp - this.prevTimeStamp) / 1000
+
+            this.physics.update(timeDelta)
+            this.logic.update(timeDelta)
+            // Draw world
+            this.render.update(timeDelta)
+            // TODO: rework animations
+            this.render.updateAnimations()
+            this.render.draw();
+            // call next frame
+            this.frameId = requestAnimationFrame(renderFrame);
+            this.prevTimeStamp = timeStamp
+        };
+        this.frameId = requestAnimationFrame(renderFrame);
+        this.prevTimeStamp = performance.now()
+        this.network.run()
+        this.is_running = true
     }
     stop() {
-        clearTimeout(this.loop.id)
-        this.render.stop()
+        if(this.is_running){
+            clearTimeout(this.loop.id)
+            cancelAnimationFrame(this.frameId)
+            this.render.stop()
+            this.network.stop()
+            this.is_running = false
+        }   
     }
 
     /**

@@ -45,17 +45,21 @@ export class Layer {
         const ClassOfTile = this.isMain ? Block : BackgroundBlock
 
         for(let tileY = 0; tileY < chunk.height; tileY++){
-            for(let tileX = 0; tileX < chunk.width; tileX++){
-            
+            for(let tileX = 0; tileX < chunk.width; tileX++){  
                 const tileIndex = tileY*chunk.width + tileX
-                const tileGID = chunkJson.data[tileIndex]
-                const texture = state.render.textureManager.getT(tileGID)
-
                 const invertedY = chunk.height - tileY - 1
+                const tileGID = chunkJson.data[tileIndex]
 
-                if(texture == undefined){
+                if(tileGID === 0) {
                     chunk.grid[tileX][invertedY] = null
                     continue
+                }
+
+                let texture = state.render.textureGIDRegistry.get(tileGID)
+                if(texture === undefined){
+                    texture = state.render.textureManager.plug
+                    // chunk.grid[tileX][invertedY] = null
+                    // continue
                 }
 
                 chunk.grid[tileX][invertedY] = state.entities.create(

@@ -2,11 +2,11 @@
 import { atlas } from "./getAtlas.js";
 import { autils } from "../../utils/utils.js"
 
-import { Texture } from "./base.js";
-import { ColorTexture } from "./color.js";
+import Texture from "./base.js";
+import ColorTexture from "./color.js";
 
 
-export class TextureManager {
+export default class TextureManager {
     static STATUSES = {
         COMPILING: 0,
         READY: 1,
@@ -17,9 +17,11 @@ export class TextureManager {
         const gl = render.gl
         this._render = render
 
+        this.idCounter = 0
         this.needUpdate = false
         this.status = TextureManager.STATUSES.INIT
 
+        /** @type {Map<String, Texture>} */
         this.textures = new Map()
         this.atlas = null
         this._glTexture = gl.createTexture()
@@ -45,41 +47,48 @@ export class TextureManager {
                 h: 2
             }
         )
-        this.plug.atlasCoords = {
-            x: 0, y: 0, w: 1, h: 1
-        }
-        this.textures.set(this.plug.id, this.plug)
+        // this.plug.atlasCoords = {
+        //     x: 0, y: 0, w: 2, h: 2
+        // }
+        this.textures.set(this.plug.name, this.plug)
         await this.compileAtlas()
+    }
+
+    generateId() {
+        this.idCounter++
+        return this.idCounter
     }
 
     /**
      * 
-     * @param {*} id 
+     * @param {String} name
      * @param {Texture} texture 
      */
-    __safeAddT(id, texture) {
-        if(this.textures.has(id)){
-            console.warn("WARNING: THIS ID TEXTURE ALREADY EXIST!!!")
+    __safeAdd(name, texture) {
+        if(this.textures.has(name)){
+            console.warn("WARNING: THIS NAME TEXTURE ALREADY EXIST!!!")
         }
-        this.addT(texture)
+        this.add(texture)
         return texture
     }
 
-    createTexture(id, name, src, frameNumber, frameOffset){
+    createTexture(name, src, frameNumber=1, frameOffset=1){
+        let id = this.generateId()
         let texture = new Texture(
             this, id, name, 
             {src: src},
             {number: frameNumber, offset: frameOffset}
         )
-        return this.__safeAddT(id, texture)
+        return this.__safeAdd(name, texture)
     }
     
-    createColorTexture(id, name, colors, w, h){
+    createColorTexture(name, colors, w, h){
+        let id = this.generateId()
         let texture = new ColorTexture(
             this, id, name, 
             {colors: colors, w: w, h: h}
         )
-        return this.__safeAddT(id, texture)
+        return this.__safeAdd(name, texture)
     }
 
     async fromTileset(tilesetInfo){
@@ -87,12 +96,10 @@ export class TextureManager {
         // tileset created by tilemap editor
         let canvas = autils.supportCanvas(tilesetInfo.tilewidth, tilesetInfo.tileheight)
         let ctx = canvas.getContext('2d')
-        
-        let img = new Image()
-        img.src = `./resources/${tilesetInfo.image}`
-        await autils.getImageLoadPromise(img)
+        let img = await autils.loadImage(`./resources/${tilesetInfo.image}`)
 
-        let tileArray = []
+        /** @type {Object<number, Texture>} */
+        let tileTextureRegistry = {}
         let realTileIndex = 0;
         for(let tileIndex = 0; tileIndex < tilesetInfo.tilecount && realTileIndex < tilesetInfo.tiles.length;){
             
@@ -104,7 +111,6 @@ export class TextureManager {
                 tileIndex++
                 continue
             }
-            
 
             // let indexX = tileIndex % tilesetInfo.columns
             let indexX = tileInfo.id % tilesetInfo.columns
@@ -122,16 +128,14 @@ export class TextureManager {
                 canvas.width = frameNumber*frameOffset
                 // draw frames
                 for(let [frameIndex, animData] of tileInfo.animation.entries()){
-
-                    indexX = animData.id % tilesetInfo.columns
+                    indexX = animData.tileid % tilesetInfo.columns
                     // indexX = tileIndex % tilesetInfo.columns
-                    indexY = Math.floor(animData.id / tilesetInfo.columns)
+                    indexY = Math.floor(animData.tileid / tilesetInfo.columns)
                     // indexY = Math.floor(tileIndex / tilesetInfo.columns)
                     coordX = indexX * tilesetInfo.tilewidth
                     coordY = indexY * tilesetInfo.tileheight
 
                     let frameXShift = frameIndex*frameOffset
-
                     ctx.drawImage(
                         img, // source 
                         coordX, coordY, tilesetInfo.tilewidth, tilesetInfo.tileheight,  // coords in source
@@ -160,41 +164,67 @@ export class TextureManager {
             let tileName = `${tilesetInfo.name}#${tileInfo.id}`
             let tileSrcData = canvas.toDataURL()
 
-            tileArray.push(
-                this.createTexture(
-                    tileGID,
-                    tileName,
-                    tileSrcData,
-                    frameNumber,
-                    frameOffset
-                )
+            tileTextureRegistry[tileGID] = this.createTexture(
+                tileName,
+                tileSrcData,
+                frameNumber,
+                frameOffset
             )
         }
 
-        return tileArray
+        return tileTextureRegistry
+    }
+
+    /**
+     * 
+     * @param {{resource: string, signWidth: number, signHeight: number, markdown: Object.<string, {x: number, y: number}>}} glyphInfo 
+     * @returns {Object.<String, Texture>}
+     */
+    async fromGlyphAtlas(glyphInfo) {
+        let signsTextures = {}
+        let signWidth = glyphInfo.signWidth, signHeight = glyphInfo.signHeight
+
+        let canvas = autils.supportCanvas(signWidth, signHeight)
+        let ctx = canvas.getContext('2d')
+        let img = await autils.loadImage(`./resources/${glyphInfo.resource}`)
+
+        for(let [sign, s_markdown] of Object.entries(glyphInfo.markdown)) {
+            ctx.drawImage(
+                img, // source 
+                s_markdown.x, s_markdown.y, signWidth, signHeight,  // coords in source
+                0, 0, signWidth, signHeight  //coords in canvas
+            )
+
+            let glyphSrcdata = canvas.toDataURL()
+            let texture = this.createTexture(sign, glyphSrcdata)
+
+            signsTextures[sign] = texture
+        }
+
+        return signsTextures
     }
 
     /**
      * 
      * @param {Texture} texture 
      */
-    addT(texture) {
+    add(texture) {
         // TODO
-        if (!this.textures.has(texture.id))
-            this.textures.set(texture.id, texture)
+        if (!this.textures.has(texture.name))
+            this.textures.set(texture.name, texture)
 
         texture.setAtlas(this.plug.atlasCoords)
         this.compileAtlas()
     }
 
-    delT(id) {
+    deleteByName(name) {
         // TODO
-        this.textures.delete(id)
+        this.textures.delete(name)
         this.compileAtlas()
     }
 
-    getT(id){
-        return this.textures.get(id)
+    getByName(name){
+        return this.textures.get(name)
     }
 
     async compileAtlas() {
@@ -229,7 +259,7 @@ export class TextureManager {
             let inverted_tile = Object.assign({}, tile)
             inverted_tile.y = this.atlas.naturalHeight - tile.h - tile.y
 
-            this.textures.get(tile.id).setAtlas({
+            this.textures.get(tile.name).setAtlas({
                 w: inverted_tile.w,
                 h: inverted_tile.h,
                 x: inverted_tile.x,
@@ -239,6 +269,7 @@ export class TextureManager {
         console.debug('Texture altas compile done')
         this.status = TextureManager.STATUSES.READY
     }
+    
     async bindAtlas(atlas) {
         this.atlas = new Image()
         this.atlas.src = atlas
@@ -247,6 +278,7 @@ export class TextureManager {
 
         this.needUpdate = true
     }
+
     draw(locals){
         if(this.needUpdate){
             const gl = this._render.gl

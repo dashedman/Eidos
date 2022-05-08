@@ -5,17 +5,24 @@ import Camera from '../engine/utils/camera.js'
 import World from '../engine/entities/enviroment/world.js'
 import Creature from '../engine/entities/creatures/base.js'
 import Dispatcher from './../engine/interactions/dispatcher.js';
+import User from '../engine/entities/creatures/user.js'
+import { DRAW_GROUND_PLAN } from '../engine/graphics/constants.js'
+import { autils } from '../engine/utils/utils.js'
 
 export default class Logic extends EngineLogic {
     constructor(world, debugMode=false) {
         super(debugMode)
 
-        /** @type {Entity} */
+        /** @type {User} */
         this.player = null
+        /** @type {User[]} */
+        this.users = []
         /** @type {Camera} */
         this.camera = null
         /** @type {World} */
         this.world = world
+
+        this._prepeared = false
     }
 
     async prepare({layers}) {
@@ -40,7 +47,14 @@ export default class Logic extends EngineLogic {
                 this._state.render.addToHighlight(chunk_box, [0, 0, 255])
             }
         }
+        this._prepeared = true
         console.debug('Logic prepeared.')
+    }
+
+    async getPrepareIndicator() {
+        while(!this._prepeared) {
+            await autils.waitTick()
+        }
     }
 
     /**
@@ -51,6 +65,45 @@ export default class Logic extends EngineLogic {
         this.player = creature
         this.camera.clearTargets()
         this.camera.addTarget(this.player)
+    }
+    
+    /**
+     * 
+     * @param {Array<{id: number, x: number, y: number}>} users 
+     */
+    updateUsersPositions(users){
+        for(let updated_user of users) {
+            let user = this.users.find((user) => user.sessionId == updated_user.id)
+            if(user !== undefined) {
+                user.x = updated_user.x
+                user.y = updated_user.y
+            } else {
+                if (updated_user.id == this.player.sessionId) 
+                    continue
+
+                let yellow_pixel = this._state.render.textureManager.getByName('yellow')
+                user = state.entities.create(
+                    User, 
+                    yellow_pixel, 
+                    DRAW_GROUND_PLAN.MAIN,
+                    {
+                        x: updated_user.x, 
+                        y: updated_user.y, 
+                        h: 1.5
+                    })
+                user.setSessionId(updated_user.id)
+                this.users.push(user)
+            }
+        }
+
+        // delete others
+        for(let i=0; i<this.users.length; i++){
+            let user = this.users[i]
+            let updated_user = users.find((updated_user) => user.sessionId == updated_user.id)
+            if(updated_user !== undefined) continue
+
+            this.users.splice(i, 1)
+        }
     }
 
     /**

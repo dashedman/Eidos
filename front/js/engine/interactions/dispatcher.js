@@ -1,9 +1,13 @@
 "use strict"
+
+import Statement from "../statement.js";
+
 export default class Dispatcher {
     constructor(el) {
         // id of the game loop to handle
+        /** @type {Statement} */
         this._state = null;
-        this._target = null
+        this._target = el
 
         this.pressedKeys = new Uint8Array(128);
         this.pressedOnce = new Set();
@@ -15,35 +19,12 @@ export default class Dispatcher {
             y: 0,
             oldX: 0,
             oldY: 0,
-        };
-
-        el.addEventListener('keydown', (event) => {
-            this.pressedKeys[event.keyCode] = true;
-            this.pressedOnce.add(event.keyCode);
-        });
-        el.addEventListener('keyup', (event) => {
-            this.pressedKeys[event.keyCode] = false;
-        });
-
-        el.addEventListener('mousedown', (e) => {
-            this.mouse.pressed = true;
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
-        el.addEventListener('mouseup', (e) => {
-            this.mouse.pressed = false;
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
-        el.addEventListener('click', (e) => {
-            this.mouse.clicked = true;
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
+        }; 
     }
 
     async prepare() {
         console.debug('Preparing Dispatcher...')
+        this.setupListeners()
         console.debug('Dispatcher prepeared.')
     }
 
@@ -52,6 +33,39 @@ export default class Dispatcher {
     }
     set target(new_target){
         this._target = new_target
+    }
+
+    setupListeners() {
+        this.target.addEventListener('keydown', (event) => {
+            this.pressedKeys[event.keyCode] = true;
+            this.pressedOnce.add(event.keyCode);
+        });
+        this.target.addEventListener('keyup', (event) => {
+            this.pressedKeys[event.keyCode] = false;
+        });
+
+        this.target.addEventListener('mousedown', (e) => {
+            this.mouse.pressed = true;
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
+        });
+        this.target.addEventListener('mouseup', (e) => {
+            this.mouse.pressed = false;
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
+        });
+        this.target.addEventListener('click', (e) => {
+            this.mouse.clicked = true;
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
+        });
+
+        window.addEventListener('blur', () => {
+            this._state.stop()
+        })
+        window.addEventListener('focus', () => {
+            this._state.run()
+        })
     }
 }
 

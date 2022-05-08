@@ -1,28 +1,23 @@
 "use strict"
+import Statement from '../statement.js';
+import Deque from '../utils/deque.js';
 import { WebRTCConnection } from './connection/webrtc_connection.js';
 import { WebSockConnection } from './connection/websock_connection.js';
 
 class Network {
-    constructor() {
+    constructor(config, debugMode=false) {
+        /** @type {Statement} */
         this._state = null
+        /** @type {WebSocket} */
         this.socket = null
-    }
-
-    async updatePlayer() {
-        // TODO
-        state.player.updateFromNet({ x: 0, y: 0 })
-    }
-
-    async updateLocation() {
-        // TODO
-        state.location.updateFromNet([
-            new Block(-50, -10, 100, 5),
-        ])
+        /** @type {Deque<{case: String, data: Object}>} */
+        this.requestsQueue = new Deque()
+        /** @type {boolean} */
+        this.debugMode = debugMode
     }
 
     async prepare() {
         console.debug('Preparing Network...')
-        console.debug('Network prepeared.')
     }
 }
 

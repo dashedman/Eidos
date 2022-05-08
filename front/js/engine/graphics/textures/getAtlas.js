@@ -1,10 +1,21 @@
 "use strict"
 import { autils } from "../../utils/utils.js"
+import Texture from "./base.js"
 export { atlas }
 
 
 
+/** 
+ * @typedef {{index: number, id: number, name: number, x: number, y: number, w: number, h: number,}} rect 
+ * @typedef {{floor: number, ceil: number, rects: rect[]}} level
+ * */
+
 var atlas = {
+    /**
+     * 
+     * @param {{textures: Texture[], extrude: boolean}} data 
+     * @returns 
+     */
     syncCompiling: function (data){
         let textures = data.textures
         let extrude = data.extrude || false
@@ -48,7 +59,11 @@ var atlas = {
 // }
 
 
-
+/**
+ * 
+ * @param {Texture[]} textures 
+ * @param {boolean} extrude 
+ */
 function generateTiling(textures, extrude=false){
     /*
     Floor Сeiling No Rotation algorithm
@@ -56,13 +71,15 @@ function generateTiling(textures, extrude=false){
     */
 
     // get sorted rectangles
+    /** @type {(tex: Texture, index: number) => rect} */
     let getRectangle;
     if(extrude){
         getRectangle = (tex, index) => ({
             index: index, 
             id: tex.id,
-            w: tex.image.naturalWidth+2, 
-            h: tex.image.naturalHeight+2,
+            name: tex.name,
+            w: tex.image.naturalWidth + 2, 
+            h: tex.image.naturalHeight + 2,
             x: 0,
             y: 0
         })
@@ -70,6 +87,7 @@ function generateTiling(textures, extrude=false){
         getRectangle = (tex, index) => ({
             index: index, 
             id: tex.id,
+            name: tex.name,
             w: tex.image.naturalWidth, 
             h: tex.image.naturalHeight,
             x: 0,
@@ -91,6 +109,7 @@ function generateTiling(textures, extrude=false){
     let estimateWidth = Math.max(Math.sqrt(summaryArea), maxWidth)
 
     // algorithm
+    /** @type {level[]} */
     let levels = []
     let lastLevelHeight = 0;
     for(let i = 0; i < rectangles.length; i++){
@@ -99,20 +118,39 @@ function generateTiling(textures, extrude=false){
         for(const level of levels){
             // seek place on floor
             let tmpWidth = 0;
-            let index = 0;
-            // while floor rects
-            while(index < level.rects.length && level.rects[index].y == level.floor){
-                tmpWidth += level.rects[index].w
-                index++
+            let index = level.rects.length - 1;
+            // find last rect on floor
+            while(index >= 0 && level.rects[index].y != level.floor){
+                index--
             }
+            tmpWidth = level.rects[index].x + level.rects[index].w
+            // check width space
             if(tmpWidth <= estimateWidth - rect.w){
-                // if can to set in level
+                // check height space
                 rect.x = tmpWidth
                 rect.y = level.floor
-                level.rects.push(rect)
+                // find ceil rect that collide
+                let isCollide = false
+                for(let level_rect of level.rects){
+                    // check rects on ceil
+                    if (level_rect.y != level.floor) {
+                        // check that ceils righter than target
+                        if(rect.x > level_rect.x + level_rect.w) break
 
-                newLevel = false;
-                break;
+                        // check collide
+                        if (level_rect.y <= level.floor + rect.h &&
+                            level_rect.x <= rect.x + rect.w) {
+                            isCollide = true
+                            break
+                        }
+                    }
+                }
+                if (!isCollide) {
+                // if can to set in level
+                    level.rects.push(rect)
+                    newLevel = false;
+                    break;
+                }
             }
 
             // seek place on ceil
@@ -135,6 +173,7 @@ function generateTiling(textures, extrude=false){
                 if(level.rects[floorIndex].y + level.rects[floorIndex].h >= rect.y) continue;
                 
                 // if can to set in level
+                console.log('ceil', rect.name, rect.x, rect.y)
                 level.rects.push(rect)
                 newLevel = false;
                 break;
@@ -161,6 +200,57 @@ function generateTiling(textures, extrude=false){
         size: {w: estimateWidth, h: lastLevelHeight},
         tiling: rectangles
     };
+}
+
+/**
+ * 
+ * @param {rect} rect 
+ * @param {level} level 
+ * @returns {{x: number, y: number}}
+ */
+function findPlaceOnLevel(rect, level) {
+    // seek place on floor
+    let tmpWidth = 0;
+    let index = 0;
+    // while floor rects
+    while(index < level.rects.length && level.rects[index].y == level.floor){
+        tmpWidth += level.rects[index].w
+        index++
+    }
+    if(tmpWidth <= estimateWidth - rect.w){
+        // if can to set in level
+        rect.x = tmpWidth
+        rect.y = level.floor
+        level.rects.push(rect)
+
+        newLevel = false;
+        return
+    }
+
+    // seek place on ceil
+    tmpWidth = 0;
+    let floorIndex = index - 1;
+    while(index < level.rects.length){
+        tmpWidth += level.rects[index].w
+        index++
+    }
+    if(tmpWidth <= estimateWidth - rect.w){
+        // check on intersect with floor rects
+        rect.x = estimateWidth - tmpWidth - rect.w
+        rect.y = level.ceil - rect.h
+        while(floorIndex >= 0 && level.rects[floorIndex].x + level.rects[floorIndex].w >= rect.x){
+            floorIndex--;
+        }
+        floorIndex++; // indexof the higer rect on floor, that may be intersect with newRect
+
+        // if intersect - skip
+        // if(level.rects[floorIndex].y + level.rects[floorIndex].h >= rect.y) continue;
+        
+        // if can to set in level
+        level.rects.push(rect)
+        newLevel = false;
+        return
+    }
 }
 
 
