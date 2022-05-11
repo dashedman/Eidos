@@ -33,7 +33,7 @@ async function initGame(){
     state.setLoopDelay(0.01)
     world.state = state
 
-    let mapConfig = await utils.loadJsonResources('resources/super duper karta (3).json')
+    let mapConfig = await utils.loadJsonResources('resources/super duper karta (4).json')
     await state.prepare({
         render_config: {
             tilesets: mapConfig.tilesets,

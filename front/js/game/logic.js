@@ -102,6 +102,7 @@ export default class Logic extends EngineLogic {
             let updated_user = users.find((updated_user) => user.sessionId == updated_user.id)
             if(updated_user !== undefined) continue
 
+            user.sprite.release()
             this.users.splice(i, 1)
         }
     }
