@@ -11,6 +11,12 @@ class NotImplementedError extends EngineError {
     }
 }
 
+class AbstractMethodError extends EngineError {
+    constructor(msg="Abstract method!") {
+        super(msg)
+    }
+}
+
 export {
-    EngineError, NotImplementedError
+    EngineError, NotImplementedError, AbstractMethodError
 }
