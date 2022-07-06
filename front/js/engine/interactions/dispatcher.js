@@ -1,16 +1,28 @@
 "use strict"
 
 import Statement from "../statement.js";
+import Dispatcher from './interactions';
 
 export default class Dispatcher {
     constructor(el) {
         // id of the game loop to handle
         /** @type {Statement} */
-        this._state = null;
+        this._state = null
         this._target = el
 
-        this.pressedKeys = new Uint8Array(128);
-        this.pressedOnce = new Set();
+        const KEYS_NUMBER = 128
+        this.pressedKeys = new Uint8Array(KEYS_NUMBER)
+        /**
+         * @callback eventCallback
+         */
+        /** @type {eventCallback[][]} */
+        this.keyDownListeners = new Array(KEYS_NUMBER)
+        /** @type {eventCallback[][]} */
+        this.keyUpListeners = new Array(KEYS_NUMBER)
+        for(let i = 0; i < KEYS_NUMBER; i++) {
+            this.keyDownListeners[i] = []
+            this.keyUpListeners[i] = []
+        }
 
         this.mouse = {
             pressed: false,
@@ -31,44 +43,119 @@ export default class Dispatcher {
     get target(){
         return this._target
     }
+
     set target(new_target){
         this._target = new_target
     }
 
+    /**
+     * 
+     * @param {Dispatcher.KEY} keyCode 
+     * @param {Dispatcher.ACTION} dispatcherAction 
+     * @param {Function} callback 
+     */
+    subscribe(keyCode, dispatcherAction, callback) {
+        switch (dispatcherAction) {
+            case Dispatcher.ACTION.KEY_DOWN:
+                this.keyDownListeners[keyCode].push(callback)
+                break
+            case Dispatcher.ACTION.KEY_UP:
+                this.keyUpListeners[keyCode].push(callback)
+                break
+            default:
+                console.warn('Undefined dispatcher action!')
+        }
+    }
+
     setupListeners() {
-        this.target.addEventListener('keydown', (event) => {
-            this.pressedKeys[event.keyCode] = true;
-            this.pressedOnce.add(event.keyCode);
-        });
-        this.target.addEventListener('keyup', (event) => {
-            this.pressedKeys[event.keyCode] = false;
-        });
+        this.target.addEventListener('keydown', this.onKeyDown);
+        this.target.addEventListener('keyup', this.onKeyUp);
 
-        this.target.addEventListener('mousedown', (e) => {
-            this.mouse.pressed = true;
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
-        this.target.addEventListener('mouseup', (e) => {
-            this.mouse.pressed = false;
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
-        this.target.addEventListener('click', (e) => {
-            this.mouse.clicked = true;
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
+        this.target.addEventListener('mousedown', this.onMouseDown);
+        this.target.addEventListener('mouseup', this.onMouseUp);
+        this.target.addEventListener('click', this.onMouseClick);
 
-        window.addEventListener('blur', () => {
-            this._state.stop()
-        })
-        window.addEventListener('focus', () => {
-            this._state.run()
-        })
+        window.addEventListener('blur', this.onBlur)
+        window.addEventListener('focus', this.onFocus)
+    }
+
+    /**
+     * @param {KeyboardEvent} event 
+     */
+    onKeyDown(event) {
+        this.pressedKeys[event.keyCode] = true;
+        for(let callback in this.keyDownListeners[event.keyCode]) {
+            callback()
+        }
+    }
+
+    /**
+     * @param {KeyboardEvent} event 
+     */
+    onKeyUp(event) {
+        this.pressedKeys[event.keyCode] = false;
+        for(let callback in this.keyUpListeners[event.keyCode]) {
+            callback()
+        }
+    }
+
+    /**
+     * @param {MouseEvent} e
+     */
+    onMouseDown(e) {
+        this.mouse.pressed = true;
+        this.mouse.x = e.clientX;
+        this.mouse.y = e.clientY;
+    }
+
+    /**
+     * @param {MouseEvent} e
+     */
+    onMouseUp(e) {
+        this.mouse.pressed = false;
+        this.mouse.x = e.clientX;
+        this.mouse.y = e.clientY;
+    }
+
+    /**
+     * @param {MouseEvent} e
+     */
+    onMouseClick(e) {
+        this.mouse.clicked = true;
+        this.mouse.x = e.clientX;
+        this.mouse.y = e.clientY;
+    }
+
+    /**
+     * @param {FocusEvent} e
+     */
+    onBlur(e) {
+        this._state.stop()
+    }
+
+    /**
+     * @param {FocusEvent} e
+     */
+     onFocus(e) {
+        this._state.run()
     }
 }
 
+/**
+ * Enum for common colors.
+ * @readonly
+ * @enum {Number}
+ */
+Dispatcher.ACTION = {
+    KEY_DOWN: 1,
+    KEY_UP: 2,
+}
+
+/**
+ * Enum for common colors.
+ * @readonly
+ * @enum {Number}
+ */
 Dispatcher.KEY = {
     // special keys
     ESCAPE: 27,

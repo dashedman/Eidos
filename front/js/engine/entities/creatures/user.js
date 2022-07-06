@@ -1,8 +1,8 @@
 "use strict"
 
-import Creature from "./base.js"
+import Character from "./character/character"
 
-export default class User extends Creature {
+export default class User extends Character {
     /**
      * 
      * @param {Sprite} sprite 
