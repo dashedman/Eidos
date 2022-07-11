@@ -22,11 +22,11 @@ export class BaseCharacterState extends AbstractState {
         return this.character.changeState(state_cls)
     }
 
-    update() {
-        this.updateByPhysic() ||
-        this.updateByEnviroment() ||
-        this.updateByLogic() ||
-        this.updateByState()
+    update(timedelta) {
+        this.updateByPhysic(timedelta) ||
+        this.updateByEnviroment(timedelta) ||
+        this.updateByLogic(timedelta) ||
+        this.updateByState(timedelta)
     }
 
     updateByPhysic() {}
@@ -77,17 +77,17 @@ export class MovingState extends BaseCharacterState {
 }
 
 export class MovingLeftState extends MovingState {
-    updateByState() {
+    updateByState(timedelta) {
         this.character.pbox.vx = Math.max(
-            this.character.pbox.vx - this.character.ACCELERATION,
+            this.character.pbox.vx - this.character.ACCELERATION * timedelta,
             -this.character.MAX_SPEED
         )
     }
 }
 export class MovingRightState extends MovingState {
-    updateByState() {
+    updateByState(timedelta) {
         this.character.pbox.vx = Math.min(
-            this.character.pbox.vx + this.character.ACCELERATION,
+            this.character.pbox.vx + this.character.ACCELERATION * timedelta,
             this.character.MAX_SPEED
         )
     }

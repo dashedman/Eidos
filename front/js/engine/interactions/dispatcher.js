@@ -67,15 +67,15 @@ export default class Dispatcher {
     }
 
     setupListeners() {
-        this.target.addEventListener('keydown', this.onKeyDown);
-        this.target.addEventListener('keyup', this.onKeyUp);
+        this.target.addEventListener('keydown', this.onKeyDown.bind(this));
+        this.target.addEventListener('keyup', this.onKeyUp.bind(this));
 
-        this.target.addEventListener('mousedown', this.onMouseDown);
-        this.target.addEventListener('mouseup', this.onMouseUp);
-        this.target.addEventListener('click', this.onMouseClick);
+        this.target.addEventListener('mousedown', this.onMouseDown.bind(this));
+        this.target.addEventListener('mouseup', this.onMouseUp.bind(this));
+        this.target.addEventListener('click', this.onMouseClick.bind(this));
 
-        window.addEventListener('blur', this.onBlur)
-        window.addEventListener('focus', this.onFocus)
+        window.addEventListener('blur', this.onBlur.bind(this))
+        window.addEventListener('focus', this.onFocus.bind(this))
     }
 
     /**

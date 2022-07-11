@@ -111,33 +111,8 @@ export default class Logic extends EngineLogic {
      * @param {Number} deltaTimeSec - time difference between previous and current ticks in seconds
      */
     update(deltaTimeSec) {
-        this.updateControl(deltaTimeSec)
-    }
-
-    updateControl(deltaTimeSec) {
-        let disp = this._state.dispatcher
-        const mp = 6
-        if(disp.pressedKeys[Dispatcher.KEY.A]){
-            this.player.pbox.vx -= deltaTimeSec * mp;
-        }
-        if(disp.pressedKeys[Dispatcher.KEY.D]){
-            this.player.pbox.vx += deltaTimeSec * mp;
-        }
-        if(disp.pressedKeys[Dispatcher.KEY.S]){
-            this.player.pbox.vy -= deltaTimeSec * mp;
-        }
-        if(disp.pressedKeys[Dispatcher.KEY.W]){
-            this.player.pbox.vy += deltaTimeSec * mp;
-        }
-        if(disp.pressedKeys[Dispatcher.KEY.SPACE]){
-            this.player.pbox.vx = 0;
-            this.player.pbox.vy = 0;
-        }
-        // if(disp.pressedKeys[Dispatcher.KEY.X]){
-        //     newCamPos[2] -= deltaTime;
-        // }
-        // if(disp.pressedKeys[Dispatcher.KEY.Z]){
-        //     newCamPos[2] += deltaTime;
-        // }
+        console.log('logic update')
+        this.player.update(deltaTimeSec)
+        // this.updateControl(deltaTimeSec)
     }
 }

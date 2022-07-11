@@ -56,4 +56,8 @@ export class TravelMode extends BaseCharacterMode {
         this.state = new state_cls(this.character)
         return true
     }
+
+    update(timedelta) {
+        this.state.update(timedelta)
+    }
 }

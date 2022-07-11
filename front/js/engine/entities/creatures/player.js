@@ -9,6 +9,8 @@ import CharacterSkinsList from './../skins/character_skins_list';
 import Character from './character/character';
 import ModeSkinsList from './../skins/mode_skins_list';
 import StateSkin, { AlignInfo, ChangeBoxData } from './../skins/state_skin';
+import Statement from "../../statement";
+import { SpriteMixins } from "../../graphics/sprites/mixins";
 
 export class Player extends User{
     /**
@@ -30,6 +32,23 @@ export class Player extends User{
 
         /** @type { CharacterSkinsList } */
         this.skinsSources = this.prepareSkinsSources()
+        this.changeState(this.mode.state)
+
+        this.ACCELERATION = 1
+        this.MAX_SPEED = 10
+    }
+
+    /**
+     * @param { Statement } state 
+     * @param {*} param1 
+     */
+    prepare(state, {role=DRAW_GROUND_PLAN.MAIN}) {
+        let texture = state.render.textureManager.plugs
+
+        this.sprite = state.render.createSprite({
+            texture: texture,
+            mixins: [SpriteMixins.iAnimated]
+        }, role)
     }
 
     do(command) {
@@ -61,6 +80,10 @@ export class Player extends User{
     changeMode(mode_cls) {
         this.mode = new mode_cls(this)
         return true
+    }
+
+    update(timedelta) {
+        this.mode.update(timedelta)
     }
 
     /**

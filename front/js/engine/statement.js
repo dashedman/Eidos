@@ -75,11 +75,13 @@ export default class Statement {
         console.debug('Statement prepeared.')
     }
     run() {
+        console.log('run', this.logic.player)
         if(this.is_running) {
             console.warn('Loop already running')
             return
         }
         let renderFrame = (timeStamp) => {
+            console.log('loop')
             // calc timeDelta in seconds
             const timeDelta = (timeStamp - this.prevTimeStamp) / 1000
 
@@ -96,10 +98,11 @@ export default class Statement {
         };
         this.frameId = requestAnimationFrame(renderFrame);
         this.prevTimeStamp = performance.now()
-        // this.network.run()
+        this.network.run()
         this.is_running = true
     }
     stop() {
+        console.log(this.logic.player)
         if(this.is_running){
             clearTimeout(this.loop.id)
             cancelAnimationFrame(this.frameId)

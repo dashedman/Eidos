@@ -95,6 +95,9 @@ async function initGame(){
         }
     })
 
+    let player = new Player(state, {}, {x: 0, y: 5, h: 1.5}, state.dispatcher)
+    state.logic.setPlayer(player)
+
     await debugInit(state)
     state.run(true)
 }
@@ -103,13 +106,13 @@ async function initGame(){
  * @param {Statement} state 
  */
 async function debugInit(state) {
+    console.debug('Start debug init')
     // TODO: remove
     let green_pixel = state.render.createColorTexture("green", [0, 128, 0, 255], 1, 1)
     let yellow_pixel = state.render.createColorTexture("yellow", [128, 128, 0, 255], 1, 1)
     let red_pixel = state.render.createColorTexture("red", [255, 0, 0, 255], 1, 1)
     let greenMan = state.entities.create(User, green_pixel, DRAW_GROUND_PLAN.MAIN, {x: 0, y: 5, h: 1.5})
-    let player = new Player(state, {x: 0, y: 5, h: 1.5})
-    state.logic.setPlayer(player)
+    console.debug('End debug init')
 }
 // start
 initGame()

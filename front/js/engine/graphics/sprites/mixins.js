@@ -26,35 +26,4 @@ export const SpriteMixins = {
             this.animationTime = time
         },
     },
-    iStated: {
-        iStated: true,
-        state_textures: new Map(),
-        current_state: undefined,
-
-        initStates(texture_map){ // {state: texture}
-            // create mapping state -> index -> texture
-            this.state_textures.clear()
-
-            this.current_state = 0;
-            this.state_textures.set(this.current_state, this.texture)
-
-            for(let [state, texture] in texture_map){
-                this.addState(state, texture)
-            }
-            
-        },
-        addState(state_id, texture){
-            this.state_textures.set(state_id, texture)
-        },
-        setState(state_id){
-            this.current_state = state_id
-            this.texture = this.textures.get(this.current_state)
-
-            if(this.iAnimated){
-                this.texture.computeFrameOffset()
-                this.initAnimation()
-            }
-        },
-        
-    },
 }

@@ -11,7 +11,7 @@ import websockets.server
 import sanic
 import sanic.response
 import sanic.server
-from sanic.server.protocols.websocket_protocol import WebsocketImplProtocol
+from sanic.server.protocols.websocket_protocol import WebsocketImplProtocol, WebSocketProtocol
 from sanic.request import Request
 
 from . import logger
@@ -59,6 +59,8 @@ class Server:
     async def run(self):
         self.loop = asyncio.get_running_loop()
         # add handler to route
+        self.http_app.enable_websocket(enable=True)
+        self.http_app.add_websocket_route(self.ws_handler, '/ws')
         self.http_app.static("/", self.front_info.index)
 
         def add_routers(handler, suffix, depth=1):
@@ -71,10 +73,12 @@ class Server:
         add_routers(self.http_handler, '/css', 3)
         add_routers(self.http_handler, '/resources', 6)
         add_routers(self.http_handler, '/shaders', 3)
-        self.http_app.add_websocket_route(self.ws_handler, '/ws', strict_slashes=True)
 
         conn_conf = self.config.connection
-        self.http_server = await self.http_app.create_server(conn_conf.host, conn_conf.port, return_asyncio_server=True)
+        self.http_server = await self.http_app.create_server(
+            conn_conf.host, conn_conf.port, 
+            return_asyncio_server=True,
+            protocol=WebSocketProtocol)
         # self.ws_server = await websockets.serve(self.ws_handler, conn_conf.host, conn_conf.ws_port)
 
         await self.http_server.startup()
@@ -90,10 +94,19 @@ class Server:
         last_path = dynamic_path.split('\\')[-1]
         if '.' not in last_path:
             dynamic_path += '.js'
-        return await sanic.response.file(dynamic_path)
+
+        if dynamic_path.endswith('.js'):
+            mime_type = 'text/javascript'
+        elif dynamic_path.endswith('.css'):
+            mime_type = 'text/css'
+        else:
+            mime_type = 'text/plain'
+        
+        return await sanic.response.file(dynamic_path, mime_type=mime_type)
 
     # async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):
     async def ws_handler(self, request, websocket: WebsocketImplProtocol):
+        print('WEBSOCKET')
         first_msg_json = await websocket.recv()
         session_info = SessionInfo.from_json(json.loads(first_msg_json))
         user = await self.app.register_session(session_info, websocket)
