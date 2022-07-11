@@ -1,18 +1,59 @@
 import { NotImplementedError } from "../../exceptions"
 import PhBox from './../../physics/colliders/box';
+import Statement from "../../statement";
+
+export class AlignInfo {
+    /**
+     * 
+     * @param {StateSkin.alignMode} horizontal 
+     * @param {StateSkin.alignMode} vertical 
+     */
+    constructor(horizontal, vertical) {
+        this.horizontal = horizontal
+        this.vertical = vertical
+    }
+}
+
+export class ChangeBoxData {
+    /**
+     * 
+     * @param {Number} w 
+     * @param {Number} h 
+     * @param {Number} shiftX 
+     * @param {Number} shiftY 
+     * @param {AlignInfo} alignInfo 
+     */
+    constructor(w, h, shiftX, shiftY, alignInfo) {
+        this.w = w
+        this.h = h
+        this.shiftX = shiftX
+        this.shiftY = shiftY
+        this.alignInfo = alignInfo
+    }
+}
 
 export default class StateSkin {
     /**
-     * @typedef {{horizontal: StateSkin.alignMode, vertical: StateSkin.alignMode}} alignInfo
-     * @typedef {{w: number, h: number, shiftX: number, shiftY: number, alignInfo: alignInfo}} changeBoxData
-     * @param {{texture_source: String, box: changeBoxData}} data 
+     * @param {{texture_name: String, box: ChangeBoxData}} data 
      */
     constructor(data) {
+        /** @type { Statement } */
+        this.state = null
+        /** @type { ChangeBoxData } */
         this.data = data
     }
 
-    compileSprite() {
-        throw new NotImplementedError()
+    /**
+     * @param { Statement } state
+     */
+    bindState(state) {
+        this.state = state
+    }
+
+    getTexture() {
+        return this.state.render.textureManager.getByName(
+            this.data.texture_name
+        )
     }
 
     /**

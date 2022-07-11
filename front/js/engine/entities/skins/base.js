@@ -1,1 +1,2 @@
-export default class BaseSkinsBag {}
+export default class BaseSkinsList {
+}

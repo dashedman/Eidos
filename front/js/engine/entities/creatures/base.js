@@ -1,6 +1,7 @@
 "use strict"
 
 import PhInertiaBox from "../../physics/colliders/inertia_box.js";
+import Statement from "../../statement.js";
 import { Square } from "../block.js";
 import PhInertiaBox from './../../physics/colliders/inertia_box';
 
@@ -17,5 +18,12 @@ export default class Creature extends Square {
          * @type {PhInertiaBox}
          */
         this.pbox
+    }
+
+    /**
+     * @param { Statement } state
+     */
+    getPhysBox(state) {
+        return state.physics.createInertedBox()
     }
 }

@@ -15,35 +15,39 @@ export default class Sprite {
     constructor(manager, bufferIndexes, texture, ...mixins) {
         this._bufferIndexes = bufferIndexes;
         this._manager = manager;
-        this.texture = texture;
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, w:0, h:0}
-    
-        this.texture.addToTrace(this)
-        // async constructor
-        this.waitInit = this.async_constructor()
 
+        this.waitInit = this.setTexture(texture)
         // add mixins
         Object.assign(this, ...mixins)
 
         // z-sort
         //this._manager.requestZSorting()
     }
-    async async_constructor(resolve){
-        await this.texture.loadState
+    async setTexture(texture) {
+        if(this.texture) {
+            this.release()
+        }
 
+        this.texture = texture;
+        this.texture.addToTrace(this)
+
+        await this.texture.loadState
         // texture coords
         this.tx = 0
         this.ty = 0
         this.tw = this.texture.image.naturalWidth
         this.th = this.texture.image.naturalHeight
     }
+
     forceUpdate(){
         // force update for verticles
         this.forceUpdateSprite()
         this.forceUpdateTexture()
     }
+
     forceUpdateTexture(){
         // force update for verticles
         this.tx = null
@@ -51,17 +55,20 @@ export default class Sprite {
         this.tw = this.texture.frameOffset
         this.th = this.texture.atlasCoords.h
     }
+
     forceUpdateSprite(){
         // force update for verticles
         this.sx = this.sx
         this.sy = this.sy
         this.sz = this.sz
     }
+
     traceEvent(texture){
         if(this.texture == texture){
             this.forceUpdateTexture()
         }
     }
+    
     release() {
         // release memory buffer
         this.texture.removeFromTrace(this)

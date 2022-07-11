@@ -17,6 +17,12 @@ class AbstractMethodError extends EngineError {
     }
 }
 
+class PrepareEntityError extends EngineError {
+    constructor(msg="Bad prepare params!") {
+        super(msg)
+    }
+}
+
 export {
-    EngineError, NotImplementedError, AbstractMethodError
+    EngineError, NotImplementedError, AbstractMethodError, PrepareEntityError
 }

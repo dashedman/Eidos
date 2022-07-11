@@ -9,6 +9,7 @@ import Renderer from './render.js'
 import { DRAW_GROUND_PLAN } from "../engine/graphics/constants.js"
 import User from "../engine/entities/creatures/user.js"
 import Network from "./network.js"
+import { Player } from './../engine/entities/creatures/player';
 let utils = engine.utils.autils
 
 
@@ -86,7 +87,7 @@ async function initGame(){
             }
         },
         logic_config: {
-            layers: mapConfig.layers
+            layers: mapConfig.layers,
         },
         network_config: {
             ws_host: window.location.host,
@@ -107,6 +108,7 @@ async function debugInit(state) {
     let yellow_pixel = state.render.createColorTexture("yellow", [128, 128, 0, 255], 1, 1)
     let red_pixel = state.render.createColorTexture("red", [255, 0, 0, 255], 1, 1)
     let greenMan = state.entities.create(User, green_pixel, DRAW_GROUND_PLAN.MAIN, {x: 0, y: 5, h: 1.5})
+    let player = new Player(state, {x: 0, y: 5, h: 1.5})
     state.logic.setPlayer(greenMan)
 }
 // start

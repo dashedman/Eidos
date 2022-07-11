@@ -28,7 +28,7 @@ export default class Entities{
      * @param {Object} entityParams 
      * @returns 
      */
-    create(ClassOfEntity=Entity, texture, role=DRAW_GROUND_PLAN.MAIN, entityParams){
+    create(ClassOfEntity=Entity, texture, role=DRAW_GROUND_PLAN.MAIN, boxParams, prepareParams){
         let mixins = []
         if(texture.frameNumber > 1) mixins.push(SpriteMixins.iAnimated)
     
@@ -45,11 +45,11 @@ export default class Entities{
                 } else {
                     physBox = this._state.physics.createPhysicBox()
                 }
-                return new ClassOfEntity(sprite, physBox, entityParams)
+                return new ClassOfEntity(sprite, physBox, boxParams)
             }
-            return new ClassOfEntity(sprite, entityParams)
+            return new ClassOfEntity(sprite, boxParams)
         }
-        return new ClassOfEntity(entityParams)
+        return new ClassOfEntity(boxParams)
     }
     
     /**

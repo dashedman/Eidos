@@ -3,24 +3,68 @@
 import { Entity } from "./base.js";
 import Sprite from "../graphics/sprites/base.js";
 import PhBox from './../physics/colliders/box.js';
+import Statement from "../statement.js";
+import { PrepareEntityError } from "../exceptions.js";
 
 export class BackgroundBlock extends Entity {
     /**
      * 
-     * @param {Sprite} sprite
-     * @param {{x: number, y: number, z:number}} param1
+     * @param {Statement} state
+     * @param {*} prepareParams
+     * @param {{x: number, y: number, z:number}} param2
      */
-    constructor(sprite, {x, y, z=1}) {
-        super()
+    constructor(state, prepareParams, {x, y, z=1}) {
+        super(state, prepareParams)
 
         /** @type {Sprite} */
-        this.sprite = sprite
+        this.sprite
 
         this.sx = x
         this.sy = y
         this.sz = z
         this.sw = 1
         this.sh = 1
+    }
+
+    /**
+     * 
+     * @param { Statement } state 
+     * @param {*} param1 
+     */
+    prepare(state, {texture, textureData}) {
+        if (!texture && textureData){
+            texture = state.render.textureManager.getByName(textureData.name)
+
+            if( !texture ) {
+                if (textureData.src) {
+                    texture = state.render.createTexture(
+                        textureData.name, 
+                        textureData.src,
+                        textureData.frameNumber,
+                        textureData.frameOffset
+                    )
+                } else if (textureData.color) {
+                    texture = state.render.createColorTexture(
+                        textureData.name, 
+                        textureData.color,
+                        textureData.width,
+                        textureData.height
+                    )
+                }
+            }
+        }
+        
+        let mixins = []
+        if( texture ){
+            if(texture.frameNumber > 1) mixins.push(SpriteMixins.iAnimated)
+        } else {
+            throw new PrepareEntityError()
+        }
+
+        this.sprite = this._state.render.createSprite({
+            texture: texture, 
+            mixins: mixins
+        }, role)
     }
 
     get sx() {return this.sprite.sx}
@@ -39,20 +83,41 @@ export class BackgroundBlock extends Entity {
 export class Block extends BackgroundBlock {
     /**
      * 
-     * @param {Sprite} sprite 
+     * @param { Statement } state 
      * @param {PhBox} pbox 
      * @param {{x: number, y: number, z:number}} param2 
      */
-    constructor(sprite, pbox, {x, y, z=1}) {
-        super(sprite, {x, y, z})
-
-        this.pbox = pbox
+    constructor(state, prepareParams, {x, y, z=1}) {
+        super(state, prepareParams, {x, y, z=1})
 
         this.px = x
         this.py = y
         this.pz = z
         this.pw = 1
         this.ph = 1
+    }
+
+    /**
+     * 
+     * @param { Statement } state 
+     * @param {*} prepareParams 
+     */
+    prepare(state, prepareParams) {
+        super.prepare(state, prepareParams)
+
+        if(prepareParams.pbox) {
+            this.pbox = prepareParams.pbox
+        } else {
+            this.pbox = this.getPhysBox(state)
+        }  
+    }
+
+    /**
+     * 
+     * @param { Statement } state 
+     */
+    getPhysBox(state) {
+        return state.physics.createPhysicBox()
     }
 
     get px() {return this.pbox.x}
@@ -68,7 +133,7 @@ export class Block extends BackgroundBlock {
     /**
      * Synchronize physics box with sprite
      */
-    sync() {
+    syncSpriteWithBox() {
         this.sx = this.px
         this.sy = this.py
         this.sh = this.ph
