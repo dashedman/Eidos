@@ -5,6 +5,8 @@ import Sprite from "../graphics/sprites/base.js";
 import PhBox from './../physics/colliders/box.js';
 import Statement from "../statement.js";
 import { PrepareEntityError } from "../exceptions.js";
+import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
+import { SpriteMixins } from './../graphics/sprites/mixins';
 
 export class BackgroundBlock extends Entity {
     /**
@@ -31,7 +33,7 @@ export class BackgroundBlock extends Entity {
      * @param { Statement } state 
      * @param {*} param1 
      */
-    prepare(state, {texture, textureData}) {
+    prepare(state, {texture=null, textureData, role=DRAW_GROUND_PLAN.MAIN}) {
         if (!texture && textureData){
             texture = state.render.textureManager.getByName(textureData.name)
 
@@ -58,10 +60,10 @@ export class BackgroundBlock extends Entity {
         if( texture ){
             if(texture.frameNumber > 1) mixins.push(SpriteMixins.iAnimated)
         } else {
-            throw new PrepareEntityError()
+            throw new PrepareEntityError('Texture didn\'t found')
         }
 
-        this.sprite = this._state.render.createSprite({
+        this.sprite = state.render.createSprite({
             texture: texture, 
             mixins: mixins
         }, role)
@@ -83,12 +85,12 @@ export class BackgroundBlock extends Entity {
 export class Block extends BackgroundBlock {
     /**
      * 
-     * @param { Statement } state 
-     * @param {PhBox} pbox 
+     * @param { Statement } state
+     * @param {*} prepareParams
      * @param {{x: number, y: number, z:number}} param2 
      */
     constructor(state, prepareParams, {x, y, z=1}) {
-        super(state, prepareParams, {x, y, z=1})
+        super(state, prepareParams, {x, y, z})
 
         this.px = x
         this.py = y
@@ -144,13 +146,14 @@ export class Block extends BackgroundBlock {
 export class Decoration extends BackgroundBlock {
     /**
      * 
-     * @param {Sprite} sprite 
+     * @param { Statement } state
+     * @param {*} prepareParams
      * @param {{x: number, y: number, z:number, width: number, height:number}} param1 
      */
-    constructor(sprite, {x, y, z=1, width, height}) {
-        super(sprite, {x, y, z})
+    constructor(state, prepareParams, {x, y, z=1, width, height}) {
+        super(state, prepareParams, {x, y, z})
 
-        this.sw = width,
+        this.sw = width
         this.sh = height
     }
 }
@@ -158,12 +161,12 @@ export class Decoration extends BackgroundBlock {
 export class Square extends Block {
     /**
      * 
-     * @param {Sprite} sprite 
-     * @param {PhBox} pbox 
+     * @param { Statement } state
+     * @param {*} prepareParams
      * @param {{x: number, y: number, z:number, w: number, h:number}} param2 
      */
-    constructor(sprite, pbox, {x, y, z=1, w=1, h=1}){
-        super(sprite, pbox, {x, y, z})
+    constructor(state, prepareParams, {x, y, z=1, w=1, h=1}){
+        super(state, prepareParams, {x, y, z})
 
         // set 
         this.w = w

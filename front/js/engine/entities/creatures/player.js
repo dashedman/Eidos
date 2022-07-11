@@ -11,8 +11,15 @@ import ModeSkinsList from './../skins/mode_skins_list';
 import StateSkin, { AlignInfo, ChangeBoxData } from './../skins/state_skin';
 
 export class Player extends User{
-    constructor(sprite, pbox, {x, y, z=1, w=1, h=1}, dispatcher) {
-        super(sprite, pbox, {x, y, z=1, w=1, h=1})
+    /**
+     * 
+     * @param { Statement } state
+     * @param {*} prepareParams
+     * @param {{x: number, y: number, z:number, w: number, h:number}} param2 
+     */
+    constructor(state, prepareParams, {x, y, z=1, w=1, h=1}, dispatcher) {
+        super(state, prepareParams, {x, y, z, w, h})
+
         /** @type { BaseCharacterMode } */
         this.mode = new TravelMode()
         /** @type { Commander } */

@@ -69,7 +69,7 @@ class Server:
 
         add_routers(self.http_handler, '/js', 10)
         add_routers(self.http_handler, '/css', 3)
-        add_routers(self.http_handler, '/resources', 3)
+        add_routers(self.http_handler, '/resources', 6)
         add_routers(self.http_handler, '/shaders', 3)
         self.http_app.add_websocket_route(self.ws_handler, '/ws', strict_slashes=True)
 
@@ -87,6 +87,9 @@ class Server:
 
     async def http_handler(self, request: Request, **__):
         dynamic_path = self.front_info.folder + unquote(request.path.replace('/', '\\'))
+        last_path = dynamic_path.split('\\')[-1]
+        if '.' not in last_path:
+            dynamic_path += '.js'
         return await sanic.response.file(dynamic_path)
 
     # async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):

@@ -1,7 +1,6 @@
 "use strict"
 
 import Statement from "../statement.js";
-import Dispatcher from './interactions';
 
 export default class Dispatcher {
     constructor(el) {

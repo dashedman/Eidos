@@ -96,7 +96,7 @@ export default class Statement {
         };
         this.frameId = requestAnimationFrame(renderFrame);
         this.prevTimeStamp = performance.now()
-        this.network.run()
+        // this.network.run()
         this.is_running = true
     }
     stop() {

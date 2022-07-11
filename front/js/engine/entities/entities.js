@@ -4,7 +4,7 @@ import { SpriteMixins } from "../graphics/sprites/mixins.js";
 import { Entity } from './base.js';
 import { BackgroundBlock, Block, Decoration } from './block.js';
 import { Location } from './location.js';
-import { Player } from './player.js';
+import { Player } from './creatures/player';
 import Statement from "../statement.js";
 import Texture from './../graphics/textures/base.js';
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
@@ -28,28 +28,13 @@ export default class Entities{
      * @param {Object} entityParams 
      * @returns 
      */
-    create(ClassOfEntity=Entity, texture, role=DRAW_GROUND_PLAN.MAIN, boxParams, prepareParams){
-        let mixins = []
-        if(texture.frameNumber > 1) mixins.push(SpriteMixins.iAnimated)
-    
+    create(ClassOfEntity=Entity, texture, role=DRAW_GROUND_PLAN.MAIN, boxParams, prepareParams={}){
         if(u.extendsfrom(ClassOfEntity, BackgroundBlock)){
-            let sprite = this._state.render.createSprite({
-                texture: texture, 
-                mixins: mixins
-            }, role)
-
-            if(u.extendsfrom(ClassOfEntity, Block)) {
-                let physBox;
-                if(u.extendsfrom(ClassOfEntity, Creature)) {
-                    physBox = this._state.physics.createInertedBox()
-                } else {
-                    physBox = this._state.physics.createPhysicBox()
-                }
-                return new ClassOfEntity(sprite, physBox, boxParams)
-            }
-            return new ClassOfEntity(sprite, boxParams)
+            prepareParams.texture = texture
+            prepareParams.role = role
         }
-        return new ClassOfEntity(boxParams)
+
+        return new ClassOfEntity(this._state, prepareParams, boxParams)
     }
     
     /**

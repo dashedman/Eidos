@@ -109,7 +109,7 @@ async function debugInit(state) {
     let red_pixel = state.render.createColorTexture("red", [255, 0, 0, 255], 1, 1)
     let greenMan = state.entities.create(User, green_pixel, DRAW_GROUND_PLAN.MAIN, {x: 0, y: 5, h: 1.5})
     let player = new Player(state, {x: 0, y: 5, h: 1.5})
-    state.logic.setPlayer(greenMan)
+    state.logic.setPlayer(player)
 }
 // start
 initGame()

@@ -2,6 +2,6 @@
 
 import { AbstractState } from "./abstract";
 
-export class BaseGuard extends AbstractStates {
+export class BaseGuard extends AbstractState {
 
 }
