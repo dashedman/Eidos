@@ -9,6 +9,7 @@ export class BaseCharacterState extends AbstractState {
      * @param {Character} character 
      */
     constructor(character) {
+        super()
         /**
          * @type {Character}
          */
@@ -45,7 +46,7 @@ export class StayingState extends BaseCharacterState {
     }
 
     updateByState() {
-        if(this.pbox.vx) this.pbox.vx = 0
+        if(this.character.pbox.vx) this.character.pbox.vx = 0
     }
 
     do(command) {

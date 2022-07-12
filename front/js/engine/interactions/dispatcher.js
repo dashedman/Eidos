@@ -83,7 +83,7 @@ export default class Dispatcher {
      */
     onKeyDown(event) {
         this.pressedKeys[event.keyCode] = true;
-        for(let callback in this.keyDownListeners[event.keyCode]) {
+        for(let callback of this.keyDownListeners[event.keyCode]) {
             callback()
         }
     }
@@ -93,7 +93,7 @@ export default class Dispatcher {
      */
     onKeyUp(event) {
         this.pressedKeys[event.keyCode] = false;
-        for(let callback in this.keyUpListeners[event.keyCode]) {
+        for(let callback of this.keyUpListeners[event.keyCode]) {
             callback()
         }
     }

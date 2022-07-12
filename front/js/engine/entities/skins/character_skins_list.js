@@ -4,6 +4,8 @@ import ModeSkinsList from './mode_skins_list';
 
 export default class CharacterSkinsList extends BaseSkinsList {
     constructor(state = null) {
+        super()
+        
         /** @type {Map<typeof BaseCharacterMode, ModeSkinsList>} */
         this.skinsMap = new Map()
         this.state = state

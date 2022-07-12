@@ -52,14 +52,6 @@ class GameApplication:
         while True:
             await asyncio.sleep(0.1)
 
-            users_to_del = []
-            for key, user in self.user_sessions.items():
-                if user.websocket.connection.state == websockets.server.State.CLOSED:
-                    users_to_del.append(key)
-
-            if users_to_del:
-                for key in users_to_del:
-                    del self.user_sessions[key]
             # send positions to all users
             positions = [
                 {
@@ -76,7 +68,12 @@ class GameApplication:
             }
             data = json.dumps(position_data)
             await asyncio.gather(*(
-                us.send(data) for us in self.user_sessions.values()
+                self.safe_send(ws_key, user, data)
+                for ws_key, user in self.user_sessions.items()
             ))
 
-
+    async def safe_send(self, key, user, data):
+        try:
+            await user.send(data)
+        except websockets.ConnectionClosedOK:
+            del self.user_sessions[key]

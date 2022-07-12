@@ -18,11 +18,11 @@ export default class Network extends EngineNetwork {
         this.world = world
     }
 
-    async prepare({ws_host}) {
+    async prepare({ws_host, ws_port}) {
         await super.prepare()
         await this.logic.getPrepareIndicator()
 
-        let url = `wss://${ws_host}/ws`
+        let url = `ws://${ws_host}:${ws_port}/ws`
         console.debug('Create websocket by url:', url)
         this.socket = new WebSocket(url)
         this.socket.onclose = this.sock_close_handler.bind(this)

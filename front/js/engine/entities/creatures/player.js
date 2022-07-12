@@ -11,6 +11,7 @@ import ModeSkinsList from './../skins/mode_skins_list';
 import StateSkin, { AlignInfo, ChangeBoxData } from './../skins/state_skin';
 import Statement from "../../statement";
 import { SpriteMixins } from "../../graphics/sprites/mixins";
+import { DRAW_GROUND_PLAN } from "../../graphics/constants";
 
 export class Player extends User{
     /**
@@ -21,19 +22,18 @@ export class Player extends User{
      */
     constructor(state, prepareParams, {x, y, z=1, w=1, h=1}, dispatcher) {
         super(state, prepareParams, {x, y, z, w, h})
+        /** @type { CharacterSkinsList } */
+        this.skinsSources = this.prepareSkinsSources()
 
         /** @type { BaseCharacterMode } */
-        this.mode = new TravelMode()
+        this.mode = new TravelMode(this)
         /** @type { Commander } */
         this.commander = new Commander(this, dispatcher)
         /** @type { Boolean[] } */
         this.commandsFlags = new Array(16)
         this.commandsFlags.fill(false)
 
-        /** @type { CharacterSkinsList } */
-        this.skinsSources = this.prepareSkinsSources()
-        this.changeState(this.mode.state)
-
+        this.changeState(StayingState)
         this.ACCELERATION = 1
         this.MAX_SPEED = 10
     }
@@ -43,12 +43,14 @@ export class Player extends User{
      * @param {*} param1 
      */
     prepare(state, {role=DRAW_GROUND_PLAN.MAIN}) {
-        let texture = state.render.textureManager.plugs
+        let texture = state.render.textureManager.plug
 
         this.sprite = state.render.createSprite({
             texture: texture,
             mixins: [SpriteMixins.iAnimated]
         }, role)
+
+        this.pbox = this.getPhysBox(state)
     }
 
     do(command) {
@@ -68,6 +70,7 @@ export class Player extends User{
         const is_changed = this.mode.changeState(state_cls)
         if(is_changed) {
             let state_skin = this.skinsSources.get(this.mode.constructor).get(state_cls)
+            console.log(state_skin)
             state_skin.adaptPhysicBox(this.pbox)
             this.sprite.setTexture(state_skin.getTexture())
             this.syncSpriteWithBox()
@@ -97,13 +100,13 @@ export class Player extends User{
         let travel_mode_skins = new ModeSkinsList()
 
         // TODO: more automatisation
-        travel_mode_skins.set(StayingState, new StateSkin({texture: 'player_staying', box: new ChangeBoxData(
+        travel_mode_skins.set(StayingState, new StateSkin({texture_name: 'player_staying', box: new ChangeBoxData(
             1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
         )}))
-        travel_mode_skins.set(MovingRightState, new StateSkin({texture: 'player_moving', box: new ChangeBoxData(
+        travel_mode_skins.set(MovingRightState, new StateSkin({texture_name: 'player_moving', box: new ChangeBoxData(
             1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
         )}))
-        travel_mode_skins.set(MovingLeftState, new StateSkin({texture: 'player_moving', box: new ChangeBoxData(
+        travel_mode_skins.set(MovingLeftState, new StateSkin({texture_name: 'player_moving', box: new ChangeBoxData(
             1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
         )}))
 

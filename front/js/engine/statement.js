@@ -81,7 +81,6 @@ export default class Statement {
             return
         }
         let renderFrame = (timeStamp) => {
-            console.log('loop')
             // calc timeDelta in seconds
             const timeDelta = (timeStamp - this.prevTimeStamp) / 1000
 

@@ -9,6 +9,7 @@ export class BaseCharacterMode extends AbstractState {
      * @param {Character} character 
      */
      constructor(character) {
+        super()
         /**
          * @type {Character}
          */
@@ -38,7 +39,7 @@ export class TravelMode extends BaseCharacterMode {
         super(character)
 
         /** @type { BaseCharacterState } */
-        this.state = new StayingState()
+        this.state = null
     }
 
     do(command) {

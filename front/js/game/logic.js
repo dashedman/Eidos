@@ -111,7 +111,6 @@ export default class Logic extends EngineLogic {
      * @param {Number} deltaTimeSec - time difference between previous and current ticks in seconds
      */
     update(deltaTimeSec) {
-        console.log('logic update')
         this.player.update(deltaTimeSec)
         // this.updateControl(deltaTimeSec)
     }

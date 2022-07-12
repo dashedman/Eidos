@@ -18,7 +18,8 @@ export default class Sprite {
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, w:0, h:0}
-
+        
+        this.texture = null
         this.waitInit = this.setTexture(texture)
         // add mixins
         Object.assign(this, ...mixins)

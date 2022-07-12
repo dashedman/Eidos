@@ -5,9 +5,6 @@ from dataclasses import dataclass
 import websockets.server
 import websockets.connection
 
-import sanic.server.protocols.websocket_protocol
-from sanic.exceptions import WebsocketClosed
-
 from .session import SessionInfo
 
 
@@ -21,7 +18,7 @@ class UserCoords:
 
 
 class User:
-    websocket: sanic.server.protocols.websocket_protocol.WebsocketImplProtocol
+    websocket: websockets.server.WebSocketServerProtocol
 
     def __init__(self, session: SessionInfo, name: str, websocket):
         self.session = session
@@ -43,7 +40,5 @@ class User:
                 self.coords.y = data['y']
 
     async def send(self, data: str):
-        try:
-            await self.websocket.send(data)
-        except WebsocketClosed:
-            return
+        await self.websocket.send(data)
+

@@ -4,7 +4,7 @@ import TextureManager from '../engine/graphics/textures/manager';
 /**
  * @param { TextureManager } textureManager 
  */
-function loadGameTextures(textureManager) {
+export function loadGameTextures(textureManager) {
     let metaData = getTexturesMetaData()
     for(let texture_data of metaData) {
         textureManager.createTexture(

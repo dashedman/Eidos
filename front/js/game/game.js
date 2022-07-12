@@ -10,6 +10,7 @@ import { DRAW_GROUND_PLAN } from "../engine/graphics/constants.js"
 import User from "../engine/entities/creatures/user.js"
 import Network from "./network.js"
 import { Player } from './../engine/entities/creatures/player';
+import { loadGameTextures } from './game_data';
 let utils = engine.utils.autils
 
 
@@ -90,10 +91,12 @@ async function initGame(){
             layers: mapConfig.layers,
         },
         network_config: {
-            ws_host: window.location.host,
-            ws_port: 8000
+            ws_host: document.domain,
+            ws_port: 8001
         }
     })
+
+    loadGameTextures(state.render.textureManager)
 
     let player = new Player(state, {}, {x: 0, y: 5, h: 1.5}, state.dispatcher)
     state.logic.setPlayer(player)
