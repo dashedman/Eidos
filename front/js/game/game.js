@@ -17,7 +17,7 @@ let utils = engine.utils.autils
 async function initGame(){
     console.log("Game started...")
     let canvas = document.getElementById("viewport");
-    let debugMode = false
+    let debugMode = true
     let world = new World()
 
     let dispatcher = new engine.Dispatcher(document)
@@ -92,7 +92,7 @@ async function initGame(){
         },
         network_config: {
             ws_host: document.domain,
-            ws_port: 8001
+            ws_port: 8000
         }
     })
 
@@ -114,7 +114,6 @@ async function debugInit(state) {
     let green_pixel = state.render.createColorTexture("green", [0, 128, 0, 255], 1, 1)
     let yellow_pixel = state.render.createColorTexture("yellow", [128, 128, 0, 255], 1, 1)
     let red_pixel = state.render.createColorTexture("red", [255, 0, 0, 255], 1, 1)
-    let greenMan = state.entities.create(User, green_pixel, DRAW_GROUND_PLAN.MAIN, {x: 0, y: 5, h: 1.5})
     console.debug('End debug init')
 }
 // start

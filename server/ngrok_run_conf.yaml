@@ -1,0 +1,10 @@
+tunnels:
+  site:
+    proto: http
+    addr: 8000
+    hostname: eidos.ngrok.io
+  websocket_game:
+    proto: http
+    addr: 8001
+    inspect: false
+    hostname: eidos.ngrok.io

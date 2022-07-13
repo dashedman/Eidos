@@ -23,6 +23,12 @@ export class BaseCharacterState extends AbstractState {
         return this.character.changeState(state_cls)
     }
 
+    onStart() {}
+    onFinish() {}
+
+    do() {}
+    undo() {}
+
     update(timedelta) {
         this.updateByPhysic(timedelta) ||
         this.updateByEnviroment(timedelta) ||
@@ -55,6 +61,8 @@ export class StayingState extends BaseCharacterState {
                 return this.changeState(MovingLeftState)
             case Character.commands.MOVE_RIGHT:
                 return this.changeState(MovingRightState)
+            case Character.commands.JUMP:
+                return this.changeState(JumpingState)
         }
     }
 }
@@ -65,6 +73,13 @@ export class MovingState extends BaseCharacterState {
             return this.changeState(FallingState)
         } else if(this.character.pbox.vy > 0) {
             return this.changeState(JumpingState)
+        }
+    }
+
+    do(command) {
+        switch(command) {
+            case Character.commands.JUMP:
+                return this.changeState(JumpingState)
         }
     }
 
@@ -95,16 +110,24 @@ export class MovingRightState extends MovingState {
 }
 
 export class JumpingState extends BaseCharacterState {
+    onStart() {
+        this.character.pbox.vy += this.character.JUMP_START_SPEED
+    }
     updateByPhysic() {
         if(this.character.pbox.vy < 0) {
             return this.changeState(FallingState)
         } else if(this.character.pbox.vy == 0) {
-            return this.changeState(StayingState)
+            if(this.character.pbox.vx < 0)
+                return this.changeState(MovingLeftState)
+            else if (this.character.pbox.vx > 0)
+                return this.changeState(MovingRightState)
+            else
+                return this.changeState(StayingState)
         }
     }
 }
 
-class FallingState extends BaseCharacterState {
+export class FallingState extends BaseCharacterState {
     updateByPhysic() {
         if(this.character.pbox.vy > 0) {
             return this.changeState(JumpingState)
@@ -114,11 +137,11 @@ class FallingState extends BaseCharacterState {
     }
 }
 
-class RollingState extends BaseCharacterState {
+export class RollingState extends BaseCharacterState {
     
 }
 
-class WallowState extends BaseCharacterState {
+export class WallowState extends BaseCharacterState {
     updateByPhysic() {
         if(this.character.pbox.vy < 0) {
             return this.changeState(FallingState)

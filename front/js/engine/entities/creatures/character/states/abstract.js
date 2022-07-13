@@ -27,6 +27,20 @@ export class AbstractState {
     update() {
         throw new AbstractMethodError()
     }
+
+    /**
+     * @abstract
+     */
+    onStart() {
+        throw new AbstractMethodError()
+    }
+
+    /**
+     * @abstract
+     */
+    onFinish() {
+        throw new AbstractMethodError()
+    }
 }
 
 export class IStated {

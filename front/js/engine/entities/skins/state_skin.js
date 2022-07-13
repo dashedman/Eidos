@@ -51,9 +51,6 @@ export default class StateSkin {
     }
 
     getTexture() {
-        console.log(this.data.texture_name, '->', this.state.render.textureManager.getByName(
-            this.data.texture_name
-        ))
         return this.state.render.textureManager.getByName(
             this.data.texture_name
         )

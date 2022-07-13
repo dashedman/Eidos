@@ -3,7 +3,7 @@
 import User from "./user";
 import Commander from './character/commander/base';
 import { BattleMode, TravelMode } from "./character/states/modes";
-import { MovingLeftState, MovingRightState, StayingState } from "./character/states/states";
+import { MovingLeftState, MovingRightState, StayingState, FallingState } from "./character/states/states";
 import Map2D from './../../utils/map2d';
 import CharacterSkinsList from './../skins/character_skins_list';
 import Character from './character/character';
@@ -34,8 +34,9 @@ export class Player extends User{
         this.commandsFlags.fill(false)
 
         this.changeState(StayingState)
-        this.ACCELERATION = 1
-        this.MAX_SPEED = 10
+        this.ACCELERATION = 10
+        this.MAX_SPEED = 15
+        this.JUMP_START_SPEED = 6
     }
 
     /**
@@ -73,9 +74,15 @@ export class Player extends User{
     changeState(state_cls) {
         const is_changed = this.mode.changeState(state_cls)
         if(is_changed) {
+            console.log(state_cls.name)
             let state_skin = this.skinsSources.get(this.mode.constructor).get(state_cls)
+            if(!state_skin) return
+
             state_skin.adaptPhysicBox(this.pbox)
             this.sprite.setTexture(state_skin.getTexture())
+                .then(() => {
+                    this.sprite.initAnimation()
+                })
             this.syncSpriteWithBox()
         }
     }
@@ -110,6 +117,12 @@ export class Player extends User{
             1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
         )}))
         travel_mode_skins.set(MovingLeftState, new StateSkin({texture_name: 'player_moving', box: new ChangeBoxData(
+            1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
+        )}))
+        travel_mode_skins.set(FallingState, new StateSkin({texture_name: 'player_staying', box: new ChangeBoxData(
+            1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
+        )}))
+        travel_mode_skins.set(FallingState, new StateSkin({texture_name: 'player_jumping', box: new ChangeBoxData(
             1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
         )}))
 

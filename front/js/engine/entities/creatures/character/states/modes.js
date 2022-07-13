@@ -39,7 +39,7 @@ export class TravelMode extends BaseCharacterMode {
         super(character)
 
         /** @type { BaseCharacterState } */
-        this.state = null
+        this.state = new BaseCharacterState(this.character)
     }
 
     do(command) {
@@ -54,7 +54,9 @@ export class TravelMode extends BaseCharacterMode {
      * @param { typeof BaseCharacterState } state_cls
      */
     changeState(state_cls) {
+        this.state.onFinish()
         this.state = new state_cls(this.character)
+        this.state.onStart()
         return true
     }
 

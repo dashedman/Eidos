@@ -70,18 +70,22 @@ class Server:
         add_routers(self.http_handler, '/resources', 6)
         add_routers(self.http_handler, '/shaders', 3)
 
+        self.http_app.add_websocket_route(self.ws_handler, '/ws')
+
         conn_conf = self.config.connection
         self.http_server = await self.http_app.create_server(
             conn_conf.host, conn_conf.port,
-            return_asyncio_server=True)
+            return_asyncio_server=True,
+            ssl=[None]
+        )
 
-        self.ws_server = await websockets.serve(self.ws_handler, conn_conf.host, conn_conf.ws_port)
+        # self.ws_server = await websockets.serve(self.ws_handler, conn_conf.host, conn_conf.ws_port)
 
         await self.http_server.startup()
 
         await asyncio.gather(
             self.http_server.serve_forever(),
-            self.ws_server.serve_forever(),
+            # self.ws_server.serve_forever(),
             self.app.serve()
         )
 
@@ -100,7 +104,8 @@ class Server:
         
         return await sanic.response.file(dynamic_path, mime_type=mime_type)
 
-    async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):
+    # async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):
+    async def ws_handler(self, request, websocket):
         first_msg_json = await websocket.recv()
         session_info = SessionInfo.from_json(json.loads(first_msg_json))
         user = await self.app.register_session(session_info, websocket)

@@ -53,7 +53,7 @@ export default class Physics extends EnginePhysics {
      */
      processingVelocity(obj, deltaTimeSec) {
         obj.vx += (obj.ax) * deltaTimeSec
-        obj.vy += (obj.ay) * deltaTimeSec //  - Physics.G_FORCE
+        obj.vy += (obj.ay - Physics.G_FORCE) * deltaTimeSec 
         obj.x += obj.vx * deltaTimeSec
         obj.y += obj.vy * deltaTimeSec
     }
