@@ -29,7 +29,7 @@ export default class Sprite {
     }
     async setTexture(texture) {
         if(this.texture) {
-            this.release()
+            this.texture.removeFromTrace()
         }
 
         this.texture = texture;

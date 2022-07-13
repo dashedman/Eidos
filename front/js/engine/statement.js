@@ -75,7 +75,6 @@ export default class Statement {
         console.debug('Statement prepeared.')
     }
     run() {
-        console.log('run', this.logic.player)
         if(this.is_running) {
             console.warn('Loop already running')
             return
@@ -101,7 +100,6 @@ export default class Statement {
         this.is_running = true
     }
     stop() {
-        console.log(this.logic.player)
         if(this.is_running){
             clearTimeout(this.loop.id)
             cancelAnimationFrame(this.frameId)

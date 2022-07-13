@@ -54,11 +54,15 @@ export class Player extends User{
     }
 
     do(command) {
+        if(this.commandsFlags[command]) return 
+
         this.commandsFlags[command] = true
         this.mode.do(command)
     }
 
     undo(command) {
+        if(!this.commandsFlags[command]) return 
+        
         this.commandsFlags[command] = false
         this.mode.undo(command)
     }
@@ -70,7 +74,6 @@ export class Player extends User{
         const is_changed = this.mode.changeState(state_cls)
         if(is_changed) {
             let state_skin = this.skinsSources.get(this.mode.constructor).get(state_cls)
-            console.log(state_skin)
             state_skin.adaptPhysicBox(this.pbox)
             this.sprite.setTexture(state_skin.getTexture())
             this.syncSpriteWithBox()
