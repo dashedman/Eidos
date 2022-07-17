@@ -1,5 +1,5 @@
 "use strict"
-console.log('E')
+
 /**
  * @module
  */
@@ -9,6 +9,7 @@ import Network from "./network/network.js"
 import Physics from "./physics/physics.js"
 import Dispatcher from "./interactions/interactions.js"
 import Logic from "./logic.js"
+import Storage from "./storage/storage.js"
 import utils from "./utils/utils.js"
 import * as exceptions from "./exceptions.js"
 import Statement from "./statement.js"
@@ -20,6 +21,7 @@ export default {
     Physics,
     Dispatcher,
     Logic,
+    Storage,
     Statement,
     utils,
     exceptions
@@ -31,6 +33,7 @@ export {
     Physics,
     Dispatcher,
     Logic,
+    Storage,
     Statement,
     utils,
     exceptions

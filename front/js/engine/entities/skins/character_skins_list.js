@@ -19,4 +19,12 @@ export default class CharacterSkinsList extends BaseSkinsList {
     get(key) {
         return this.skinsMap.get(key)
     }
+
+    bindState(state) {
+        this.state = state
+        
+        for(let skin of this.skinsMap.values()) {
+            skin.bindState(this.state)
+        }
+    }
 }

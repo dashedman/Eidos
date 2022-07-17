@@ -1,16 +1,14 @@
 "use strict"
-console.log('GM')
+
 import engine from "../engine/engine.js"
 import Statement from "../engine/statement.js"
 import World from "../engine/entities/enviroment/world.js"
 import Physics from "./physic.js"
 import Logic from "./logic.js"
 import Renderer from './render.js'
-import { DRAW_GROUND_PLAN } from "../engine/graphics/constants.js"
-import User from "../engine/entities/creatures/user.js"
-import Network from "./network.js"
+import Storage from "./storage.js"
 import { Player } from './../engine/entities/creatures/player';
-import { loadGameTextures } from './game_data';
+import { loadGame } from './data/init';
 let utils = engine.utils.autils
 
 
@@ -24,13 +22,16 @@ async function initGame(){
     let renderer = new Renderer(canvas, debugMode)
     let physics = new Physics(world, debugMode)
     let logic = new Logic(world, debugMode)
-    let network = new Network(logic, world, debugMode)
+    let network = new engine.Network(logic, world, debugMode)
+    let storage = new Storage(debugMode)
+    // let network = new Network(logic, world, debugMode)
     let entities = new engine.Entities()
 
     let state = window.state = new engine.Statement(
         dispatcher, renderer,
         physics, logic,
-        network, entities
+        network, entities,
+        storage
     )
     state.setLoopDelay(0.01)
     world.state = state
@@ -96,7 +97,7 @@ async function initGame(){
         }
     })
 
-    loadGameTextures(state.render.textureManager)
+    state.storage.skinsList = loadGame(state)
 
     let player = new Player(state, {}, {x: 0, y: 5, h: 1.5}, state.dispatcher)
     state.logic.setPlayer(player)

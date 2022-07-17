@@ -26,4 +26,5 @@ export const SpriteMixins = {
             this.animationTime = time
         },
     },
+
 }

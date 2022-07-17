@@ -132,7 +132,12 @@ export class FallingState extends BaseCharacterState {
         if(this.character.pbox.vy > 0) {
             return this.changeState(JumpingState)
         } else if(this.character.pbox.vy == 0) {
-            return this.changeState(StayingState)
+            if(this.character.commandsFlags[Character.commands.MOVE_LEFT])
+                return this.changeState(MovingLeftState)
+            else if (this.character.commandsFlags[Character.commands.MOVE_RIGHT])
+                return this.changeState(MovingRightState)
+            else
+                return this.changeState(StayingState)
         }
     }
 }

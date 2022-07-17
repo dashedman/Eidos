@@ -19,6 +19,9 @@ class Network {
     async prepare() {
         console.debug('Preparing Network...')
     }
+
+    run() {}
+    stop() {}
 }
 
 

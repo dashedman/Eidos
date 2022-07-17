@@ -24,6 +24,7 @@ from .session import SessionInfo
 class FrontendInfo:
     folder: str
     index: str
+    favicon: str
     resources: str
     js: str
     css: str
@@ -46,6 +47,7 @@ class Server:
         self.front_info = FrontendInfo(
             self.config.path_to_front,
             os.path.join(self.config.path_to_front, 'index.html'),
+            os.path.join(self.config.path_to_front, 'favicon.ico'),
             os.path.join(self.config.path_to_front, 'resources'),
             os.path.join(self.config.path_to_front, 'js'),
             os.path.join(self.config.path_to_front, 'css'),
@@ -58,6 +60,7 @@ class Server:
         self.loop = asyncio.get_running_loop()
         # add handler to route
         self.http_app.static("/", self.front_info.index)
+        self.http_app.static("/favicon.ico", self.front_info.favicon)
 
         def add_routers(handler, suffix, depth=1):
             uri = suffix
@@ -76,7 +79,6 @@ class Server:
         self.http_server = await self.http_app.create_server(
             conn_conf.host, conn_conf.port,
             return_asyncio_server=True,
-            ssl=[None]
         )
 
         # self.ws_server = await websockets.serve(self.ws_handler, conn_conf.host, conn_conf.ws_port)
@@ -99,6 +101,10 @@ class Server:
             mime_type = 'text/javascript'
         elif dynamic_path.endswith('.css'):
             mime_type = 'text/css'
+        elif dynamic_path.endswith('.ico'):
+            mime_type = 'image/x-icon'
+        elif dynamic_path.endswith('.png'):
+            mime_type = 'image/png'
         else:
             mime_type = 'text/plain'
         

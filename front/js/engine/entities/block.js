@@ -2,7 +2,6 @@
 
 import { Entity } from "./base.js";
 import Sprite from "../graphics/sprites/base.js";
-import PhBox from './../physics/colliders/box.js';
 import Statement from "../statement.js";
 import { PrepareEntityError } from "../exceptions.js";
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";

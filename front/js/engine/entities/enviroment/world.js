@@ -98,10 +98,10 @@ export default class World {
                         texture, 
                         groundPlan,
                         {
-                            x: obj.x/32,
-                            y: -obj.y/32,
-                            width: obj.width/32,
-                            height: obj.height/32,
+                            x: obj.x / this.state.PIXELS_MEASURE,
+                            y: -obj.y / this.state.PIXELS_MEASURE,
+                            width: obj.width / this.state.PIXELS_MEASURE,
+                            height: obj.height / this.state.PIXELS_MEASURE,
                         }
                     )
                     this.decorations.push(decoration)
@@ -109,10 +109,10 @@ export default class World {
                     const text_decoration = this.state.entities.createText(
                         obj.text.text,
                         {
-                            x: obj.x/32,
-                            y: -obj.y/32,
-                            width: obj.width/32,
-                            height: obj.height/32,
+                            x: obj.x / this.state.PIXELS_MEASURE,
+                            y: -obj.y / this.state.PIXELS_MEASURE,
+                            width: obj.width / this.state.PIXELS_MEASURE,
+                            height: obj.height / this.state.PIXELS_MEASURE,
                         },
                         groundPlan,
                     )

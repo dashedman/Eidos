@@ -5,6 +5,7 @@ import Network from './network/network.js'
 import Physics from './physics/physics.js'
 import Entities from './entities/entities.js'
 import Logic from './logic.js'
+import Storage from './storage/storage.js'
 
 import Camera from './utils/camera.js';
 import TimeManager from './utils/time.js'
@@ -17,6 +18,8 @@ import TimeManager from './utils/time.js'
 // ==========================================
 
 export default class Statement {
+    PIXELS_MEASURE = 32
+    
     /**
      * getting extended classes
      * 
@@ -26,8 +29,9 @@ export default class Statement {
      * @param {Logic} logic 
      * @param {Network} network 
      * @param {Entities} entities 
+     * @param {Storage} storage
      */
-    constructor(dispatcher, renderer, physics, logic, network, entities) {
+    constructor(dispatcher, renderer, physics, logic, network, entities, storage) {
         // id of the game loop to handle
         this.loop = {
             id: -1,
@@ -43,6 +47,7 @@ export default class Statement {
         this.physics = physics
         this.logic = logic
         this.entities = entities // array of entities
+        this.storage = storage
 
         this.dispatcher._state = this
         this.render._state = this
@@ -50,6 +55,7 @@ export default class Statement {
         this.physics._state = this
         this.logic._state = this
         this.entities._state = this
+        this.storage._state = this
 
         this.is_running = false
     }
@@ -74,6 +80,7 @@ export default class Statement {
         ])
         console.debug('Statement prepeared.')
     }
+
     run() {
         if(this.is_running) {
             console.warn('Loop already running')
@@ -99,6 +106,7 @@ export default class Statement {
         this.network.run()
         this.is_running = true
     }
+
     stop() {
         if(this.is_running){
             clearTimeout(this.loop.id)

@@ -3,15 +3,11 @@
 import User from "./user";
 import Commander from './character/commander/base';
 import { BattleMode, TravelMode } from "./character/states/modes";
-import { MovingLeftState, MovingRightState, StayingState, FallingState } from "./character/states/states";
-import Map2D from './../../utils/map2d';
 import CharacterSkinsList from './../skins/character_skins_list';
-import Character from './character/character';
-import ModeSkinsList from './../skins/mode_skins_list';
-import StateSkin, { AlignInfo, ChangeBoxData } from './../skins/state_skin';
 import Statement from "../../statement";
 import { SpriteMixins } from "../../graphics/sprites/mixins";
 import { DRAW_GROUND_PLAN } from "../../graphics/constants";
+import { StayingState } from "./character/states/states";
 
 export class Player extends User{
     /**
@@ -23,7 +19,7 @@ export class Player extends User{
     constructor(state, prepareParams, {x, y, z=1, w=1, h=1}, dispatcher) {
         super(state, prepareParams, {x, y, z, w, h})
         /** @type { CharacterSkinsList } */
-        this.skinsSources = this.prepareSkinsSources()
+        this.skinsSources = this.prepareSkinsSources(state)
 
         /** @type { BaseCharacterMode } */
         this.mode = new TravelMode(this)
@@ -100,36 +96,10 @@ export class Player extends User{
     }
 
     /**
-     * 
+     * @param { Statement } state
      * @returns { CharacterSkinsList }
      */
-    prepareSkinsSources() {
-        /**
-         * @type { [typeof BaseCharacterMode, [typeof BaseCharacterState, {texture: string, box: string}][]][] }
-         */
-        let travel_mode_skins = new ModeSkinsList()
-
-        // TODO: more automatisation
-        travel_mode_skins.set(StayingState, new StateSkin({texture_name: 'player_staying', box: new ChangeBoxData(
-            1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
-        )}))
-        travel_mode_skins.set(MovingRightState, new StateSkin({texture_name: 'player_moving', box: new ChangeBoxData(
-            1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
-        )}))
-        travel_mode_skins.set(MovingLeftState, new StateSkin({texture_name: 'player_moving', box: new ChangeBoxData(
-            1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
-        )}))
-        travel_mode_skins.set(FallingState, new StateSkin({texture_name: 'player_staying', box: new ChangeBoxData(
-            1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
-        )}))
-        travel_mode_skins.set(FallingState, new StateSkin({texture_name: 'player_jumping', box: new ChangeBoxData(
-            1, 1, 0, 0, new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
-        )}))
-
-        // TODO: remove global state
-        let character_skins = new CharacterSkinsList(state)
-        character_skins.set(TravelMode, travel_mode_skins)  
-
-        return character_skins
+    prepareSkinsSources(state) {
+        return state.storage.skinsList.get(this.constructor)
     }
 }

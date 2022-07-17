@@ -109,4 +109,3 @@ export default class SortingSpriteManager extends SpriteManager {
         this.sprites = newSprites
     }
 }
-console.log('SSM+')
