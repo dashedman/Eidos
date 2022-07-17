@@ -5,9 +5,9 @@ import Commander from './character/commander/base';
 import { BattleMode, TravelMode } from "./character/states/modes";
 import CharacterSkinsList from './../skins/character_skins_list';
 import Statement from "../../statement";
-import { SpriteMixins } from "../../graphics/sprites/mixins";
 import { DRAW_GROUND_PLAN } from "../../graphics/constants";
 import { StayingState } from "./character/states/states";
+import { EngineError } from "../../exceptions";
 
 export class Player extends User{
     /**
@@ -30,9 +30,10 @@ export class Player extends User{
         this.commandsFlags.fill(false)
 
         this.changeState(StayingState)
-        this.ACCELERATION = 10
-        this.MAX_SPEED = 15
-        this.JUMP_START_SPEED = 6
+        this.ACCELERATION = 15
+        this.MAX_SPEED = 9
+        this.JUMP_START_SPEED = 18
+        this.JUMP_ACCELERATION = this.ACCELERATION
     }
 
     /**
@@ -44,7 +45,7 @@ export class Player extends User{
 
         this.sprite = state.render.createSprite({
             texture: texture,
-            mixins: [SpriteMixins.iAnimated]
+            isAnimated: true,
         }, role)
 
         this.pbox = this.getPhysBox(state)
@@ -67,18 +68,34 @@ export class Player extends User{
     /**
      * @param { typeof BaseCharacterState } state_cls
      */
-    changeState(state_cls) {
-        const is_changed = this.mode.changeState(state_cls)
-        if(is_changed) {
-            console.log(state_cls.name)
+    changeState(state_cls, continueAnimation=false) {
+        console.log(state_cls.name)
+        this.mode.changeState(state_cls)
+        if(this.mode.state.constructor == state_cls) {
+
             let state_skin = this.skinsSources.get(this.mode.constructor).get(state_cls)
-            if(!state_skin) return
+            if(!state_skin) throw EngineError('StateSkin not found!')
 
             state_skin.adaptPhysicBox(this.pbox)
-            this.sprite.setTexture(state_skin.getTexture())
-                .then(() => {
-                    this.sprite.initAnimation()
-                })
+
+            const {reversed, loopMode, frameRate} = state_skin.getSpriteMeta()
+
+            this.sprite.setFrameRate(frameRate)
+            this.sprite.setLoopMode(loopMode)
+
+            this.sprite.setTexture(
+                state_skin.getTexture(),
+                reversed
+            ).then(() => {
+                const prevAnimFrame = this.sprite.currentFrame
+                this.sprite.initAnimation()
+                if(continueAnimation){
+                    this.sprite.currentFrame = prevAnimFrame
+                }
+                    
+            })
+            if(!continueAnimation) this.sprite.currentFrame = 0
+
             this.syncSpriteWithBox()
         }
     }

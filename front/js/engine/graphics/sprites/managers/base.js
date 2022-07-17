@@ -1,6 +1,7 @@
 "use strict"
 import { Renderer } from "../../render.js";
 import Sprite from "../base.js";
+import AnimatedSprite from './../animated';
 
 
 export default class SpriteManager {
@@ -19,6 +20,7 @@ export default class SpriteManager {
         const gl = render.gl
         this._render = render
         this.sprites = []
+        this.animatedSprites = []
 
         // buffer of position of verticles
         this.positionHandler = Object.assign({}, SpriteManager.handlerPattern, {offset: 3 * 6})
@@ -28,16 +30,19 @@ export default class SpriteManager {
         this.textureHandler._glBuffer = gl.createBuffer()
     }
 
-    createSprite({texture, mixins=[]}){
+    createSprite({texture, reversed=false, isAnimated=false}){
         let bufferIndexes = this.allocate()
-        let sprite = new Sprite(this, bufferIndexes, texture, ...mixins)
-        this.sprites.push(sprite)
-        return sprite
-    }
+        let sprite_cls = Sprite
+        if(isAnimated) {
+            sprite_cls = AnimatedSprite
+        }
 
-    async as_createSprite(texture, ...mixins){
-        let sprite = this.createSprite(texture, ...mixins)
-        await sprite.waitInit
+        let sprite = new sprite_cls(this, bufferIndexes, texture, reversed)
+        this.sprites.push(sprite)
+
+        if(isAnimated) {
+            this.animatedSprites.push(sprite)
+        }
         return sprite
     }
 
@@ -66,7 +71,6 @@ export default class SpriteManager {
     }
     release(spriteToDel) {
         let spriteToDelIndex = this.sprites.indexOf(spriteToDel)
-        console.log('[RELEASE]', spriteToDelIndex)
         if(spriteToDelIndex != -1){
             let indexes = spriteToDel._bufferIndexes
             // clear verticles
@@ -76,12 +80,18 @@ export default class SpriteManager {
 
             this.sprites.splice(spriteToDelIndex, 1)
 
+            // remove if animated sprite
+            const animIndex = this.animatedSprites.indexOf(spriteToDel);
+            if (animIndex > -1) {
+                this.animatedSprites.splice(animIndex, 1)
+            }
+
             for(let spriteIndex = spriteToDelIndex; spriteIndex < this.sprites.length; spriteIndex++){
                 let sprite = this.sprites[spriteIndex]
                 sprite._bufferIndexes.p = sprite._bufferIndexes.p - this.positionHandler.offset
                 sprite._bufferIndexes.t = sprite._bufferIndexes.t - this.textureHandler.offset
             }
-        }
+        }      
     }
 
     get vertCount(){

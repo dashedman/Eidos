@@ -23,6 +23,12 @@ class PrepareEntityError extends EngineError {
     }
 }
 
+class VoidAnimationFunction extends EngineError {
+    constructor(msg="Bad animation using!") {
+        super(msg)
+    }
+}
+
 export {
-    EngineError, NotImplementedError, AbstractMethodError, PrepareEntityError
+    EngineError, NotImplementedError, AbstractMethodError, PrepareEntityError, VoidAnimationFunction
 }

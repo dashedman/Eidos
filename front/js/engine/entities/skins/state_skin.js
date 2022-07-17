@@ -1,6 +1,7 @@
 import { NotImplementedError } from "../../exceptions"
 import PhBox from './../../physics/colliders/box';
 import Statement from "../../statement";
+import AnimatedSprite from './../../graphics/sprites/animated';
 
 export class AlignInfo {
     /**
@@ -34,12 +35,11 @@ export class ChangeBoxData {
 
 export default class StateSkin {
     /**
-     * @param {{texture_name: String, box: ChangeBoxData}} data 
+     * @param {{texture_name: String, box: ChangeBoxData, sprite_meta: {reversed?: boolean, loopMode: AnimatedSprite.LOOP_MODE, frameRate?: number}}} data 
      */
     constructor(data) {
         /** @type { Statement } */
         this.state = null
-        /** @type { ChangeBoxData } */
         this.data = data
     }
 
@@ -54,6 +54,10 @@ export default class StateSkin {
         return this.state.render.textureManager.getByName(
             this.data.texture_name
         )
+    }
+
+    getSpriteMeta() {
+        return this.data.sprite_meta
     }
 
     /**

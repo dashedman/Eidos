@@ -169,22 +169,15 @@ export class Renderer {
 	 * 
 	 * update all animations for animated sprites.
 	 */
-	updateAnimations(){
-		const time = performance.now()
-		for(const sprite of this.backgroundSpriteManager.sprites){
-			if(sprite.iAnimated){
-				sprite.doAnimation(time)
-			}
+	updateAnimations(timeDelta){
+		for(const sprite of this.backgroundSpriteManager.animatedSprites){
+			sprite.doAnimation(timeDelta)
 		}
-		for(const sprite of this.mainSpriteManager.sprites){
-			if(sprite.iAnimated){
-				sprite.doAnimation(time)
-			}
+		for(const sprite of this.mainSpriteManager.animatedSprites){
+			sprite.doAnimation(timeDelta)
 		}
-		for(const sprite of this.foregroundSpriteManager.sprites){
-			if(sprite.iAnimated){
-				sprite.doAnimation(time)
-			}
+		for(const sprite of this.foregroundSpriteManager.animatedSprites){
+			sprite.doAnimation(timeDelta)
 		}
 	}
 
@@ -394,14 +387,14 @@ export class Renderer {
 	 * @param {DRAW_GROUND_PLAN} role - role of sprite on scene. From enum DRAW_GROUND_PLAN.
 	 * @returns {Sprite} - created sprite.
 	 */
-	createSprite({texture, mixins=[]}, role=DRAW_GROUND_PLAN.MAIN){
+	createSprite({texture, isAnimated=false}, role=DRAW_GROUND_PLAN.MAIN){
 		switch (role) {
 			case DRAW_GROUND_PLAN.BACK:
-				return this.backgroundSpriteManager.createSprite({texture, mixins})
+				return this.backgroundSpriteManager.createSprite({texture, isAnimated})
 			case DRAW_GROUND_PLAN.MAIN:
-				return this.mainSpriteManager.createSprite({texture, mixins})
+				return this.mainSpriteManager.createSprite({texture, isAnimated})
 			case DRAW_GROUND_PLAN.FRONT:
-				return this.foregroundSpriteManager.createSprite({texture, mixins})
+				return this.foregroundSpriteManager.createSprite({texture, isAnimated})
 			default:
 				throw 'Undefined render type of sprite'
 		}

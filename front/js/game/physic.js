@@ -8,7 +8,7 @@ import GMath from "../engine/utils/glsl_math.js";
 import PhBox from './../engine/physics/colliders/box.js';
 
 export default class Physics extends EnginePhysics {
-    static G_FORCE = 9.8
+    static G_FORCE = 30
     /**
      * 
      * @param {World} world 

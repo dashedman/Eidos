@@ -1,2 +1,3 @@
-export default class BaseSkinsList {
-}
+'use strict'
+
+export default class BaseSkinsList {}

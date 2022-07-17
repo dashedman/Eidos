@@ -1,7 +1,7 @@
 "use strict"
 // Realize container for texture, with rect
 import Texture from '../textures/base.js';
-// import SpriteManager from './managers/base.js';
+import SpriteManager from './managers/base.js';
 // import SortingSpriteManager from './managers/sorting.js';
 
 export default class Sprite {
@@ -12,35 +12,42 @@ export default class Sprite {
      * @param { Texture } texture 
      * @param  {...any} mixins 
      */
-    constructor(manager, bufferIndexes, texture, ...mixins) {
+    constructor(manager, bufferIndexes, texture, reversed=false) {
         this._bufferIndexes = bufferIndexes;
+        /** @type { SpriteManager } */
         this._manager = manager;
 
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, w:0, h:0}
         
         this.texture = null
-        this.waitInit = this.setTexture(texture)
-        // add mixins
-        Object.assign(this, ...mixins)
+        this.waitInit = this.setTexture(texture, reversed)
 
         // z-sort
         //this._manager.requestZSorting()
     }
-    async setTexture(texture) {
+    async setTexture(texture, reversed=null) {
         if(this.texture) {
             this.texture.removeFromTrace()
         }
+        if(reversed !== null) this.reversed = reversed
 
         this.texture = texture;
         this.texture.addToTrace(this)
 
         await this.texture.loadState
         // texture coords
-        this.tx = 0
-        this.ty = 0
-        this.tw = this.texture.image.naturalWidth
-        this.th = this.texture.image.naturalHeight
+        if (reversed) {
+            this.tx = this.texture.image.naturalWidth
+            this.ty = 0
+            this.tw = -this.texture.image.naturalWidth
+            this.th = this.texture.image.naturalHeight
+        } else {
+            this.tx = 0
+            this.ty = 0
+            this.tw = this.texture.image.naturalWidth
+            this.th = this.texture.image.naturalHeight
+        }
     }
 
     forceUpdate(){

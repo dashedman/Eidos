@@ -5,7 +5,6 @@ import Sprite from "../graphics/sprites/base.js";
 import Statement from "../statement.js";
 import { PrepareEntityError } from "../exceptions.js";
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
-import { SpriteMixins } from './../graphics/sprites/mixins';
 
 export class BackgroundBlock extends Entity {
     /**
@@ -55,16 +54,13 @@ export class BackgroundBlock extends Entity {
             }
         }
         
-        let mixins = []
-        if( texture ){
-            if(texture.frameNumber > 1) mixins.push(SpriteMixins.iAnimated)
-        } else {
+        if( !texture ){
             throw new PrepareEntityError('Texture didn\'t found')
         }
 
         this.sprite = state.render.createSprite({
-            texture: texture, 
-            mixins: mixins
+            texture: texture,
+            isAnimated: texture.frameNumber > 1 
         }, role)
     }
 

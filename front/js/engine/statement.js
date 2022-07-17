@@ -87,15 +87,16 @@ export default class Statement {
             return
         }
         let renderFrame = (timeStamp) => {
-            // calc timeDelta in seconds
-            const timeDelta = (timeStamp - this.prevTimeStamp) / 1000
+
+            const rawTimeDelta = timeStamp - this.prevTimeStamp
+            const timeDelta = rawTimeDelta / 1000 // sec
 
             this.physics.update(timeDelta)
             this.logic.update(timeDelta)
             // Draw world
             this.render.update(timeDelta)
-            // TODO: rework animations
-            this.render.updateAnimations()
+
+            this.render.updateAnimations(rawTimeDelta)
             this.render.draw();
             // call next frame
             this.frameId = requestAnimationFrame(renderFrame);

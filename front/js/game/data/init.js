@@ -46,7 +46,8 @@ function loadSkins(state) {
                     char_state.cls, 
                     new StateSkin({
                         texture_name: char_state.texture_name, 
-                        box: box_data
+                        box: box_data,
+                        sprite_meta: char_state.sprite_meta
                     })
                 )
             }

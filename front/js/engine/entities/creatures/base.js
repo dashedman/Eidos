@@ -3,6 +3,7 @@
 import PhInertiaBox from "../../physics/colliders/inertia_box";
 import Statement from "../../statement.js";
 import { Square } from "../block.js";
+import AnimatedSprite from './../../graphics/sprites/animated';
 
 export default class Creature extends Square {
     /**
@@ -16,6 +17,8 @@ export default class Creature extends Square {
 
         /** @type { PhInertiaBox } */
         this.pbox
+        /** @type { AnimatedSprite } */
+        this.sprite
     }
 
     /**

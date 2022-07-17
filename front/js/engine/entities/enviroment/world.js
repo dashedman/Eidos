@@ -229,8 +229,9 @@ export default class World {
                 }
 
                 for(let gridX = startGridX; gridX != endGridX; gridX += dirX)
-                    for(let gridY = startGridY; gridY != endGridY; gridY += dirY)
+                    for(let gridY = startGridY; gridY != endGridY; gridY += dirY){
                         yield chunk.grid[gridX][gridY]
+                    }
             }
     }
 }

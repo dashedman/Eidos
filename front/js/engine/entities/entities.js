@@ -1,6 +1,5 @@
 "use strict"
 import enviroment from "./enviroment/enviroment.js";
-import { SpriteMixins } from "../graphics/sprites/mixins.js";
 import { Entity } from './base.js';
 import { BackgroundBlock, Block, Decoration } from './block.js';
 import { Location } from './location.js';
@@ -9,8 +8,6 @@ import Statement from "../statement.js";
 import Texture from './../graphics/textures/base.js';
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
 import u from "../utils/async_utils.js"
-import Creature from "./creatures/base.js";
-import TextBox from './../graphics/text/text.js';
 
 
 export default class Entities{

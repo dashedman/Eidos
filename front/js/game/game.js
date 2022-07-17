@@ -15,7 +15,8 @@ let utils = engine.utils.autils
 async function initGame(){
     console.log("Game started...")
     let canvas = document.getElementById("viewport");
-    let debugMode = true
+    let debugMode = false
+    // let debugMode = true
     let world = new World()
 
     let dispatcher = new engine.Dispatcher(document)
@@ -36,7 +37,7 @@ async function initGame(){
     state.setLoopDelay(0.01)
     world.state = state
 
-    let mapConfig = await utils.loadJsonResources('resources/super duper karta (4).json')
+    let mapConfig = await utils.loadJsonResources('resources/maps/polygon.json')
     await state.prepare({
         render_config: {
             tilesets: mapConfig.tilesets,
