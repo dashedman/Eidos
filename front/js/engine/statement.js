@@ -89,7 +89,7 @@ export default class Statement {
         let renderFrame = (timeStamp) => {
 
             const rawTimeDelta = timeStamp - this.prevTimeStamp
-            const timeDelta = rawTimeDelta / 1000 // sec
+            const timeDelta = rawTimeDelta / 3000 // sec
 
             this.physics.update(timeDelta)
             this.logic.update(timeDelta)

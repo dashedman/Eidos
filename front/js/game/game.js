@@ -15,7 +15,7 @@ let utils = engine.utils.autils
 async function initGame(){
     console.log("Game started...")
     let canvas = document.getElementById("viewport");
-    let debugMode = false
+    let debugMode = true
     // let debugMode = true
     let world = new World()
 

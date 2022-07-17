@@ -132,6 +132,6 @@ export function getPlayerTexturesData() {
         {name: 'player_jumping', src: 'resources/animations/characters/player/upMC.png', frameNumber: 9, frameOffset: 50},
         {name: 'player_falling', src: 'resources/animations/characters/player/MCfall2.png', frameNumber: 5, frameOffset: 50},
         {name: 'player_landing', src: 'resources/animations/characters/player/MCprizemlenie.png', frameNumber: 9, frameOffset: 50},
-        {name: 'player_directed_landing', src: 'resources/animations/characters/player/prizbegMC.png', frameNumber: 6, frameOffset: 50},
+        {name: 'player_directed_landing', src: 'resources/animations/characters/player/prizbegMC.png', frameNumber: 3, frameOffset: 50},
     ]
 }
