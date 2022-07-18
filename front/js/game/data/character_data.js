@@ -30,6 +30,7 @@ export function getPlayerSkinsMeta() {
                         sprite_meta: {
                             reversed: false,
                             loopMode: AnimatedSprite.LOOP_MODE.CYCLE,
+                            frameRate: 140
                         }
                     }, 
                     {
@@ -38,7 +39,8 @@ export function getPlayerSkinsMeta() {
                         pixel_box: [50, 50],
                         sprite_meta: {
                             reversed: true,
-                            loopMode: AnimatedSprite.LOOP_MODE.CYCLE
+                            loopMode: AnimatedSprite.LOOP_MODE.CYCLE,
+                            frameRate: 140
                         }
                     }, 
                     {
@@ -127,8 +129,8 @@ export function getPlayerSkinsMeta() {
 
 export function getPlayerTexturesData() {
     return [
-        {name: 'player_staying', src: 'resources/animations/characters/player/idleMC.png', frameNumber: 3, frameOffset: 50},
-        {name: 'player_moving', src: 'resources/animations/characters/player/runMC.png', frameNumber: 12, frameOffset: 50},
+        {name: 'player_staying', src: 'resources/animations/characters/player/idle.png', frameNumber: 3, frameOffset: 50},
+        {name: 'player_moving', src: 'resources/animations/characters/player/runMC.png', frameNumber: 6, frameOffset: 50},
         {name: 'player_jumping', src: 'resources/animations/characters/player/upMC.png', frameNumber: 9, frameOffset: 50},
         {name: 'player_falling', src: 'resources/animations/characters/player/MCfall2.png', frameNumber: 5, frameOffset: 50},
         {name: 'player_landing', src: 'resources/animations/characters/player/MCprizemlenie.png', frameNumber: 9, frameOffset: 50},

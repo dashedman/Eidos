@@ -19,6 +19,7 @@ import TimeManager from './utils/time.js'
 
 export default class Statement {
     PIXELS_MEASURE = 32
+    GAME_SPEED = 1
     
     /**
      * getting extended classes
@@ -88,8 +89,8 @@ export default class Statement {
         }
         let renderFrame = (timeStamp) => {
 
-            const rawTimeDelta = timeStamp - this.prevTimeStamp
-            const timeDelta = rawTimeDelta / 3000 // sec
+            const rawTimeDelta = (timeStamp - this.prevTimeStamp) * this.GAME_SPEED
+            const timeDelta = rawTimeDelta / 1000 // sec
 
             this.physics.update(timeDelta)
             this.logic.update(timeDelta)

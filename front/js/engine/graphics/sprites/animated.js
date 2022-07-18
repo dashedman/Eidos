@@ -94,7 +94,6 @@ AnimatedSprite.FUNCTIONS = {
         },
         // ONCE
         function (timeDelta){
-            console.log(this.currentFrame)
             this.currentFrame = Math.min(
                 this.currentFrame + timeDelta / this.animationFrameRate,
                 this.texture.frameNumber - 1
