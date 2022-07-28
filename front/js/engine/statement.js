@@ -39,6 +39,7 @@ export default class Statement {
             interval: 60
         }
         this.time = new TimeManager()
+        this.agregatedDelta = 0
 
         this.camera = new Camera()
 
@@ -90,13 +91,20 @@ export default class Statement {
         let renderFrame = (timeStamp) => {
 
             const rawTimeDelta = (timeStamp - this.prevTimeStamp) * this.GAME_SPEED
-            const timeDelta = rawTimeDelta / 1000 // sec
+            const timeDelta = rawTimeDelta * 0.001 // sec
 
-            this.physics.update(timeDelta)
+            // 20 ticks per sec
+            // this.agregatedDelta += timeDelta
+            // if(this.agregatedDelta >= 0.05) {
+            //     this.logic.update(this.agregatedDelta)
+            //     this.physics.update(this.agregatedDelta)
+            //     this.agregatedDelta = 0
+            // }
             this.logic.update(timeDelta)
+            this.physics.update(timeDelta)
+            
             // Draw world
             this.render.update(timeDelta)
-
             this.render.updateAnimations(rawTimeDelta)
             this.render.draw();
             // call next frame

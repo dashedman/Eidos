@@ -19,6 +19,9 @@ export default class Creature extends Square {
         this.pbox
         /** @type { AnimatedSprite } */
         this.sprite
+
+        /** @type { -1 | 1 } */
+        this.direction = 1
     }
 
     /**

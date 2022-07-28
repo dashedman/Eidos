@@ -16,10 +16,10 @@ export default class Commander {
 
     plugInDispatcher() {
         const command_relations = [
-            [Dispatcher.KEY.A, Character.commands.MOVE_LEFT],
-            [Dispatcher.KEY.D, Character.commands.MOVE_RIGHT],
+            [Dispatcher.KEY.A, Commander.cs.MOVE_LEFT],
+            [Dispatcher.KEY.D, Commander.cs.MOVE_RIGHT],
             
-            [Dispatcher.KEY.SPACE, Character.commands.JUMP],
+            [Dispatcher.KEY.SPACE, Commander.cs.JUMP],
         ]
 
         for(const [key, command] of command_relations){
@@ -31,4 +31,20 @@ export default class Commander {
             })
         }
     }
+
+    /**
+     * Enum for common colors.
+     * @readonly
+     * @enum {Number}
+     */
+    static commands = {
+        STAY: 0,
+        MOVE_LEFT: 1,
+        MOVE_RIGHT: 2,
+        JUMP: 3,
+        CHANGE_MODE: 4,
+        ATTACK: 5,
+        CHANGE_GUARD: 8,
+    }
+    static cs = Commander.commands   // alias
 }

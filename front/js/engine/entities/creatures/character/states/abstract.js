@@ -7,7 +7,7 @@ import Character from "../character";
 export class AbstractState {
     /**
      * @abstract
-     * @param { Character.commands } command 
+     * @param { Commander.commands } command 
      */
     do(command) {
         throw new AbstractMethodError()
@@ -15,7 +15,7 @@ export class AbstractState {
 
     /**
      * @abstract
-     * @param { Character.commands } command 
+     * @param { Commander.commands } command 
      */
     undo(command) {
         throw new AbstractMethodError()

@@ -19,27 +19,12 @@ export default class Character extends Creature {
     }
 
     /**
-     * @param {Character.commands} command
+     * @param {Commander.commands} command
      */
     do(command) {}
 
     /**
-     * @param {Character.commands} command
+     * @param {Commander.commands} command
      */
     undo(command) {}
-}
-
-/**
- * Enum for common colors.
- * @readonly
- * @enum {Number}
- */
-Character.commands = {
-    STAY: 0,
-    MOVE_LEFT: 1,
-    MOVE_RIGHT: 2,
-    JUMP: 3,
-    CHANGE_MODE: 4,
-    ATTACK: 5,
-    CHANGE_GUARD: 8,
 }

@@ -18,17 +18,18 @@ export default class Physics extends EnginePhysics {
         super(debugMode)
 
         this.world = world
+        this.agregatedDelta = 0
     }
 
     /**
      * @param {Number} deltaTime - time difference between previous and current ticks in milliseconds
      */
     update(deltaTimeSec) {
-        const chunkSize = this.world.settings.chunkSize
         // add moves
         // calc collision
         for(let collider of this.inertedColliders) {
             this.processingVelocity(collider, deltaTimeSec)
+
             if(collider.vx == 0 && collider.vy == 0) continue
             const [pX, pY] = GMath.normalize([collider.vx, collider.vy])
             // check grid

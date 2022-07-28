@@ -9,7 +9,7 @@ import { DRAW_GROUND_PLAN } from "../../graphics/constants";
 import { StayingState } from "./character/states/states";
 import { EngineError } from "../../exceptions";
 
-export class Player extends User{
+export class Player extends User {
     /**
      * 
      * @param { Statement } state
@@ -26,12 +26,12 @@ export class Player extends User{
         /** @type { Commander } */
         this.commander = new Commander(this, dispatcher)
         /** @type { Boolean[] } */
-        this.commandsFlags = new Array(16)
+        this.commandsFlags = this.cf = new Array(16)
         this.commandsFlags.fill(false)
 
         this.changeState(StayingState)
         this.ACCELERATION = 15
-        this.MAX_SPEED = 9
+        this.MAX_SPEED = 10
         this.JUMP_START_SPEED = 18
         this.JUMP_ACCELERATION = this.ACCELERATION
     }
@@ -52,24 +52,30 @@ export class Player extends User{
     }
 
     do(command) {
-        if(this.commandsFlags[command]) return 
+        // if(this.commandsFlags[command]) return 
 
         this.commandsFlags[command] = true
-        this.mode.do(command)
+        // this.mode.do(command)
     }
 
     undo(command) {
-        if(!this.commandsFlags[command]) return 
-        
+        // if(!this.commandsFlags[command]) return 
+
         this.commandsFlags[command] = false
-        this.mode.undo(command)
+        // this.mode.undo(command)
     }
 
     /**
      * @param { typeof BaseCharacterState } state_cls
+     * @param { ?(-1 | 1) } direction
+     * @param { boolean } continueAnimation
      */
-    changeState(state_cls, continueAnimation=false) {
-        console.log(state_cls.name)
+    changeState(state_cls, direction=null, continueAnimation=false) {
+        if(direction !== null) {
+            this.direction = direction
+        }
+        console.log(state_cls.name, this.direction > 0 ? 'right' : 'left')
+
         this.mode.changeState(state_cls)
         if(this.mode.state.constructor == state_cls) {
 
@@ -78,7 +84,8 @@ export class Player extends User{
 
             state_skin.adaptPhysicBox(this.pbox)
 
-            const {reversed, loopMode, frameRate} = state_skin.getSpriteMeta()
+            const {loopMode, frameRate} = state_skin.getSpriteMeta()
+            const reversed = this.direction < 0
 
             this.sprite.setFrameRate(frameRate)
             this.sprite.setLoopMode(loopMode)

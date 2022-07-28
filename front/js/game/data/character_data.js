@@ -1,7 +1,7 @@
 'use strict'
 
-import { FallingRightState, JumpingLeftState, JumpingState, LandingLeftState, LandingState, MovingLeftState, StayingState } from "../../engine/entities/creatures/character/states/states"
-import { MovingRightState, FallingState, JumpingRightState, FallingLeftState, LandingRightState } from './../../engine/entities/creatures/character/states/states';
+import { FallingMoveState, JumpingMoveState, JumpingState, LandingMoveState, LandingState, StayingState, WindupState } from "../../engine/entities/creatures/character/states/states"
+import { FallingState, MovingState } from './../../engine/entities/creatures/character/states/states';
 import { TravelMode } from './../../engine/entities/creatures/character/states/modes';
 import { Player } from './../../engine/entities/creatures/player';
 import AnimatedSprite from "../../engine/graphics/sprites/animated";
@@ -24,25 +24,23 @@ export function getPlayerSkinsMeta() {
                         }
                     }, 
                     {
-                        cls: MovingRightState,
+                        cls: MovingState,
                         texture_name: 'player_moving',
                         pixel_box: [50, 50],
                         sprite_meta: {
-                            reversed: false,
                             loopMode: AnimatedSprite.LOOP_MODE.CYCLE,
-                            frameRate: 140
+                            frameRate: 120
                         }
-                    }, 
+                    },
                     {
-                        cls: MovingLeftState,
-                        texture_name: 'player_moving',
+                        cls: WindupState,
+                        texture_name: 'player_windup',
                         pixel_box: [50, 50],
                         sprite_meta: {
-                            reversed: true,
-                            loopMode: AnimatedSprite.LOOP_MODE.CYCLE,
-                            frameRate: 140
+                            loopMode: AnimatedSprite.LOOP_MODE.ONCE,
+                            frameRate: 30
                         }
-                    }, 
+                    },
                     {
                         cls: FallingState,
                         texture_name: 'player_falling',
@@ -52,20 +50,10 @@ export function getPlayerSkinsMeta() {
                         }
                     }, 
                     {
-                        cls: FallingRightState,
+                        cls: FallingMoveState,
                         texture_name: 'player_falling',
                         pixel_box: [50, 50],
                         sprite_meta: {
-                            reversed: false,
-                            loopMode: AnimatedSprite.LOOP_MODE.ONCE
-                        }
-                    }, 
-                    {
-                        cls: FallingLeftState,
-                        texture_name: 'player_falling',
-                        pixel_box: [50, 50],
-                        sprite_meta: {
-                            reversed: true,
                             loopMode: AnimatedSprite.LOOP_MODE.ONCE
                         }
                     },
@@ -78,23 +66,13 @@ export function getPlayerSkinsMeta() {
                         }
                     }, 
                     {
-                        cls: JumpingRightState,
+                        cls: JumpingMoveState,
                         texture_name: 'player_jumping',
                         pixel_box: [50, 50],
                         sprite_meta: {
-                            reversed: false,
                             loopMode: AnimatedSprite.LOOP_MODE.ONCE
                         }
-                    }, 
-                    {
-                        cls: JumpingLeftState,
-                        texture_name: 'player_jumping',
-                        pixel_box: [50, 50],
-                        sprite_meta: {
-                            reversed: true,
-                            loopMode: AnimatedSprite.LOOP_MODE.ONCE
-                        }
-                    }, 
+                    },
                     {
                         cls: LandingState,
                         texture_name: 'player_landing',
@@ -104,20 +82,10 @@ export function getPlayerSkinsMeta() {
                         }
                     },
                     {
-                        cls: LandingRightState,
+                        cls: LandingMoveState,
                         texture_name: 'player_directed_landing',
                         pixel_box: [50, 50],
                         sprite_meta: {
-                            reversed: false,
-                            loopMode: AnimatedSprite.LOOP_MODE.ONCE
-                        }
-                    },
-                    {
-                        cls: LandingLeftState,
-                        texture_name: 'player_directed_landing',
-                        pixel_box: [50, 50],
-                        sprite_meta: {
-                            reversed: true,
                             loopMode: AnimatedSprite.LOOP_MODE.ONCE
                         }
                     },
@@ -131,6 +99,7 @@ export function getPlayerTexturesData() {
     return [
         {name: 'player_staying', src: 'resources/animations/characters/player/idle.png', frameNumber: 3, frameOffset: 50},
         {name: 'player_moving', src: 'resources/animations/characters/player/runMC.png', frameNumber: 6, frameOffset: 50},
+        {name: 'player_windup', src: 'resources/animations/characters/player/windup.png', frameNumber: 4, frameOffset: 50},
         {name: 'player_jumping', src: 'resources/animations/characters/player/upMC.png', frameNumber: 9, frameOffset: 50},
         {name: 'player_falling', src: 'resources/animations/characters/player/MCfall2.png', frameNumber: 5, frameOffset: 50},
         {name: 'player_landing', src: 'resources/animations/characters/player/MCprizemlenie.png', frameNumber: 9, frameOffset: 50},
