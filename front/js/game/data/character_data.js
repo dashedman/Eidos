@@ -22,7 +22,7 @@ export function getPlayerSkinsMeta() {
                             loopMode: AnimatedSprite.LOOP_MODE.CYCLE,
                             frameRate: 140,
                         }
-                    }, 
+                    },
                     {
                         cls: MovingState,
                         texture_name: 'player_moving',
@@ -48,7 +48,7 @@ export function getPlayerSkinsMeta() {
                         sprite_meta: {
                             loopMode: AnimatedSprite.LOOP_MODE.ONCE
                         }
-                    }, 
+                    },
                     {
                         cls: FallingMoveState,
                         texture_name: 'player_falling',
@@ -64,7 +64,7 @@ export function getPlayerSkinsMeta() {
                         sprite_meta: {
                             loopMode: AnimatedSprite.LOOP_MODE.ONCE
                         }
-                    }, 
+                    },
                     {
                         cls: JumpingMoveState,
                         texture_name: 'player_jumping',
@@ -104,5 +104,7 @@ export function getPlayerTexturesData() {
         {name: 'player_falling', src: 'resources/animations/characters/player/MCfall2.png', frameNumber: 5, frameOffset: 50},
         {name: 'player_landing', src: 'resources/animations/characters/player/MCprizemlenie.png', frameNumber: 9, frameOffset: 50},
         {name: 'player_directed_landing', src: 'resources/animations/characters/player/prizbegMC.png', frameNumber: 3, frameOffset: 50},
+        {name: 'player_winddown', src: 'resourses/animations/characters/player/winddownd.png', framenumber: 6, frameOffset: 50},
+        {name: 'player_idle_stance', src: 'resourses/animations/characters/player/idle_stance.png', frameNumber: 3, frameOffset: 50},
     ]
 }
