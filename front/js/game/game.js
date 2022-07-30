@@ -19,7 +19,7 @@ async function initGame(){
     // let debugMode = true
     let world = new World()
 
-    let dispatcher = new engine.Dispatcher(document)
+    let dispatcher = new engine.Dispatcher(canvas, debugMode)
     let renderer = new Renderer(canvas, debugMode)
     let physics = new Physics(world, debugMode)
     let logic = new Logic(world, debugMode)

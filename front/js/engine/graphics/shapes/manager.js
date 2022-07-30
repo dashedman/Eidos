@@ -56,7 +56,7 @@ export default class LineManager {
     }
 
     release(lineBuffToDel) {
-        lineToDelIndex = this.lines.indexOf(lineBuffToDel)
+        let lineToDelIndex = this.lines.indexOf(lineBuffToDel)
         if(lineToDelIndex != -1){
             // clear verticles
             this._releaseWithHandler(this.positionHandler, lineBuffToDel.p)

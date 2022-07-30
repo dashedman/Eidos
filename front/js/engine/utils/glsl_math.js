@@ -67,11 +67,11 @@ export default class GMath {
     }
     static cross(v1, v2){
         //Calculate the cross product of two 3-component vectors
-        return v1.constructor([
-            v1[1]*v2[2] - v1[2]*v1[1],//x
-            v1[2]*v2[0] - v1[0]*v1[2],//y
-            v1[0]*v2[1] - v1[1]*v1[0],//z
-        ])
+        return [
+            v1[1] * v2[2] - v1[2] * v2[1], //x
+            v1[2] * v2[0] - v1[0] * v2[2], //y
+            v1[0] * v2[1] - v1[1] * v2[0], //z
+        ]
     }
     static normalize(v){
         //Calculate the unit vector in the same direction as the input vector
@@ -102,5 +102,24 @@ export default class GMath {
         const k = 1.0 - eta * eta * (1.0 - calcDot * calcDot);
         if(k < 0.0) return vecI.constructor(vecI.length)
         return vecI.map((vecI_val, index) => eta * vecI_val - (eta * calcDot + Math.sqrt(k)) * vecN[index])
+    }
+    /**
+     * @param {Mat4} mat 
+     * @param {Vec4} vec 
+     * @return {Vec4}
+     */
+    static mat4vec4multiply(mat, vec) {
+        // return [
+        //     mat[0]  * vec[0] + mat[4]  * vec[1] + mat[8]  * vec[2] + mat[12]  * vec[3],
+        //     mat[1]  * vec[0] + mat[5]  * vec[1] + mat[9]  * vec[2] + mat[13]  * vec[3],
+        //     mat[2]  * vec[0] + mat[6]  * vec[1] + mat[10] * vec[2] + mat[14] * vec[3],
+        //     mat[3] * vec[0] + mat[7] * vec[1] + mat[11] * vec[2] + mat[15] * vec[3],
+        // ]
+        return [
+            mat[0]  * vec[0] + mat[1]  * vec[1] + mat[2]  * vec[2] + mat[3]  * vec[3],
+            mat[4]  * vec[0] + mat[5]  * vec[1] + mat[6]  * vec[2] + mat[7]  * vec[3],
+            mat[8]  * vec[0] + mat[9]  * vec[1] + mat[10] * vec[2] + mat[11] * vec[3],
+            mat[12] * vec[0] + mat[13] * vec[1] + mat[14] * vec[2] + mat[15] * vec[3],
+        ]
     }
 }

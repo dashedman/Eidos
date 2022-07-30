@@ -3,11 +3,12 @@ import TextureManager from './textures/manager.js';
 import {SpriteManager, SortingSpriteManager} from './sprites/sprites.js';
 
 import Statement from "../statement.js";
-import { autils } from "../utils/utils.js";
+import { autils, Camera } from "../utils/utils.js";
 import { DRAW_GROUND_PLAN } from './constants.js';
 import LineManager from './shapes/manager.js';
 import { NotImplementedError } from '../exceptions.js';
 import TextManager from './text/manager.js';
+import Dispatcher from './../interactions/interactions';
 
 // ==========================================
 // Renderer
@@ -112,6 +113,7 @@ export class Renderer {
 		}
 		await this.textManager.prepare(glyphInfo)
 		await this.loadShaders();
+
 		this._prepeared = true
         console.debug('Renderer prepeared.')
 	}
@@ -197,7 +199,7 @@ export class Renderer {
 		let locals = this.varLocals.sprites
 		gl.useProgram(this.programs.sprites)
 		// uniforms
-		gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
+		gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.VP)
 		// textures
 		this.textureManager.draw(locals)
 		
@@ -215,7 +217,7 @@ export class Renderer {
 		if(this.debugMode) {
 			locals = this.varLocals.colors
 			gl.useProgram(this.programs.colors)
-			gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.viewMatrix)
+			gl.uniformMatrix4fv(locals.u_viewMatrix, false, this._state.camera.VP)
 			this.debugLineManager.draw(gl.STREAM_DRAW, locals)
 		}
 
@@ -400,7 +402,7 @@ export class Renderer {
 		}
 	}
 
-	addToHighlight(obj, color=[255, 255, 255]) {
+	addToHighlight(obj, color=[1, 1, 1]) {
 		if(this.debugMode){
 			let rect = this.debugLineManager.createRect(color)
 			this.debugShapes.set(obj, rect)

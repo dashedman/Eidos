@@ -24,7 +24,7 @@ export class Rect {
         /** @type {[number, number, number, number]} */
         this.color = null
         this.mimicTarget = null
-        this.setColor(color || [255, 255, 255, 1])
+        this.setColor(color || [1, 1, 1, 1])
     }
 
     /**

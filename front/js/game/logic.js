@@ -44,7 +44,7 @@ export default class Logic extends EngineLogic {
                     w: chunk.width, 
                     h: chunk.height, 
                 }
-                this._state.render.addToHighlight(chunk_box, [0, 0, 255])
+                this._state.render.addToHighlight(chunk_box, [0, 0, 1])
             }
         }
         this._prepeared = true

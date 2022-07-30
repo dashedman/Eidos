@@ -18,11 +18,12 @@ export class BaseCharacterMode extends AbstractState {
 }
 
 export class BattleMode extends BaseCharacterMode {
-    constructor(character) {
+    constructor(character, guardsList) {
         super(character)
 
         /** @type { BaseGuard } */
         this.guard = null
+        this.guardsList = guardsList
     } 
 
     do(command) {
@@ -31,6 +32,17 @@ export class BattleMode extends BaseCharacterMode {
 
     undo(command) {
         this.guard.undo(command)
+    }
+
+    /**
+     * @param { typeof BaseCharacterState } state_cls
+     */
+    changeState(state_cls) {
+        this.guard.changeState(state_cls)
+    }
+
+    update(timedelta) {
+        this.guard.update(timedelta)
     }
 }
 

@@ -4,21 +4,27 @@ import GMath from "./glsl_math.js";
 import { mat4 } from "./gl_matrix/index.js"
 
 export default class Camera {
-    constructor(target) {
+    constructor() {
         this.settings = {
             fovy: GMath.radians(60),        // 	Vertical field of view in radians
             aspect: 1,      // 	Aspect ratio. typically viewport width/height
             near: 1,      //  Near bound of the frustum
-            far: Infinity,  //  Far bound of the frustum, can be null or Infinity
+            far: 50,  //  Far bound of the frustum, can be null or Infinity
         }
         this.position = [0, 0, 0];
-        this.direction = [0, 0, 1]; // need to be normalize
+        this.direction = [0, 0, -1]; // need to be normalize
         this.upAxis = [0, 1, 0]; //  orientation, do not to be changed
+        this.rightAxis = [1, 0, 0]; //  orientation, do not to be changed
 
-        this._projMatrix = this.calcProjMatrix()
-        this.viewMatrix = mat4.create();
-        this.needUpdate = false;
-        this.recalcMatrix()
+        this.projectionMatrix = mat4.create()
+        this.invertedProjectionMatrix = mat4.create()
+        this.viewMatrix = mat4.create()
+        this.invertedViewMatrix = mat4.create()
+        this.VP = mat4.create()
+
+        this.needUpdate = false
+        this.recalcProjectionMatrix()
+        this.recalcVPMatrix()
 
         this.targets = []
         this.movingMode = null
@@ -32,51 +38,86 @@ export default class Camera {
         this.position[0] = x
         this.position[1] = y
         this.position[2] = z
-
-        this.recalcMatrix()
+        this.recalcVPMatrix()
     }
+
+    setPositionZ(z){
+        this.position[2] = z
+        this.recalcVPMatrix()
+    }
+
     setDirection(x, y, z){
         let raw_vector = GMath.normalize([x, y, z])
         this.direction[0] = raw_vector[0]
         this.direction[1] = raw_vector[1]
         this.direction[2] = raw_vector[2]
 
-        this.recalcMatrix()
+        // recalc ortogonal up and right axises
+        this.rightAxis = GMath.normalize(GMath.cross(this.direction, this.upAxis))
+        this.upAxis = GMath.normalize(GMath.cross(this.rightAxis, this.direction))
+
+        this.recalcVPMatrix()
     }
+
     setFovy(fovy){
         this.settings.fovy = fovy
-        this._projMatrix = this.calcProjMatrix()
+        this.recalcProjectionMatrix()
         this.recalcMatrix()
     }
+
     setRatio(ratio){
         this.settings.aspect = ratio
-        this._projMatrix = this.calcProjMatrix()
-        this.recalcMatrix()
+         this.recalcProjectionMatrix()
+        this.recalcVPMatrix()
     }
-    calcProjMatrix(){
-        return mat4.perspective(
-            mat4.create(),
+
+    recalcProjectionMatrix() {
+        mat4.perspective(
+            this.projectionMatrix,
             this.settings.fovy,
             this.settings.aspect,
             this.settings.near,
             this.settings.far,
         )
+
+        mat4.invert(
+            this.invertedProjectionMatrix,
+            this.projectionMatrix
+        )
     }
-    recalcMatrix(){
-        const invertedPos = [
-            -this.position[0],
-            -this.position[1],
-            this.position[2]
-        ]
+
+    recalcViewMatrix() {
+        //https://www.3dgep.com/understanding-the-view-matrix/
+        let ivm = this.invertedViewMatrix
+
+        ivm[0] = this.rightAxis[0]
+        ivm[1] = this.rightAxis[1]
+        ivm[2] = this.rightAxis[2]
+
+        ivm[4] = this.upAxis[0]
+        ivm[5] = this.upAxis[1]
+        ivm[6] = this.upAxis[2]
+
+        ivm[8]  = this.direction[0]
+        ivm[9]  = this.direction[1]
+        ivm[10] = this.direction[2]
+
+        ivm[12]  = this.position[0]
+        ivm[13]  = this.position[1]
+        ivm[14] = this.position[2]
+
+        ivm[3] = ivm[7] = ivm[11] = 0
+        ivm[15] = 1
         
-        this.viewMatrix = mat4.mul(
-            this.viewMatrix,
-            this._projMatrix,
-            mat4.translate(
-                this.viewMatrix,
-                mat4.identity(this.viewMatrix),
-                invertedPos, 
-            )
+        mat4.invert(this.viewMatrix, ivm)
+    }
+
+    recalcVPMatrix(){
+        this.recalcViewMatrix()
+        this.VP = mat4.mul(
+            this.VP,
+            this.projectionMatrix,
+            this.viewMatrix
         )
     }
 
@@ -84,6 +125,7 @@ export default class Camera {
     addTarget(target) {
         this.targets.push(target)
     }
+
     delTarget(target) {
         const indexOfTarget = this.targets.indexOf(target)
         if(indexOfTarget > -1){
@@ -92,9 +134,11 @@ export default class Camera {
         }
         return false
     }
+
     clearTargets() {
         this.targets.length = 0
     }
+
     calculatePositionByTargets(timeDelta){
         const destinationPos = new Float32Array(2)
         destinationPos[0] = 0
@@ -116,6 +160,7 @@ export default class Camera {
         
         this._movingFunction(destinationPos, timeDelta)
     }
+
     setMovingMode(modeId){
         let movingModeIsExist = false;
         for(const modeName in Camera.MOVING_MODES){
@@ -131,6 +176,49 @@ export default class Camera {
             this._movingFunction = Camera.MOVING_FUNCTIONS[modeId].bind(this)
         }else{
             console.error(`[Camera] Mode '${modeId}' doesn't found`)
+        }
+    }
+
+    /**
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} zTarget 
+     * @returns {{
+     *  x: number,
+     *  y: number
+     * }}
+     */
+    getIntersectMouseWithZPlane(x, y, zTarget=0) {
+        let ray = this.getMouseRay(x, y)
+        // [2] - is z
+        const t = (zTarget - ray.origin[2]) / ray.direction[2]
+        return {
+            x: ray.origin[0] + t * ray.direction[0],
+            y: ray.origin[1] + t * ray.direction[1],
+        }
+    }
+
+    /**
+     * @param {number} x - mouse coord in NDC
+     * @param {number} y - mouse coord in NDC
+     * @return {{origin: [numper, number, number], direction: [numper, number, number]}}
+     */
+    getMouseRay(x, y) {
+        let clipCoords = [x, y, -1, 1]
+        
+        let rayEye = GMath.mat4vec4multiply(
+            this.invertedProjectionMatrix,
+            clipCoords
+        )
+        let rayWorld = GMath.mat4vec4multiply(
+            this.invertedViewMatrix,
+            [rayEye[0], rayEye[1], -1, 0]
+        )
+        
+        return {
+            origin: [...this.position],
+            direction: GMath.normalize([rayWorld[0], rayWorld[1], rayWorld[2]])
         }
     }
 

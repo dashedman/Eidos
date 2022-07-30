@@ -38,7 +38,7 @@ export default class Physics {
     createPhysicBox({x, y, w, h}={}, cls=PhBox) {
         let pbox = this.createCollider(cls, {x: x, y: y, w: w, h: h})
         if(this.debugMode){
-            this._state.render.addToHighlight(pbox, [255, 255, 0])
+            this._state.render.addToHighlight(pbox, [1, 1, 0])
         }
         return pbox
     }

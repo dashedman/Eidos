@@ -1,6 +1,7 @@
 "use strict"
 
 import { Renderer as EngineRenderer } from './../engine/engine.js'
+import Dispatcher from './../engine/interactions/interactions';
 
 export default class Renderer extends EngineRenderer {
 

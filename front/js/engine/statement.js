@@ -102,6 +102,16 @@ export default class Statement {
             // }
             this.logic.update(timeDelta)
             this.physics.update(timeDelta)
+
+            // camera control
+                    
+            if(this.dispatcher.pressedKeys[Dispatcher.KEY.PLUS]) {
+                this.camera.setPositionZ(this.camera.position[2] + timeDelta)
+                console.log(this.camera.position)
+            } else if(this.dispatcher.pressedKeys[Dispatcher.KEY.MINUS]) {
+                this.camera.setPositionZ(this.camera.position[2] - timeDelta)
+                console.log(this.camera.position)
+            }
             
             // Draw world
             this.render.update(timeDelta)

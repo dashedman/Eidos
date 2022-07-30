@@ -3,14 +3,22 @@
 import Statement from "../statement.js";
 
 export default class Dispatcher {
-    constructor(el) {
+    /**
+     * @param { HTMLElement } el 
+     * @param { boolean } debugMode 
+     */
+    constructor(el, debugMode=false) {
         // id of the game loop to handle
         /** @type {Statement} */
         this._state = null
         this._target = el
+        this.debugMode = debugMode
 
-        const KEYS_NUMBER = 128
+        const KEYS_NUMBER = 256
+        const BUTTONS_NUMBER = 3
+
         this.pressedKeys = new Uint8Array(KEYS_NUMBER)
+        this.pressedMouseButtons = new Uint8Array(BUTTONS_NUMBER)
         /**
          * @callback eventCallback
          */
@@ -18,24 +26,44 @@ export default class Dispatcher {
         this.keyDownListeners = new Array(KEYS_NUMBER)
         /** @type {eventCallback[][]} */
         this.keyUpListeners = new Array(KEYS_NUMBER)
+        /** @type {eventCallback[][]} */
+        this.mouseDownListeners = new Array(BUTTONS_NUMBER)
+        /** @type {eventCallback[][]} */
+        this.mouseMoveListeners = new Array(BUTTONS_NUMBER)
+        /** @type {eventCallback[][]} */
+        this.mouseUpListeners = new Array(BUTTONS_NUMBER)
+
+
         for(let i = 0; i < KEYS_NUMBER; i++) {
             this.keyDownListeners[i] = []
             this.keyUpListeners[i] = []
         }
+        for(let i = 0; i < BUTTONS_NUMBER; i++) {
+            this.mouseDownListeners[i] = []
+            this.mouseMoveListeners[i] = []
+            this.mouseUpListeners[i] = []
+        }
 
-        this.mouse = {
-            pressed: false,
-            clicked: false,
-            x: 0,
-            y: 0,
-            oldX: 0,
-            oldY: 0,
+        // NDC coords
+        /** @type {{X: number, Y: number, prevX: number, prevY: number, downX: number, downY: number, upX: number, upY: number}} */
+        this.mouseCoords = {
+            X: 0,
+            Y: 0,
+            prevX: 0,
+            prevY: 0,
+            downX: 0,
+            downY: 0,
+            upX: 0,
+            upY: 0
         }; 
     }
 
     async prepare() {
         console.debug('Preparing Dispatcher...')
         this.setupListeners()
+        if(this.debugMode) {
+            // this.addDebugInputLog()
+        }
         console.debug('Dispatcher prepeared.')
     }
 
@@ -61,18 +89,27 @@ export default class Dispatcher {
             case Dispatcher.ACTION.KEY_UP:
                 this.keyUpListeners[keyCode].push(callback)
                 break
+            case Dispatcher.ACTION.MOUSE_DOWN:
+                this.mouseDownListeners[keyCode].push(callback)
+                break
+            case Dispatcher.ACTION.MOUSE_MOVE:
+                this.mouseMoveListeners[keyCode].push(callback)
+                break
+            case Dispatcher.ACTION.MOUSE_UP:
+                this.mouseUpListeners[keyCode].push(callback)
+                break
             default:
                 console.warn('Undefined dispatcher action!')
         }
     }
 
     setupListeners() {
-        this.target.addEventListener('keydown', this.onKeyDown.bind(this));
-        this.target.addEventListener('keyup', this.onKeyUp.bind(this));
+        document.addEventListener('keydown', this.onKeyDown.bind(this));
+        document.addEventListener('keyup', this.onKeyUp.bind(this));
 
         this.target.addEventListener('mousedown', this.onMouseDown.bind(this));
+        this.target.addEventListener('mousemove', this.onMouseMove.bind(this));
         this.target.addEventListener('mouseup', this.onMouseUp.bind(this));
-        this.target.addEventListener('click', this.onMouseClick.bind(this));
 
         window.addEventListener('blur', this.onBlur.bind(this))
         window.addEventListener('focus', this.onFocus.bind(this))
@@ -102,27 +139,40 @@ export default class Dispatcher {
      * @param {MouseEvent} e
      */
     onMouseDown(e) {
-        this.mouse.pressed = true;
-        this.mouse.x = e.clientX;
-        this.mouse.y = e.clientY;
+        this.pressedMouseButtons[e.button] = true
+        this.mouseCoords.downX = this.mouseCoords.X = 2 * (e.clientX / this._target.clientWidth) - 1
+        this.mouseCoords.downY = this.mouseCoords.Y = -2 * (e.clientY / this._target.clientHeight) + 1
+
+        for(let callback of this.mouseDownListeners[e.button]) {
+            callback()
+        }
+    }
+
+    /**
+     * @param {MouseEvent} e
+     */
+    onMouseMove(e) {
+        this.mouseCoords.prevX = this.mouseCoords.X
+        this.mouseCoords.prevY = this.mouseCoords.Y
+        this.mouseCoords.X = 2 * (e.clientX / this._target.clientWidth) - 1
+        this.mouseCoords.Y = -2 * (e.clientY / this._target.clientHeight) + 1
+
+        for(let callback of this.mouseMoveListeners[e.button]) {
+            callback()
+        }
     }
 
     /**
      * @param {MouseEvent} e
      */
     onMouseUp(e) {
-        this.mouse.pressed = false;
-        this.mouse.x = e.clientX;
-        this.mouse.y = e.clientY;
-    }
+        this.pressedMouseButtons[e.button] = false
+        this.mouseCoords.upX = this.mouseCoords.X = 2 * (e.clientX / this._target.clientWidth) - 1
+        this.mouseCoords.upY = this.mouseCoords.Y = -2 * (e.clientY / this._target.clientHeight) + 1
 
-    /**
-     * @param {MouseEvent} e
-     */
-    onMouseClick(e) {
-        this.mouse.clicked = true;
-        this.mouse.x = e.clientX;
-        this.mouse.y = e.clientY;
+        for(let callback of this.mouseUpListeners[e.button]) {
+            callback()
+        }
     }
 
     /**
@@ -138,6 +188,27 @@ export default class Dispatcher {
      onFocus(e) {
         this._state.run()
     }
+
+    addDebugInputLog() {
+        let usedValues = []
+        for(let [key, value] of Object.entries(Dispatcher.KEY)) {
+            this.subscribe(value, Dispatcher.ACTION.KEY_DOWN, () => {console.debug('Key down:', key)})
+            this.subscribe(value, Dispatcher.ACTION.KEY_UP,   () => {console.debug('Key up:',   key)})
+            usedValues.push(value)
+        }
+
+        for(let i = 0; i < 256; i++) {
+            if(usedValues.includes(i)) continue
+            this.subscribe(i, Dispatcher.ACTION.KEY_DOWN, () => {console.debug('Key down:', i)})
+            this.subscribe(i, Dispatcher.ACTION.KEY_UP,   () => {console.debug('Key up:',   i)})
+        }
+
+        for(let [key, value] of Object.entries(Dispatcher.MOUSE)) {
+            this.subscribe(value, Dispatcher.ACTION.MOUSE_DOWN, () => {console.debug('Mouse down:', key, this.mouseCoords.X, this.mouseCoords.Y)})
+            this.subscribe(value, Dispatcher.ACTION.MOUSE_MOVE, () => {console.debug('Mouse move:', key, this.mouseCoords.X, this.mouseCoords.Y)})
+            this.subscribe(value, Dispatcher.ACTION.MOUSE_UP,   () => {console.debug('Mouse up:',   key, this.mouseCoords.X, this.mouseCoords.Y)})
+        }
+    }
 }
 
 /**
@@ -148,9 +219,23 @@ export default class Dispatcher {
 Dispatcher.ACTION = {
     KEY_DOWN: 1,
     KEY_UP: 2,
+    MOUSE_DOWN: 3,
+    MOUSE_MOVE: 4,
+    MOUSE_UP: 5
 }
 
 /**
+ * Enum for common colors.
+ * @readonly
+ * @enum {Number}
+ */
+ Dispatcher.MOUSE = {
+    LEFT: 0,
+    WHEEL: 1,
+    RIGHT: 2
+ }
+ 
+ /**
  * Enum for common colors.
  * @readonly
  * @enum {Number}
@@ -171,9 +256,9 @@ Dispatcher.KEY = {
     RIGHT: 39,
     DOWN: 40,
     // math
-    PLUS: 187,
-    EQUAL: 187,
-    MINUS: 189,
+    PLUS: 61,
+    EQUAL: 61,
+    MINUS: 173,
     // alphabeth
     A: 65,
     B: 66,

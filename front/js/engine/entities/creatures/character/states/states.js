@@ -24,6 +24,10 @@ export class BaseCharacterState extends AbstractState {
         return this.character.changeState(state_cls, direction, continueAnimation)
     }
 
+    changeMode(direction=null, continueAnimation=false) {
+        return this.character.changeMode(direction, continueAnimation)
+    }
+
     onStart() {}
     onFinish() {}
 
@@ -82,6 +86,9 @@ export class StayingState extends BaseCharacterState {
             }
             if (this.character.cf[Commander.cs.JUMP]) {
                 return this.changeState(JumpingState)
+            }
+            if (this.character.cf[Commander.cs.CHANGE_MODE]) {
+                // return this.changeMode()
             }
         }
     }

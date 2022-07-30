@@ -8,8 +8,6 @@
 
 precision mediump float;
 
-uniform sampler2D u_texture_src;
-
 varying vec4 v_color;
 
 //MAIN

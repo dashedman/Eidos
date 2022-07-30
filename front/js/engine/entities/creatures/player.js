@@ -110,7 +110,8 @@ export class Player extends User {
     /**
      * @param { typeof BaseCharacterMode } mode_cls
      */
-    changeMode(mode_cls) {
+    changeMode() {
+        mode_cls = this.mode.constructor == TravelMode ? BattleMode : TravelMode 
         this.mode = new mode_cls(this)
         return true
     }
