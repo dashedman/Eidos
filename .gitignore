@@ -2,3 +2,4 @@
 config.yaml
 venv
 server/logs
+**/__pycache__/
