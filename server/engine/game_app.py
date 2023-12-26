@@ -1,6 +1,8 @@
 import asyncio
 import json
+import logging
 import random
+import time
 
 import websockets
 from websockets.server import WebSocketServerProtocol
@@ -11,9 +13,13 @@ from .user import User
 
 
 class GameApplication:
+    TIME_FOR_FRAME = 0.1
+
     def __init__(self, config: GameConfig):
         self.config = config
+        self.last_frame_time = 0
         self.user_sessions: dict[WebSocketServerProtocol, User] = {}
+        self.logger = logging.getLogger('GameApp')
 
     async def register_session(self, session_info: SessionInfo, websocket: WebSocketServerProtocol) -> User | None:
         if session_info.version != self.config.version:
@@ -35,7 +41,7 @@ class GameApplication:
                 return user
 
         session_info.id = random.randint(1, 1000)
-        new_user = User(session_info, '', websocket)
+        new_user = User('', session_info, websocket)
         self.user_sessions[websocket] = new_user
 
         reqister_succesfull_data = {
@@ -48,9 +54,13 @@ class GameApplication:
         print(len(self.user_sessions), 'USERS!!!')
         return new_user
 
-    async def serve(self):
+    async def main_loop(self):
+        time_delta = self.TIME_FOR_FRAME
         while True:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(self.TIME_FOR_FRAME - time_delta)
+            frame_time = time.perf_counter()
+            time_delta = frame_time - self.last_frame_time
+            # calc physic
 
             # send positions to all users
             positions = [

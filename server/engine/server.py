@@ -88,7 +88,7 @@ class Server:
         await asyncio.gather(
             self.http_server.serve_forever(),
             self.ws_server.serve_forever(),
-            self.app.serve()
+            self.app.main_loop()
         )
 
     async def http_handler(self, request: Request, **__):
@@ -111,7 +111,7 @@ class Server:
         return await sanic.response.file(dynamic_path, mime_type=mime_type)
 
     async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):
-    # async def ws_handler(self, request, websocket):
+        # async def ws_handler(self, request, websocket):
         first_msg_json = await websocket.recv()
         session_info = SessionInfo.from_json(json.loads(first_msg_json))
         user = await self.app.register_session(session_info, websocket)
