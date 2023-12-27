@@ -8,12 +8,13 @@ import websockets
 from websockets.server import WebSocketServerProtocol
 
 from .config import GameConfig
+from .logic import GameLogicEngine
+from .physics import PhysicsEngine
 from .session import SessionInfo
 from .user import User
 
 
 class GameApplication:
-    TIME_FOR_FRAME = 0.1
 
     def __init__(self, config: GameConfig):
         self.config = config
@@ -87,3 +88,31 @@ class GameApplication:
             await user.send(data)
         except websockets.ConnectionClosedOK:
             del self.user_sessions[key]
+
+
+class GameLoop:
+    TIME_FOR_FRAME = 0.1
+
+    def __init__(self):
+        self.alive = False
+        self.last_frame_time = 0
+        self.logger = logging.getLogger('GameLoop')
+        self.physic = PhysicsEngine()
+        self.logic = GameLogicEngine()
+
+        self.users = {}
+
+    def run_loop(self):
+        self.alive = True
+        time_delta = self.TIME_FOR_FRAME
+
+        while self.alive:
+            time.sleep(self.TIME_FOR_FRAME - time_delta)
+            frame_time = time.perf_counter()
+            time_delta = frame_time - self.last_frame_time
+            # calc physic
+            self.physic.tick(time_delta)
+
+            # calc logic
+            self.logic.tick(time_delta)
+
