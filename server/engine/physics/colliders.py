@@ -6,18 +6,29 @@ class AbstractCollider(ABC):
 
 
 class BoxCollider(AbstractCollider):
-    __slots__ = ('x', 'y', 'width', 'half_width', 'height', 'half_height')
+    __slots__ = (
+        'x', 'y',
+        'width', 'half_width',
+        'height', 'half_height',
+        'left', 'right', 'bottom', 'top',
+    )
+    x: float
+    y: float
+    width: float
+    half_width: float
+    height: float
+    half_height: float
+
+    left: float
+    right: float
+    bottom: float
+    top: float
 
     def __init__(self, x: float, y: float, width: float, height: float):
-        self.x = x
-        self.y = y
-        self.width = 0
-        self.half_width = 0
-        self.height = 0
-        self.half_height = 0
-
         self.set_width(width)
         self.set_height(height)
+        self.set_x(x)
+        self.set_y(y)
 
     def set_width(self, width: float):
         self.width = width
@@ -27,21 +38,15 @@ class BoxCollider(AbstractCollider):
         self.height = height
         self.half_height = height * 0.5
 
-    @property
-    def left(self):
-        return self.x - self.half_width
+    def set_x(self, x: float):
+        self.x = x
+        self.left = self.x - self.half_width
+        self.right = self.x + self.half_width
 
-    @property
-    def right(self):
-        return self.x + self.half_width
-
-    @property
-    def top(self):
-        return self.y + self.half_height
-
-    @property
-    def bottom(self):
-        return self.y - self.half_height
+    def set_y(self, y: float):
+        self.y = y
+        self.bottom = self.y - self.half_height
+        self.top = self.y + self.half_height
 
 
 class InertiaBoxCollider(BoxCollider):
@@ -72,4 +77,12 @@ class GridCollider(AbstractCollider):
 
     def __setitem__(self, coordinates, value):
         self.raw_grid[coordinates[0] * self.height + coordinates[1]] = value
+
+
+class HasBoxCollider(ABC):
+    ph_collider: BoxCollider = NotImplemented
+
+
+class HasInertiaBoxCollider(ABC):
+    ph_collider: InertiaBoxCollider = NotImplemented
 

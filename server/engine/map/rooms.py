@@ -9,4 +9,4 @@ class Room:
 
 class RoomsManager:
     def __init__(self):
-        self.rooms = []
+        self.rooms: list[Room] = []

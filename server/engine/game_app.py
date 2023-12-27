@@ -3,18 +3,21 @@ import json
 import logging
 import random
 import time
+import multiprocessing
 
 import websockets
 from websockets.server import WebSocketServerProtocol
 
 from .config import GameConfig
+from .entities.users import UsersManager
 from .logic import GameLogicEngine
+from .map import Map
 from .physics import PhysicsEngine
 from .session import SessionInfo
 from .user import User
 
 
-class GameApplication:
+class GameFrontend:
 
     def __init__(self, config: GameConfig):
         self.config = config
@@ -90,17 +93,20 @@ class GameApplication:
             del self.user_sessions[key]
 
 
-class GameLoop:
+class GameBackend:
     TIME_FOR_FRAME = 0.1
 
-    def __init__(self):
+    def __init__(self, queue: multiprocessing.Queue):
         self.alive = False
         self.last_frame_time = 0
         self.logger = logging.getLogger('GameLoop')
-        self.physic = PhysicsEngine()
-        self.logic = GameLogicEngine()
 
-        self.users = {}
+        self.map = Map()
+
+        self.physic = PhysicsEngine(self)
+        self.logic = GameLogicEngine(self)
+
+        self.users = UsersManager()
 
     def run_loop(self):
         self.alive = True
@@ -110,9 +116,14 @@ class GameLoop:
             time.sleep(self.TIME_FOR_FRAME - time_delta)
             frame_time = time.perf_counter()
             time_delta = frame_time - self.last_frame_time
+            # check new messages in queue
+            self.check_frontend_messages()
+
             # calc physic
             self.physic.tick(time_delta)
 
             # calc logic
             self.logic.tick(time_delta)
 
+    def check_frontend_messages(self):
+        pass

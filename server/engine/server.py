@@ -14,7 +14,7 @@ import sanic.server
 from sanic.request import Request
 
 from . import logger
-from .game_app import GameApplication
+from .game_app import GameFrontend
 from .config import ServerConfig
 from .exceptions import BadWebsocketRequest
 from .session import SessionInfo
@@ -33,7 +33,7 @@ class FrontendInfo:
 class Server:
     loop: asyncio.AbstractEventLoop
 
-    app: GameApplication
+    app: GameFrontend
     http_app: sanic.Sanic
     http_server: sanic.server.AsyncioServer
     ws_server: websockets.server.WebSocketServer
@@ -54,7 +54,7 @@ class Server:
         )
 
         self.http_app = sanic.Sanic("GameServerApp")
-        self.app = GameApplication(self.config.game)
+        self.app = GameFrontend(self.config.game)
 
     async def run(self):
         self.loop = asyncio.get_running_loop()
