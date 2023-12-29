@@ -3,6 +3,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
+from multiprocessing import Process, Queue
 from urllib.parse import unquote
 
 import websockets
@@ -14,9 +15,8 @@ import sanic.server
 from sanic.request import Request
 
 from . import logger
-from .game_app import GameFrontend
+from .game_app import GameFrontend, GameBackend
 from .config import ServerConfig
-from .exceptions import BadWebsocketRequest
 from .session import SessionInfo
 
 
@@ -33,7 +33,7 @@ class FrontendInfo:
 class Server:
     loop: asyncio.AbstractEventLoop
 
-    app: GameFrontend
+    frontend: GameFrontend
     http_app: sanic.Sanic
     http_server: sanic.server.AsyncioServer
     ws_server: websockets.server.WebSocketServer
@@ -54,7 +54,11 @@ class Server:
         )
 
         self.http_app = sanic.Sanic("GameServerApp")
-        self.app = GameFrontend(self.config.game)
+
+        f_to_b_queue = Queue()
+        b_to_f_queue = Queue()
+        self.frontend = GameFrontend(self.config.game, f_to_b_queue, b_to_f_queue)
+        self.backend_p = Process(target=GameBackend, args=(b_to_f_queue, f_to_b_queue))
 
     async def run(self):
         self.loop = asyncio.get_running_loop()
@@ -88,7 +92,7 @@ class Server:
         await asyncio.gather(
             self.http_server.serve_forever(),
             self.ws_server.serve_forever(),
-            self.app.main_loop()
+            self.frontend.run_loop()
         )
 
     async def http_handler(self, request: Request, **__):
@@ -114,5 +118,5 @@ class Server:
         # async def ws_handler(self, request, websocket):
         first_msg_json = await websocket.recv()
         session_info = SessionInfo.from_json(json.loads(first_msg_json))
-        user = await self.app.register_session(session_info, websocket)
+        user = await self.frontend.register_session(session_info, websocket)
         await user.listen()

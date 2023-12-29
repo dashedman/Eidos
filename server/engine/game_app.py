@@ -4,6 +4,8 @@ import logging
 import random
 import time
 import multiprocessing
+from enum import IntEnum
+from typing import Any
 
 import websockets
 from websockets.server import WebSocketServerProtocol
@@ -17,13 +19,29 @@ from .session import SessionInfo
 from .user import User
 
 
+
+
+
+class QueueCode(IntEnum):
+    NewUser = 1
+    TakeMap = 2
+
+
 class GameFrontend:
 
-    def __init__(self, config: GameConfig):
+    def __init__(
+            self,
+            config: GameConfig,
+            queue_to_backend: multiprocessing.Queue,
+            queue_from_backend: multiprocessing.Queue,
+    ):
         self.config = config
         self.last_frame_time = 0
         self.user_sessions: dict[WebSocketServerProtocol, User] = {}
         self.logger = logging.getLogger('GameApp')
+
+        self.queue_to_backend = queue_to_backend
+        self.queue_from_backend = queue_from_backend
 
     async def register_session(self, session_info: SessionInfo, websocket: WebSocketServerProtocol) -> User | None:
         if session_info.version != self.config.version:
@@ -58,13 +76,11 @@ class GameFrontend:
         print(len(self.user_sessions), 'USERS!!!')
         return new_user
 
-    async def main_loop(self):
-        time_delta = self.TIME_FOR_FRAME
+    async def run_loop(self):
         while True:
-            await asyncio.sleep(self.TIME_FOR_FRAME - time_delta)
-            frame_time = time.perf_counter()
-            time_delta = frame_time - self.last_frame_time
-            # calc physic
+            await asyncio.sleep(0)
+
+            self.check_backend_messages()
 
             # send positions to all users
             positions = [
@@ -86,6 +102,14 @@ class GameFrontend:
                 for ws_key, user in self.user_sessions.items()
             ))
 
+    def check_backend_messages(self):
+        while self.queue_from_backend:
+            response_code, request_data = self.queue_from_backend.get_nowait()
+            match response_code:
+                case QueueCode.TakeMap:
+                    map_part = self.get_map_by_coords(request_data)
+                    self.queue_to_backend.put_nowait((QueueCode.ResponseMap, map_part))
+
     async def safe_send(self, key, user, data):
         try:
             await user.send(data)
@@ -96,10 +120,17 @@ class GameFrontend:
 class GameBackend:
     TIME_FOR_FRAME = 0.1
 
-    def __init__(self, queue: multiprocessing.Queue):
+    def __init__(
+            self,
+            queue_to_frontend: multiprocessing.Queue,
+            queue_from_frontend: multiprocessing.Queue[tuple[QueueCode, Any]],
+    ):
         self.alive = False
         self.last_frame_time = 0
         self.logger = logging.getLogger('GameLoop')
+
+        self.queue_to_frontend = queue_to_frontend
+        self.queue_from_frontend = queue_from_frontend
 
         self.map = Map()
 
@@ -126,4 +157,8 @@ class GameBackend:
             self.logic.tick(time_delta)
 
     def check_frontend_messages(self):
-        pass
+        while self.queue_from_frontend:
+            request_code, request_data = self.queue_from_frontend.get_nowait()
+            match request_code:
+                case QueueCode.NewUser:
+                    raise NotImplementedError

@@ -1,3 +1,6 @@
+import easy_vector
+
+from .entities import User
 from .game_app import GameBackend
 
 
@@ -6,4 +9,8 @@ class GameLogicEngine:
         self.backend = backend
 
     def tick(self, time_delta: float):
-        pass
+        for user in self.backend.users:
+            raise NotImplementedError=
+
+
+
