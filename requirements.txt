@@ -1,3 +1,5 @@
 pyyaml
 websockets
 sanic
+pytiled_parser
+tqdm

@@ -8,6 +8,7 @@ from enum import IntEnum
 from typing import Any
 
 import websockets
+from pytiled_parser import Tileset
 from websockets.server import WebSocketServerProtocol
 
 from .config import GameConfig
@@ -16,6 +17,7 @@ from .logic import GameLogicEngine
 from .map import Map
 from .physics import PhysicsEngine
 from .session import SessionInfo
+from .tileset import TileSetRegistry
 from .user import User
 
 
@@ -25,6 +27,7 @@ from .user import User
 class QueueCode(IntEnum):
     NewUser = 1
     TakeMap = 2
+    UpdateTileSet = 3
 
 
 class GameFrontend:
@@ -39,6 +42,8 @@ class GameFrontend:
         self.last_frame_time = 0
         self.user_sessions: dict[WebSocketServerProtocol, User] = {}
         self.logger = logging.getLogger('GameApp')
+
+        self.tilesets = TileSetRegistry()
 
         self.queue_to_backend = queue_to_backend
         self.queue_from_backend = queue_from_backend
@@ -107,8 +112,9 @@ class GameFrontend:
             response_code, request_data = self.queue_from_backend.get_nowait()
             match response_code:
                 case QueueCode.TakeMap:
-                    map_part = self.get_map_by_coords(request_data)
-                    self.queue_to_backend.put_nowait((QueueCode.ResponseMap, map_part))
+                    pass
+                case QueueCode.UpdateTileSet:
+                    self.tilesets.update(request_data)
 
     async def safe_send(self, key, user, data):
         try:
@@ -132,7 +138,7 @@ class GameBackend:
         self.queue_to_frontend = queue_to_frontend
         self.queue_from_frontend = queue_from_frontend
 
-        self.map = Map()
+        self.map = Map(self)
 
         self.physic = PhysicsEngine(self)
         self.logic = GameLogicEngine(self)
@@ -162,3 +168,6 @@ class GameBackend:
             match request_code:
                 case QueueCode.NewUser:
                     raise NotImplementedError
+
+    def update_tileset(self, tilesets: dict[int, Tileset]):
+        self.queue_to_frontend.put_nowait((QueueCode.UpdateTileSet, tilesets))
