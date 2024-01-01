@@ -13,8 +13,8 @@ class SessionInfo:
         try:
             session_json: dict = data_json.get('session')
 
-            id = int(session_json.get('id', 0))
+            id_ = int(session_json.get('id', 0))
             version = session_json['version']
         except (KeyError, ValueError):
             raise BadWebsocketRequest('Bad session description')
-        return SessionInfo(id, version)
+        return SessionInfo(id_, version)

@@ -1,27 +1,31 @@
 import asyncio
+import ctypes
 import json
 import logging
-import random
 import time
 import multiprocessing
 from enum import IntEnum
 from typing import Any
 
+import pytiled_parser
 import websockets
 from pytiled_parser import Tileset
 from websockets.server import WebSocketServerProtocol
 
 from .config import GameConfig
-from .entities.users import UsersManager
+from .entities.users import UsersManager, User
 from .logic import GameLogicEngine
-from .map import Map
-from .physics import PhysicsEngine
+from .map import Map, Cell
+from .physics import PhysicsEngine, InertiaBoxColliderMultiprocess
+from .server import MessageCode
 from .session import SessionInfo
 from .tileset import TileSetRegistry
-from .user import User
+from .user import UserSession, UserPosition
 
 
-
+def session_id_gen(max_id: int = 10000):
+    while 1:
+        yield from range(1, max_id)
 
 
 class QueueCode(IntEnum):
@@ -40,7 +44,7 @@ class GameFrontend:
     ):
         self.config = config
         self.last_frame_time = 0
-        self.user_sessions: dict[WebSocketServerProtocol, User] = {}
+        self.user_sessions: dict[int, UserSession] = {}
         self.logger = logging.getLogger('GameApp')
 
         self.tilesets = TileSetRegistry()
@@ -48,79 +52,120 @@ class GameFrontend:
         self.queue_to_backend = queue_to_backend
         self.queue_from_backend = queue_from_backend
 
-    async def register_session(self, session_info: SessionInfo, websocket: WebSocketServerProtocol) -> User | None:
+        self.session_id_gen = session_id_gen()
+
+    async def register_session(self, session_info: SessionInfo, websocket: WebSocketServerProtocol) -> UserSession | None:
         if session_info.version != self.config.version:
-            await websocket.close(reason="Wrong game version")
+            await websocket.close(reason="Wrong version")
             return
 
         if session_info.id != 0:
             # find exist session for reconnect
             old_ws: WebSocketServerProtocol
-            user: User
+            user: UserSession
 
-            old_ws, user = next((
-                (ws, us) for ws, us in self.user_sessions.items()
-                if us.session.id == session_info.id
-            ), (None, None))
-
+            user = self.user_sessions.get(session_info.id)
             if user is not None:
                 user.session = session_info
                 return user
 
-        session_info.id = random.randint(1, 1000)
-        new_user = User('', session_info, websocket)
-        self.user_sessions[websocket] = new_user
+        session_info.id = next(self.session_id_gen)
+        new_user = UserSession('', session_info, websocket)
 
-        reqister_succesfull_data = {
-            'case': 'session',
+        self.spawn_user(new_user)
+
+        self.user_sessions[new_user.session.id] = new_user
+
+        register_successful_data = {
+            'type': MessageCode.Init,
             'data': {
-                'id': new_user.session.id
+                'id': new_user.session.id,
+                'tilesets': self.tilesets.registry_data
             }
         }
-        await websocket.send(json.dumps(reqister_succesfull_data))
+        await websocket.send(json.dumps(register_successful_data))
         print(len(self.user_sessions), 'USERS!!!')
         return new_user
 
     async def run_loop(self):
         while True:
             await asyncio.sleep(0)
-
-            self.check_backend_messages()
+            async_tasks = self.check_backend_messages()
 
             # send positions to all users
             positions = [
                 {
                     'id': user.session.id,
-                    'x': user.coords.x,
-                    'y': user.coords.y,
+                    'x': user.position.x.value,
+                    'y': user.position.y.value,
+                    'vx': user.position.vx.value,
+                    'vy': user.position.vy.value,
                 } for user in self.user_sessions.values()
             ]
             position_data = {
-                'case': 'positions',
+                'type': MessageCode.Positions,
                 'data': {
                     'positions': positions
                 }
             }
             data = json.dumps(position_data)
-            await asyncio.gather(*(
-                self.safe_send(ws_key, user, data)
-                for ws_key, user in self.user_sessions.items()
-            ))
+
+            async_tasks.extend(
+                self.safe_send(user, data)
+                for user in self.user_sessions.values()
+            )
+            await asyncio.wait(async_tasks)
 
     def check_backend_messages(self):
+        async_tasks = []
         while self.queue_from_backend:
             response_code, request_data = self.queue_from_backend.get_nowait()
             match response_code:
                 case QueueCode.TakeMap:
-                    pass
-                case QueueCode.UpdateTileSet:
-                    self.tilesets.update(request_data)
+                    request_data: tuple[int, list[Cell]]
+                    session_id, list_of_cell = request_data
+                    user_session = self.user_sessions[session_id]
 
-    async def safe_send(self, key, user, data):
+                    async_tasks.append(
+                        self.safe_send(user_session, json.dumps({
+                            'type': MessageCode.Map,
+                            'data': [
+                                {
+                                    'tid': cell.tile_id,
+                                    'x': cell.ph_collider.x,
+                                    'y': cell.ph_collider.y,
+                                }
+                                for cell in list_of_cell
+                            ]
+                        }))
+                    )
+                case QueueCode.UpdateTileSet:
+                    request_data: dict[int, pytiled_parser.Tileset]
+                    self.tilesets.update(request_data)
+        return async_tasks
+
+    def spawn_user(self, user: UserSession):
+        x_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
+        y_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
+        vx_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
+        vy_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
+        position = UserPosition(
+            x=x_coord_cell,
+            y=y_coord_cell,
+            vx=vx_coord_cell,
+            vy=vy_coord_cell,
+        )
+        self.queue_to_backend.put_nowait((
+            QueueCode.NewUser,
+            (position, user.input_registry.command_flags)
+        ))
+        user.position = position
+
+    async def safe_send(self, user: UserSession, data):
         try:
             await user.send(data)
         except websockets.ConnectionClosedOK:
-            del self.user_sessions[key]
+            del self.user_sessions[user.session.id]
 
 
 class GameBackend:
@@ -167,7 +212,17 @@ class GameBackend:
             request_code, request_data = self.queue_from_frontend.get_nowait()
             match request_code:
                 case QueueCode.NewUser:
-                    raise NotImplementedError
+                    request_data: tuple[int, tuple[UserPosition, list[bool]]]
+                    session_id, (user_position, command_flags) = request_data
+                    user_collider = InertiaBoxColliderMultiprocess(
+                        x=user_position.x,
+                        y=user_position.y,
+                        width=1,
+                        height=1.8,
+                        vx=user_position.vx,
+                        vy=user_position.vy,
+                    )
+                    self.users.add(User(session_id, user_collider, command_flags))
 
     def update_tileset(self, tilesets: dict[int, Tileset]):
         self.queue_to_frontend.put_nowait((QueueCode.UpdateTileSet, tilesets))

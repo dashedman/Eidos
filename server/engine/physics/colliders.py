@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value as SharedValue
 from abc import ABC
 
 
@@ -59,24 +60,50 @@ class InertiaBoxCollider(BoxCollider):
         self.ax = 0
         self.ay = 0
 
+    def set_vx(self, vx: float):
+        self.vx = vx
 
-class GridCollider(AbstractCollider):
-    __slots__ = ('x', 'y', 'width', 'height', 'cell_size')
+    def set_vy(self, vy: float):
+        self.vy = vy
 
-    def __init__(self, x: float, y: float, width: int, height: int, cell_size: float):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.cell_size = cell_size
 
-        self.raw_grid: list[None | BoxCollider] = [None] * (width * height)
+class InertiaBoxColliderMultiprocess(InertiaBoxCollider):
 
-    def __getitem__(self, coordinates):
-        return self.raw_grid[coordinates[0] * self.height + coordinates[1]]
+    def __init__(
+            self,
+            x: SharedValue,
+            y: SharedValue,
+            width: float,
+            height: float,
+            vx: SharedValue,
+            vy: SharedValue,
+    ):
+        self._x = x
+        self._y = y
+        self._vx = vx
+        self._vy = vy
 
-    def __setitem__(self, coordinates, value):
-        self.raw_grid[coordinates[0] * self.height + coordinates[1]] = value
+        super().__init__(x.value, y.value, width, height)
+        self.vx = self._vx.value
+        self.vy = self._vy.value
+        self.ax = 0
+        self.ay = 0
+
+    def set_x(self, x: float):
+        self._x.value = self.x = x
+        self.left = self.x - self.half_width
+        self.right = self.x + self.half_width
+
+    def set_y(self, y: float):
+        self._y.value = self.y = y
+        self.bottom = self.y - self.half_height
+        self.top = self.y + self.half_height
+
+    def set_vx(self, vx: float):
+        self._vx.value = self.vx = vx
+
+    def set_vy(self, vy: float):
+        self._vy.value = self.vy = vy
 
 
 class HasBoxCollider(ABC):
@@ -85,4 +112,8 @@ class HasBoxCollider(ABC):
 
 class HasInertiaBoxCollider(ABC):
     ph_collider: InertiaBoxCollider = NotImplemented
+
+
+class HasInertiaBoxColliderMultiprocess(ABC):
+    ph_collider: InertiaBoxColliderMultiprocess = NotImplemented
 

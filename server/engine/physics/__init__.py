@@ -1,2 +1,9 @@
 from .physics import PhysicsEngine
-from .colliders import BoxCollider, InertiaBoxCollider, HasInertiaBoxCollider, HasBoxCollider
+from .colliders import (
+    BoxCollider,
+    InertiaBoxCollider,
+    InertiaBoxColliderMultiprocess,
+    HasBoxCollider,
+    HasInertiaBoxCollider,
+    HasInertiaBoxColliderMultiprocess,
+)

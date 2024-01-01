@@ -45,7 +45,7 @@ class TileSetRegistry:
 
     def update(self, tilesets: dict[int, pytiled_parser.Tileset]):
         for tileset in tilesets.values():
-            self.tileset_registry[tileset.firstgid] = (TileSet(tileset))
+            self.tileset_registry[tileset.firstgid] = TileSet(tileset)
 
         if 'registry_data' in self.__dict__.keys():
             # noinspection PyPropertyAccess

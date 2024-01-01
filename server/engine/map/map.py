@@ -30,14 +30,20 @@ class Map:
         self.rooms = RoomsManager(self)
         self.last_user_positions: dict[User, tuple[int, int]] = {}
 
-    def check_user_map(self, user):
-        last_user_pos = self.last_user_positions[user]
+    def check_user_map(self, user) -> list[Cell] | None:
+        last_user_pos = self.last_user_positions.get(user)
         user_x, user_y = int(user.ph_collider.x), int(user.ph_collider.y)
-        x_diff: Literal[-1, 0, 1] | int = user_x - last_user_pos[0]
-        y_diff: Literal[-1, 0, 1] | int = user_y - last_user_pos[1]
-        if x_diff == 0 and y_diff == 0:
-            # no moves
-            return
+        if last_user_pos is None:
+            # new user
+            # set big diff to generate full circle
+            x_diff = 100000
+            y_diff = 100000
+        else:
+            x_diff: Literal[-1, 0, 1] | int = user_x - last_user_pos[0]
+            y_diff: Literal[-1, 0, 1] | int = user_y - last_user_pos[1]
+            if x_diff == 0 and y_diff == 0:
+                # no moves
+                return
 
         self.last_user_positions[user] = (user_x, user_y)
         if abs(x_diff) < 2 and abs(y_diff) < 2:

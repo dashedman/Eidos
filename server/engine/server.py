@@ -3,6 +3,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
+from enum import IntEnum
 from multiprocessing import Process, Queue
 from urllib.parse import unquote
 
@@ -18,6 +19,12 @@ from . import logger
 from .game_app import GameFrontend, GameBackend
 from .config import ServerConfig
 from .session import SessionInfo
+
+
+class MessageCode(IntEnum):
+    Init = 0
+    Positions = 1
+    Map = 2
 
 
 @dataclass
@@ -116,7 +123,11 @@ class Server:
 
     async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):
         # async def ws_handler(self, request, websocket):
-        first_msg_json = await websocket.recv()
-        session_info = SessionInfo.from_json(json.loads(first_msg_json))
-        user = await self.frontend.register_session(session_info, websocket)
-        await user.listen()
+        init_msg = await websocket.recv()
+        init_msg_json = json.loads(init_msg)
+        assert init_msg_json['type'] == MessageCode.Init
+
+        session_info = SessionInfo.from_json(init_msg_json)
+        user_session = await self.frontend.register_session(session_info, websocket)
+        if user_session is not None:
+            await user_session.listen()

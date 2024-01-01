@@ -73,10 +73,10 @@ class PhysicsEngine:
                             self.processing_with_ceil(collider, cell.ph_collider)
 
     def processing_velocity(self, collider: InertiaBoxCollider, time_delta: float):
-        collider.vx += collider.ax * time_delta
-        collider.vy += (collider.ay - self.G_FORCE) * time_delta
-        collider.x += collider.vx * time_delta
-        collider.y += collider.vy * time_delta
+        collider.set_vx(collider.vx + collider.ax * time_delta)
+        collider.set_vy(collider.vy + (collider.ay - self.G_FORCE) * time_delta)
+        collider.set_x(collider.x + collider.vx * time_delta)
+        collider.set_y(collider.y + collider.vy * time_delta)
 
     @staticmethod
     def processing_with_ceil(collider: InertiaBoxCollider, cell_box: BoxCollider):
@@ -96,11 +96,11 @@ class PhysicsEngine:
                 if angle_orientation > 0:
                     # collision with left edge
                     collider.set_x(nearest_corner_x - collider.half_width)
-                    collider.vx = 0
+                    collider.set_vx(0)
                 else:
                     # collision with bottom edge
                     collider.set_y(nearest_corner_y - collider.half_height)
-                    collider.vy = 0
+                    collider.set_vy(0)
 
             elif collider.vy < 0:
                 nearest_corner_y = cell_box.top
@@ -112,11 +112,11 @@ class PhysicsEngine:
                 if angle_orientation > 0:
                     # collision with top edge
                     collider.set_y(nearest_corner_y + collider.half_height)
-                    collider.vy = 0
+                    collider.set_vy(0)
                 else:
                     # collision with left edge
                     collider.set_x(nearest_corner_x - collider.half_width)
-                    collider.vx = 0
+                    collider.set_vx(0)
 
             else:
                 non_soft_y_collision = (
@@ -127,7 +127,7 @@ class PhysicsEngine:
                     # horisontal right move
                     # only less! not equal
                     collider.set_x(cell_box.left - collider.half_width)
-                    collider.vx = 0
+                    collider.set_vx(0)
         elif collider.vx < 0:
             nearest_corner_x = cell_box.right
             if collider.vy > 0:
@@ -140,11 +140,11 @@ class PhysicsEngine:
                 if angle_orientation > 0:
                     # collision with bottom edge
                     collider.set_y(nearest_corner_y - collider.half_height)
-                    collider.vy = 0
+                    collider.set_vy(0)
                 else:
                     # collision with right edge
                     collider.set_x(nearest_corner_x + collider.half_width)
-                    collider.vx = 0
+                    collider.set_vx(0)
 
             elif collider.vy < 0:
                 nearest_corner_y = cell_box.top
@@ -156,11 +156,11 @@ class PhysicsEngine:
                 if angle_orientation > 0:
                     # collision with right edge
                     collider.set_x(nearest_corner_x + collider.half_width)
-                    collider.vx = 0
+                    collider.set_vx(0)
                 else:
                     # collision with top edge
                     collider.set_y(nearest_corner_y + collider.half_height)
-                    collider.vy = 0
+                    collider.set_vy(0)
             else:
                 non_soft_y_collision = (
                         cell_box.bottom < collider.top <= cell_box.top
@@ -170,7 +170,7 @@ class PhysicsEngine:
                     # horisontal left move
                     # only greater! not equal
                     collider.set_x(cell_box.right + collider.half_width)
-                    collider.vx = 0
+                    collider.set_vx(0)
 
         else:
             # vertical move
@@ -184,9 +184,9 @@ class PhysicsEngine:
                     # horisontal up move
                     # only less! not equal
                     collider.set_y(cell_box.bottom - collider.half_height)
-                    collider.vy = 0
+                    collider.set_vy(0)
                 elif collider.vy < 0 and cell_box.top > collider.bottom:
                     # horisontal down move
                     # only greater! not equal
                     collider.set_y(cell_box.top + collider.half_height)
-                    collider.vy = 0
+                    collider.set_vy(0)

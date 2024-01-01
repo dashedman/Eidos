@@ -1,3 +1,5 @@
+import ctypes
+import multiprocessing
 from enum import IntEnum
 
 
@@ -15,28 +17,17 @@ class InputAction(IntEnum):
 
 
 class InputType(IntEnum):
-    Hit = 1
-    Press = 2
-    PressOut = 3
+    PressOut = 0
+    Press = 1
 
 
 class InputRegistry:
     def __init__(self):
-        self.pressed: set[InputAction] = set()
-        self.clicked: set[InputAction] = set()
+        self.command_flags: list[bool] = multiprocessing.Array(ctypes.c_bool, 16, lock=False)
 
     def register_input(self, action: InputAction, input_type: InputType):
         match input_type:
-            case InputType.Press:
-                self.pressed.add(action)
             case InputType.PressOut:
-                self.pressed.remove(action)
-            case InputType.Hit:
-                self.clicked.remove(action)
-
-    def get_clicked(self):
-        if self.clicked:
-            clicked = self.clicked
-            self.clicked = set()
-            return clicked
-        return None
+                self.command_flags[action.value] = False
+            case InputType.Press:
+                self.command_flags[action.value] = True

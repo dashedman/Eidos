@@ -1,25 +1,24 @@
 import json
 import logging
+import multiprocessing
 from dataclasses import dataclass
 
-import websockets.server
 import websockets.connection
-from websockets.exceptions import ConnectionClosedOK
 
 from .inputs import InputRegistry, InputAction, InputType
 from .session import SessionInfo
 
 
 @dataclass
-class UserCoords:
-    x: float
-    y: float
-    chunkX: int
-    chunkY: int
-    location: str
+class UserPosition:
+    x: multiprocessing.Value
+    y: multiprocessing.Value
+    vx: multiprocessing.Value
+    vy: multiprocessing.Value
 
 
-class User:
+class UserSession:
+    position: UserPosition
 
     def __init__(
             self,
@@ -33,7 +32,6 @@ class User:
         self.logger = logging.getLogger(f'user_{name}')
 
         self.input_registry = InputRegistry()
-        self.coords = UserCoords(0, 0, 0, 0, 'spawn')
 
     async def listen(self):
         self.logger.info('Start listen user')
