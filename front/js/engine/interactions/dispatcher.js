@@ -217,11 +217,11 @@ export default class Dispatcher {
  * @enum {Number}
  */
 Dispatcher.ACTION = {
-    KEY_DOWN: 1,
-    KEY_UP: 2,
-    MOUSE_DOWN: 3,
-    MOUSE_MOVE: 4,
-    MOUSE_UP: 5
+    KEY_DOWN: 0,
+    KEY_UP: 1,
+    MOUSE_DOWN: 2,
+    MOUSE_MOVE: 3,
+    MOUSE_UP: 4
 }
 
 /**

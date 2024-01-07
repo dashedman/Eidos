@@ -1,6 +1,6 @@
 "use strict"
-import { VoidAnimationFunction } from '../../exceptions';
-import Sprite from './base';
+import { VoidAnimationFunction } from "../../exceptions.js";
+import Sprite from "./base.js";
 
 export default class AnimatedSprite extends Sprite {
     static BASE_FRAME_RATE = 70
@@ -12,12 +12,17 @@ export default class AnimatedSprite extends Sprite {
      * @param { Texture } texture 
      * @param  {...any} mixins 
      */
-     constructor(manager, bufferIndexes, texture, reversed=false, 
+     constructor(
+        manager, 
+        bufferIndexes, 
+        texture, 
+        rotate_bits=0, 
         animationFrameRate=AnimatedSprite.BASE_FRAME_RATE, 
         loopMode=AnimatedSprite.LOOP_MODE.CYCLE
     ) {
-        super(manager, bufferIndexes, texture, reversed)
+        super(manager, bufferIndexes, texture, rotate_bits)
 
+        // milliseconds per frame
         this.animationFrameRate = animationFrameRate
         this.currentFrame = 0
         this.loopMode = 0
@@ -33,8 +38,29 @@ export default class AnimatedSprite extends Sprite {
             this.animationFrameRate = AnimatedSprite.BASE_FRAME_RATE
     }
 
+    /**
+     * 
+     * @param {number} duration - duration of animation in milliseconds
+     */
+    setFrameRateFromDuration(duration) {
+        let frameRate = duration / this.texture.frameNumber
+        this.animationFrameRate = frameRate
+    }
+
+    /**
+     * 
+     * @param {AnimatedSprite.LOOP_MODE | string} loopMode 
+     * @returns 
+     */
     setLoopMode(loopMode) {
-        if(this.loopMode == loopMode) return 
+        if (typeof loopMode === 'string') {
+            loopMode = AnimatedSprite.LOOP_MODE[loopMode]
+        }
+
+        if (this.loopMode === loopMode) {
+            return
+        }
+
         this.loopMode = loopMode
         this.doAnimation = AnimatedSprite.FUNCTIONS.doAnimation[this.loopMode]
         // this.initAnimation = AnimatedSprite.FUNCTIONS.initAnimation[this.loopMode]
@@ -46,8 +72,7 @@ export default class AnimatedSprite extends Sprite {
         this.animationFrameRate = frameRate || this.animationFrameRate
         this.animationEnded = false
 
-        this.tx = this.reversed ? this.texture.frameOffset : 0
-        this.tw = this.texture.frameOffset * (this.reversed ? -1 : 1)
+        this.resetTextureCoords()
     }
 
     resetAnimation(){
@@ -56,7 +81,22 @@ export default class AnimatedSprite extends Sprite {
     }
 
     doAnimation(timeDelta){
-        throw VoidAnimationFunction()
+        throw new VoidAnimationFunction()
+    }
+
+    resetTextureCoords() {
+        this.setTextureCoords(0, null, this.texture.frameOffset, null)
+    }
+
+    /**
+     * 
+     * @param {number} currentFrame - from zero to this.frameNumber - 1
+     */
+    setFrameNumber(currentFrame) {
+        this.setTextureCoords(
+            this.texture.frameOffset * currentFrame, 
+            null, null, null
+        )
     }
 }
 
@@ -90,7 +130,7 @@ AnimatedSprite.FUNCTIONS = {
                 this.currentFrame + timeDelta / this.animationFrameRate // step
             ) % this.texture.frameNumber // fix by frame edge
             
-            this.tx = ( this.texture.frameOffset ) * Math.floor(this.currentFrame + this.reversed)
+            this.setFrameNumber( Math.floor(this.currentFrame) )
         },
         // ONCE
         function (timeDelta){
@@ -99,7 +139,7 @@ AnimatedSprite.FUNCTIONS = {
                 this.texture.frameNumber - 1
             )
     
-            this.tx = ( this.texture.frameOffset ) * Math.floor(this.currentFrame + this.reversed)
+            this.setFrameNumber( Math.floor(this.currentFrame) )
             if(this.currentFrame == this.texture.frameNumber - 1) {
                 this.animationEnded = true
             }

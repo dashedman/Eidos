@@ -1,0 +1,79 @@
+{
+    "player": [
+        {
+            "state_name": "StayingState",
+            "texture_name": "player_staying",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "CYCLE"
+            }
+        },
+        {
+            "state_name": "MovingState",
+            "texture_name": "player_moving",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "CYCLE"
+            }
+        },
+        {
+            "state_name": "WindupState",
+            "texture_name": "player_windup",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "ONCE",
+                "animation_duration": 1000
+            }
+        },
+        {
+            "state_name": "FallingState",
+            "texture_name": "player_falling",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "ONCE"
+            }
+        },
+        {
+            "state_name": "FallingMoveState",
+            "texture_name": "player_falling",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "ONCE"
+            }
+        },
+        {
+            "state_name": "JumpingState",
+            "texture_name": "player_jumping",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "ONCE"
+            }
+        },
+        {
+            "state_name": "JumpingMoveState",
+            "texture_name": "player_jumping",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "ONCE"
+            }
+        },
+        {
+            "state_name": "LandingState",
+            "texture_name": "player_landing",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "ONCE",
+                "animation_duration": 1000
+            }
+        },
+        {
+            "state_name": "LandingMoveState",
+            "texture_name": "player_directed_landing",
+            "pixel_box": [50, 50],
+            "sprite_meta": {
+                "loop_mode": "ONCE",
+                "animation_duration": 1000
+            }
+        }
+    ]
+}

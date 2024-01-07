@@ -1,8 +1,8 @@
 from typing import Literal
 
-from server.engine.logic.states.base import BaseState
-from server.engine.logic.states.main_states import StayingState
-from server.engine.physics import HasInertiaBoxColliderMultiprocess, InertiaBoxColliderMultiprocess
+from ..logic import states
+from ..physics import HasInertiaBoxColliderMultiprocess, InertiaBoxColliderMultiprocess
+from ..utils.shared_types import SharedBoolList
 
 
 class User(HasInertiaBoxColliderMultiprocess):
@@ -11,26 +11,26 @@ class User(HasInertiaBoxColliderMultiprocess):
     JUMP_START_SPEED = 18
     JUMP_ACCELERATION = ACCELERATION
 
-    WINDUP_DURATION = 1
-    LANDING_DURATION = 1
+    windup_duration: float
+    landing_duration: float
 
     def __init__(
             self,
             session_id: int,
             ph_collider: InertiaBoxColliderMultiprocess,
-            command_flags: list[bool],
+            command_flags: SharedBoolList,
     ):
         self.session_id = session_id
-        self.sight_distance = 4
+        self.sight_distance = 10
         self.ph_collider = ph_collider
-        self.command_flags: list[bool] = command_flags
+        self.command_flags: SharedBoolList = command_flags
         self.cf = self.command_flags    # alias
-        self.state: BaseState = StayingState(self)
+        self.state: states.BaseState = states.StayingState(self)
         self.direction: Literal[-1, 1] = 1
 
     def change_state(
             self,
-            state_cls: type[BaseState],
+            state_cls: type[states.BaseState],
             direction: Literal[-1, 1, None] = None,
     ):
         if direction is not None:

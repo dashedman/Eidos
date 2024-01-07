@@ -1,7 +1,8 @@
-import { NotImplementedError } from "../../exceptions"
-import PhBox from './../../physics/colliders/box';
-import Statement from "../../statement";
-import AnimatedSprite from './../../graphics/sprites/animated';
+import { NotImplementedError } from "../../exceptions.js"
+import PhBox from "./../../physics/colliders/box.js";
+import Statement from "../../statement.js";
+import AnimatedSprite from "./../../graphics/sprites/animated.js";
+import { Storage } from "../../engine.js";
 
 export class AlignInfo {
     /**
@@ -35,19 +36,17 @@ export class ChangeBoxData {
 
 export default class StateSkin {
     /**
-     * @param {{texture_name: String, box: ChangeBoxData, sprite_meta: {reversed?: boolean, loopMode: AnimatedSprite.LOOP_MODE, frameRate?: number}}} data 
+     * @param {{texture_name: String, box: ChangeBoxData, sprite_meta: {reversed?: boolean, loop_mode: string, animation_duration?: number}}} data 
+     * @param {Storage} storage
      */
-    constructor(data) {
-        /** @type { Statement } */
-        this.state = null
+    constructor(data, storage) {
+        /** @type { Storage } */
+        this.storage = storage
         this.data = data
     }
 
-    /**
-     * @param { Statement } state
-     */
-    bindState(state) {
-        this.state = state
+    get state() {
+        return this.storage._state
     }
 
     getTexture() {

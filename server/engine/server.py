@@ -27,12 +27,12 @@ class MessageCode(IntEnum):
     Map = 2
 
 
-@dataclass
+@dataclass(kw_only=True)
 class FrontendInfo:
-    folder: str
+    front_folder: str
+    resources_folder: str
     index: str
     favicon: str
-    resources: str
     js: str
     css: str
 
@@ -52,37 +52,43 @@ class Server:
 
         self.logger.info('Path to frontend part: %s', self.config.path_to_front)
         self.front_info = FrontendInfo(
-            self.config.path_to_front,
-            os.path.join(self.config.path_to_front, 'index.html'),
-            os.path.join(self.config.path_to_front, 'favicon.ico'),
-            os.path.join(self.config.path_to_front, 'resources'),
-            os.path.join(self.config.path_to_front, 'js'),
-            os.path.join(self.config.path_to_front, 'css'),
+            front_folder=self.config.path_to_front,
+            resources_folder=self.config.path_to_resources,
+            index=os.path.join(self.config.path_to_front, 'index.html'),
+            favicon=os.path.join(self.config.path_to_front, 'favicon.ico'),
+            js=os.path.join(self.config.path_to_front, 'js'),
+            css=os.path.join(self.config.path_to_front, 'css'),
         )
 
         self.http_app = sanic.Sanic("GameServerApp")
 
+        # load sprites meta
+        path_to_sprites_meta = os.path.join(self.config.path_to_resources, 'game_config/sprites_meta.json')
+        with open(path_to_sprites_meta, 'r') as f:
+            self.config.game.sprites_meta = json.load(f)
+
         f_to_b_queue = Queue()
         b_to_f_queue = Queue()
         self.frontend = GameFrontend(self.config.game, f_to_b_queue, b_to_f_queue)
-        self.backend_p = Process(target=GameBackend, args=(b_to_f_queue, f_to_b_queue))
+        self.backend_p = Process(target=GameBackend.init_n_run, name='BackendProcess', args=(b_to_f_queue, f_to_b_queue))
 
     async def run(self):
         self.loop = asyncio.get_running_loop()
         # add handler to route
-        self.http_app.static("/", self.front_info.index)
-        self.http_app.static("/favicon.ico", self.front_info.favicon)
+        self.http_app.static("/", self.front_info.index, name='root')
+        self.http_app.static("/favicon.ico", self.front_info.favicon, name='favicon')
 
         def add_routers(handler, suffix, depth=1):
             uri = suffix
             for i in range(depth):
                 uri += f'/<path{i}>'
-                self.http_app.add_route(handler, uri)
+                self.http_app.add_route(handler, uri, name=suffix + str(i))
 
         add_routers(self.http_handler, '/js', 10)
         add_routers(self.http_handler, '/css', 3)
-        add_routers(self.http_handler, '/resources', 6)
         add_routers(self.http_handler, '/shaders', 3)
+
+        add_routers(self.http_handler, '/resources', 6)
 
         # self.http_app.add_websocket_route(self.ws_handler, '/ws')
 
@@ -96,6 +102,7 @@ class Server:
 
         await self.http_server.startup()
 
+        self.backend_p.start()
         await asyncio.gather(
             self.http_server.serve_forever(),
             self.ws_server.serve_forever(),
@@ -103,10 +110,17 @@ class Server:
         )
 
     async def http_handler(self, request: Request, **__):
-        dynamic_path = self.front_info.folder + unquote(request.path.replace('/', '\\'))
+
+        path = unquote(request.path.replace('/', '\\'))
+        if path.startswith('\\resources'):
+            # cut off resources from uri to path
+            dynamic_path = self.front_info.resources_folder + path[len('\\resources'):]
+        else:
+            dynamic_path = self.front_info.front_folder + path
+
         last_path = dynamic_path.split('\\')[-1]
         if '.' not in last_path:
-            dynamic_path += '.js'
+            dynamic_path += ''
 
         if dynamic_path.endswith('.js'):
             mime_type = 'text/javascript'
@@ -118,7 +132,7 @@ class Server:
             mime_type = 'image/png'
         else:
             mime_type = 'text/plain'
-        
+
         return await sanic.response.file(dynamic_path, mime_type=mime_type)
 
     async def ws_handler(self, websocket: websockets.server.WebSocketServerProtocol):
@@ -130,4 +144,9 @@ class Server:
         session_info = SessionInfo.from_json(init_msg_json)
         user_session = await self.frontend.register_session(session_info, websocket)
         if user_session is not None:
-            await user_session.listen()
+            try:
+                await user_session.listen()
+            except Exception:
+                raise
+            finally:
+                await self.frontend.unregister_session(user_session)

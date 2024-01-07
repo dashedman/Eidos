@@ -1,12 +1,14 @@
+from pathlib import Path
 from typing import Literal
 
 from pytiled_parser import Tileset
 
 from . import Cell
 from .chunks import ChunksManager
-from .rooms import RoomsManager
+from . import rooms
 from ..entities import User
-from ..game_app import GameBackend
+from .. import game_app
+from ..physics import BoxCollider
 
 DIRECTION_TO_OCTANT = {
     1: {(-1, 1), (0, 1), (1, 1), (1, 0)},
@@ -23,14 +25,24 @@ DIRECTION_TO_OCTANT = {
 class Map:
     CHUNK_SIZE = 16
 
-    def __init__(self, backend: GameBackend):
+    def __init__(self, backend: 'game_app.GameBackend'):
         self.backend = backend
 
         self.chunks = ChunksManager(self.CHUNK_SIZE)
-        self.rooms = RoomsManager(self)
+        self.rooms = rooms.RoomsManager(self)
         self.last_user_positions: dict[User, tuple[int, int]] = {}
 
-    def check_user_map(self, user) -> list[Cell] | None:
+    def find_place_for(self, collider: BoxCollider):
+        foot_x, foot_y = int(collider.x), int(collider.y)
+        self.get_cell(foot_x, foot_y)
+        chunk_x, chunk_y, cell_x_in_chunk, cell_y_in_chunk = \
+            self.get_chunk_coords(foot_x, foot_y)
+
+        chunk = self.chunks.get_chunk((chunk_x, chunk_y))
+        left_cell_x, left_cell_y = chunk.find_place_for(collider, (cell_x_in_chunk, cell_y_in_chunk))
+        return chunk_x + left_cell_x, chunk_y + left_cell_y
+
+    def check_user_map(self, user: User) -> list[Cell] | None:
         last_user_pos = self.last_user_positions.get(user)
         user_x, user_y = int(user.ph_collider.x), int(user.ph_collider.y)
         if last_user_pos is None:
@@ -138,10 +150,8 @@ class Map:
         return list(cell_for_user)
 
     def get_cell(self, cell_x: int, cell_y: int) -> Cell | None:
-        chunk_x = cell_x // self.CHUNK_SIZE
-        chunk_y = cell_y // self.CHUNK_SIZE
-        cell_x_in_chunk = cell_x % self.CHUNK_SIZE
-        cell_y_in_chunk = cell_y % self.CHUNK_SIZE
+        chunk_x, chunk_y, cell_x_in_chunk, cell_y_in_chunk = self.get_chunk_coords(cell_x, cell_y)
+
         chunk = self.chunks.get_chunk((chunk_x, chunk_y))
         if chunk is None:
             # generate new room and chunk
@@ -151,5 +161,12 @@ class Map:
         cell = chunk.grid[cell_x_in_chunk][cell_y_in_chunk]
         return cell
 
-    def update_tileset(self, tilesets: dict[int, Tileset]):
-        self.backend.update_tileset(tilesets)
+    def get_chunk_coords(self, cell_x: int, cell_y: int) -> tuple[int, int, int, int]:
+        chunk_x = cell_x // self.CHUNK_SIZE
+        chunk_y = cell_y // self.CHUNK_SIZE
+        cell_x_in_chunk = cell_x % self.CHUNK_SIZE
+        cell_y_in_chunk = cell_y % self.CHUNK_SIZE
+        return chunk_x, chunk_y, cell_x_in_chunk, cell_y_in_chunk
+
+    def update_tileset(self, tilesets: dict[int, Tileset], tileset_path: Path = None):
+        self.backend.update_tileset(tilesets, tileset_path, ignore_class_none=True)

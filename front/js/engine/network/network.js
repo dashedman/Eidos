@@ -1,8 +1,8 @@
 "use strict"
-import Statement from '../statement.js';
-import Deque from '../utils/deque.js';
-import { WebRTCConnection } from './connection/webrtc_connection.js';
-import { WebSockConnection } from './connection/websock_connection.js';
+import Statement from "../statement.js";
+import Deque from "../utils/deque.js";
+import { WebRTCConnection } from "./connection/webrtc_connection.js";
+import { WebSockConnection } from "./connection/websock_connection.js";
 
 class Network {
     constructor(config, debugMode=false) {
@@ -20,8 +20,7 @@ class Network {
         console.debug('Preparing Network...')
     }
 
-    run() {}
-    stop() {}
+    close() {}
 }
 
 

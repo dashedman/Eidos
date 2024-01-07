@@ -1,11 +1,20 @@
 "use strict"
 
-import { Network as EngineNetwork } from './../engine/engine.js'
-import Camera from '../engine/utils/camera.js'
-import World from '../engine/entities/enviroment/world.js'
-import Creature from '../engine/entities/creatures/base.js'
-import Dispatcher from './../engine/interactions/dispatcher.js';
-import Logic from './logic.js'
+import { Network as EngineNetwork } from "./../engine/engine.js"
+import World from "../engine/entities/enviroment/world.js"
+import Logic from "./logic.js"
+import { waitTick } from "../engine/utils/async_utils.js"
+
+/**
+ * @enum {number}
+ */
+const MessageCode = {
+    Init: 0,
+    Positions: 1,
+    Map: 2,
+}
+    
+
 
 export default class Network extends EngineNetwork {
     constructor(logic, world, debugMode=false) {
@@ -16,22 +25,33 @@ export default class Network extends EngineNetwork {
         this.logic = logic
         /** @type {World} */
         this.world = world
+
+        this.initiated = false
+    }
+
+    get render() {
+        return this._state.render
+    }
+
+    get storage() {
+        return this._state.storage
     }
 
     async prepare({ws_host, ws_port}) {
         await super.prepare()
         await this.logic.getPrepareIndicator()
 
-        let url = `wss://${ws_host}:${ws_port}/ws`
+        let url = (ws_host == '127.0.0.1' ? 'ws' : 'wss') + `://${ws_host}:${ws_port}/`
         console.debug('Create websocket by url:', url)
         this.socket = new WebSocket(url)
-        this.socket.onclose = this.sock_close_handler.bind(this)
-        this.socket.onmessage = this.sock_message_handler.bind(this)
+        this.socket.onclose = (e) => this.sock_close_handler.bind(e)
+        this.socket.onmessage = (e) => this.sock_message_handler(e)
 
         await new Promise((res, rej) => {
             let sock_open_handler = (e) => {
                 console.debug("Соединение установлено. Отправляем данные для регистрации сессии на сервер...")
                 let data = {
+                    'type': MessageCode.Init,
                     'session': {
                         version: 'v0.0.1'
                     }
@@ -42,18 +62,47 @@ export default class Network extends EngineNetwork {
 
             this.socket.onopen = sock_open_handler
         })
+
+        let startWait = performance.now()
+        // wait init message for 20 sec
+        while (!this.initiated && performance.now() < startWait + 20000) {
+            await waitTick()
+        }
+
+        if (!this.initiated) {
+             new Error('Timeout! Websocket connection is not initiated!!!')
+        }
     }
 
-    sock_message_handler(event) {
-        /** @type {{case: String, data: Object}} */
+    async sock_message_handler(event) {
+        /** @type {{type: MessageCode, data: Object}} */
         let message = JSON.parse(event.data)
-        switch(message.case) {
-            case 'positions':
-                return this.logic.updateUsersPositions(message.data.positions)
-            case 'set_state':
-                return this.logic.reloadPlayerState(message.data.state)
-            case 'session': 
-                return this.logic.player.setSessionId(message.data.id)
+        switch(message.type) {
+            case MessageCode.Positions:
+                if(this.initiated) {
+                    this.logic.updateUsersPositions(message.data.positions)
+                }
+                return 
+            case MessageCode.Map:
+                if(this.initiated) {
+                    this.logic.updateMap(message.data)
+                }
+                return 
+            case MessageCode.Init: 
+                /* TODO: 
+                    - add durations of state animations
+                */
+                console.log('Catch init message from server!')
+                this.world.settings.chunkSize = message.data.chunk_size
+                console.log(message.data.tilesets)
+                await this.render.updateTilesetData(message.data.tilesets)
+                for (let [characterName, skinSet] of Object.entries(message.data.skin_sets)) {
+                    this.storage.skinsList.addSkinsSet(characterName, skinSet)
+                }
+
+                this.logic.initPlayer(message.data.id)
+                this.initiated = true
+                return 
             default:
                 console.debug('[SOCKET] Unknown message:', event.data)
         }
@@ -67,39 +116,27 @@ export default class Network extends EngineNetwork {
         console.log('[SOCKET] Catch the error:', e)
     }
 
-    update() {
-        this.request('position', {
-            'x': this.logic.player.x,
-            'y': this.logic.player.y
-        })
-
-        while(!this.requestsQueue.isEmpty()){
-            let request = this.requestsQueue.popLeft()
-            this.socket.send(JSON.stringify(request))
-        }
-    }
-
-    run() {
-        let loop = () => {
-            this.update()
-            this.frameId = setTimeout(loop, 100)
-        }
-        loop()
-    }
-
-    stop() {
-        clearTimeout(this.frameId)
+    close() {
+        this.socket.close()
     }
 
     /**
      * 
-     * @param {String} command
-     * @param {Object} options
+     * @param {MessageCode} command
+     * @param {*} options
      */
-    request(command, options={}) {
-        this.requestsQueue.push({
-            'case': command,
+    async request(command, options=null) {
+        this.socket.send(JSON.stringify({
+            'type': command,
             'data': options
-        })
+        }))
+    }
+
+    /**
+     * 
+     * @param {*} request
+     */
+    async send(request) {
+        this.socket.send(JSON.stringify(request))
     }
 }

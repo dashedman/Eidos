@@ -1,7 +1,8 @@
 "use strict"
 import { Renderer } from "../../render.js";
+import Texture from "../../textures/base.js";
 import Sprite from "../base.js";
-import AnimatedSprite from './../animated';
+import AnimatedSprite from "./../animated.js";
 
 
 export default class SpriteManager {
@@ -19,7 +20,9 @@ export default class SpriteManager {
     constructor(render) {
         const gl = render.gl
         this._render = render
+        /** @type { Sprite[] } */
         this.sprites = []
+        /** @type { AnimatedSprite[] } */
         this.animatedSprites = []
 
         // buffer of position of verticles
@@ -30,14 +33,19 @@ export default class SpriteManager {
         this.textureHandler._glBuffer = gl.createBuffer()
     }
 
-    createSprite({texture, reversed=false, isAnimated=false}){
+    /**
+     * 
+     * @param {{texture: Texture, rotate_bits?: number, isAnimated?: boolean}} param0 
+     * @returns 
+     */
+    createSprite({texture, rotate_bits=0, isAnimated=false}){
         let bufferIndexes = this.allocate()
         let sprite_cls = Sprite
         if(isAnimated) {
             sprite_cls = AnimatedSprite
         }
 
-        let sprite = new sprite_cls(this, bufferIndexes, texture, reversed)
+        let sprite = new sprite_cls(this, bufferIndexes, texture, rotate_bits)
         this.sprites.push(sprite)
 
         if(isAnimated) {

@@ -1,12 +1,12 @@
 from typing import Self, Literal
 
-from server.engine.entities import User
-from server.engine.logic.states.abstract import AbstractState
+from ... import entities
+from .abstract import AbstractState
 
 
 class BaseState(AbstractState):
 
-    def __init__(self, user: User):
+    def __init__(self, user: 'entities.User'):
         self.state_lifetime = 0.0
         self.user = user
 

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -58,18 +59,21 @@ class LoggingConfig:
 class GameConfig:
     name: str
     version: str
+    sprites_meta: dict[str, Any]
 
     @staticmethod
     def from_dict(source):
         return GameConfig(
             source['name'],
             source['version'],
+            source['sprites_meta']
         )
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ServerConfig:
     path_to_front: str
+    path_to_resources: str
     connection: ConnectionConfig
     logger: LoggingConfig
     game: GameConfig
@@ -77,8 +81,9 @@ class ServerConfig:
     @staticmethod
     def from_dict(source: dict) -> 'ServerConfig':
         return ServerConfig(
-            source['path_to_front'],
-            ConnectionConfig.from_dict(source['connection']),
-            LoggingConfig.from_dict(source['logger']),
-            GameConfig.from_dict(source['game'])
+            path_to_front=source['path_to_front'],
+            path_to_resources=source['path_to_resources'],
+            connection=ConnectionConfig.from_dict(source['connection']),
+            logger=LoggingConfig.from_dict(source['logger']),
+            game=GameConfig.from_dict(source['game']),
         )

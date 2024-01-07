@@ -1,14 +1,15 @@
 "use strict"
-import Dispatcher from './interactions/interactions.js'
-import Renderer from './graphics/graphics.js'
-import Network from './network/network.js'
-import Physics from './physics/physics.js'
-import Entities from './entities/entities.js'
-import Logic from './logic.js'
-import Storage from './storage/storage.js'
 
-import Camera from './utils/camera.js';
-import TimeManager from './utils/time.js'
+import Dispatcher from "./interactions/interactions.js"
+import Renderer from "./graphics/graphics.js"
+import Network from "./network/network.js"
+import Physics from "./physics/physics.js"
+import Entities from "./entities/entities.js"
+import Logic from "./logic.js"
+import Storage from "./storage/storage.js"
+
+import Camera from "./utils/camera.js";
+import TimeManager from "./utils/time.js"
 
 
 // ==========================================
@@ -100,8 +101,8 @@ export default class Statement {
             //     this.physics.update(this.agregatedDelta)
             //     this.agregatedDelta = 0
             // }
-            this.logic.update(timeDelta)
-            this.physics.update(timeDelta)
+            // this.logic.update(timeDelta)
+            // this.physics.update(timeDelta)
 
             // camera control
                     
@@ -121,9 +122,10 @@ export default class Statement {
             this.frameId = requestAnimationFrame(renderFrame);
             this.prevTimeStamp = timeStamp
         };
+
+        console.log('Starting main loop!')
         this.frameId = requestAnimationFrame(renderFrame);
         this.prevTimeStamp = performance.now()
-        this.network.run()
         this.is_running = true
     }
 
@@ -132,7 +134,7 @@ export default class Statement {
             clearTimeout(this.loop.id)
             cancelAnimationFrame(this.frameId)
             this.render.stop()
-            this.network.stop()
+            this.network.close()
             this.is_running = false
         }   
     }

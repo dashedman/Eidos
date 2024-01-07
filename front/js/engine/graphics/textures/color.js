@@ -14,9 +14,7 @@ export default class ColorTexture extends Texture{
         }
         ctx.putImageData(pixels, 0, 0)
 
-        this.image = new Image()
-        this.image.src = canvas.toDataURL()
-        this.loadState = autils.getImageLoadPromise(this.image)
+        super.loadData({src: canvas.toDataURL()})
     }
 }
 

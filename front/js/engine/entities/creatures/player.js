@@ -1,13 +1,13 @@
 "use strict"
 
-import User from "./user";
-import Commander from './character/commander/base';
-import { BattleMode, TravelMode } from "./character/states/modes";
-import CharacterSkinsList from './../skins/character_skins_list';
-import Statement from "../../statement";
-import { DRAW_GROUND_PLAN } from "../../graphics/constants";
-import { StayingState } from "./character/states/states";
-import { EngineError } from "../../exceptions";
+import User from "./user.js";
+import Commander from "./character/commander/base.js";
+import CharacterSkinsList from "./../skins/character_skins_list.js";
+import Statement from "../../statement.js";
+import { DRAW_GROUND_PLAN } from "../../graphics/constants.js";
+import { BaseCharacterState, StayingState } from "./character/states/states.js";
+import { EngineError } from "../../exceptions.js";
+
 
 export class Player extends User {
     /**
@@ -21,8 +21,8 @@ export class Player extends User {
         /** @type { CharacterSkinsList } */
         this.skinsSources = this.prepareSkinsSources(state)
 
-        /** @type { BaseCharacterMode } */
-        this.mode = new TravelMode(this)
+        /** @type { BaseCharacterState } */
+        this.state = new StayingState(this)
         /** @type { Commander } */
         this.commander = new Commander(this, dispatcher)
         /** @type { Boolean[] } */
@@ -52,17 +52,11 @@ export class Player extends User {
     }
 
     do(command) {
-        // if(this.commandsFlags[command]) return 
-
         this.commandsFlags[command] = true
-        // this.mode.do(command)
     }
 
     undo(command) {
-        // if(!this.commandsFlags[command]) return 
-
         this.commandsFlags[command] = false
-        // this.mode.undo(command)
     }
 
     /**
@@ -76,18 +70,21 @@ export class Player extends User {
         }
         console.log(state_cls.name, this.direction > 0 ? 'right' : 'left')
 
-        this.mode.changeState(state_cls)
-        if(this.mode.state.constructor == state_cls) {
+        this.state.onFinish()
+        this.state = new state_cls(this)
+        this.state.onStart()
 
-            let state_skin = this.skinsSources.get(this.mode.constructor).get(state_cls)
-            if(!state_skin) throw EngineError('StateSkin not found!')
+        if(this.state.constructor == state_cls) {
+
+            let state_skin = this.skinsSources.get(state_cls.name)
+            if (!state_skin) throw new EngineError(`StateSkin not found for ${state_cls.name}!`)
 
             state_skin.adaptPhysicBox(this.pbox)
 
-            const {loopMode, frameRate} = state_skin.getSpriteMeta()
+            const {loop_mode: loopMode, animation_duration: animationDuration} = state_skin.getSpriteMeta()
             const reversed = this.direction < 0
 
-            this.sprite.setFrameRate(frameRate)
+            this.sprite.setFrameRateFromDuration(animationDuration)
             this.sprite.setLoopMode(loopMode)
 
             this.sprite.setTexture(
@@ -107,17 +104,8 @@ export class Player extends User {
         }
     }
 
-    /**
-     * @param { typeof BaseCharacterMode } mode_cls
-     */
-    changeMode() {
-        mode_cls = this.mode.constructor == TravelMode ? BattleMode : TravelMode 
-        this.mode = new mode_cls(this)
-        return true
-    }
-
     update(timedelta) {
-        this.mode.update(timedelta)
+        this.state.update(timedelta)
     }
 
     /**
@@ -125,6 +113,6 @@ export class Player extends User {
      * @returns { CharacterSkinsList }
      */
     prepareSkinsSources(state) {
-        return state.storage.skinsList.get(this.constructor)
+        return state.storage.skinsList.get('player')
     }
 }

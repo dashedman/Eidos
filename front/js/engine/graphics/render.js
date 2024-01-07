@@ -1,14 +1,37 @@
 "use strict"
-import TextureManager from './textures/manager.js';
-import {SpriteManager, SortingSpriteManager} from './sprites/sprites.js';
+import TextureManager from "./textures/manager.js";
+import {SpriteManager, SortingSpriteManager} from "./sprites/sprites.js";
 
 import Statement from "../statement.js";
 import { autils, Camera } from "../utils/utils.js";
-import { DRAW_GROUND_PLAN } from './constants.js';
-import LineManager from './shapes/manager.js';
-import { NotImplementedError } from '../exceptions.js';
-import TextManager from './text/manager.js';
-import Dispatcher from './../interactions/interactions';
+import { DRAW_GROUND_PLAN } from "./constants.js";
+import LineManager from "./shapes/manager.js";
+import { NotImplementedError } from "../exceptions.js";
+import TextManager from "./text/manager.js";
+import Dispatcher from "./../interactions/interactions.js";
+
+
+/**
+ * @typedef {{tile_id: number, duration: number}} AnimationData
+ * 
+ * @typedef {{
+ * 	id: number, 
+ * 	type: string, 
+ * 	animation: AnimationData[] | null
+ * }} TileData
+ * 
+ * @typedef {{
+ *  gid_key: number,
+ *  first_gid: number,
+ *  name: string,
+ * 	image: string, 
+ *  columns: number,
+ * 	tile_width: number, 
+ * 	tile_height: number, 
+ *  tile_count: number,
+ * 	tiles: TileData[]
+ * }} TileSetData
+ */
 
 // ==========================================
 // Renderer
@@ -91,7 +114,7 @@ export class Renderer {
 		this.textureManager = new TextureManager(this);
 		this.textManager = new TextManager(this, true)
 
-		/** @type {Map<number, Texture>} */
+		/** @type {Map<string, Texture>} */
 		this.textureGIDRegistry = new Map()
 
 		this._prepeared = false
@@ -102,20 +125,29 @@ export class Renderer {
 	 * 
 	 * Prepare renderer to run. Load some weight things. Must be overrided with super()
 	 */
-	async prepare({tilesets, glyphInfo}) {
+	async prepare({glyphInfo}) {
 		// Load shaders
 		console.debug('Preparing Renderer...')
 		await this.textureManager.prepare();
-		for(let tileset of tilesets){
-			let textureRegistry = await this.textureManager.fromTileset(tileset)
-			for(let [GID, texture] of Object.entries(textureRegistry))
-				this.textureGIDRegistry.set(Number.parseInt(GID), texture)
-		}
 		await this.textManager.prepare(glyphInfo)
 		await this.loadShaders();
 
 		this._prepeared = true
         console.debug('Renderer prepeared.')
+	}
+
+	/**
+	 * 
+	 * @param {Record<number, TileSetData>} tilesets 
+	 */
+	async updateTilesetData(tilesets) {
+        console.log('Update tileset data')
+		for(let tileset of Object.values(tilesets)){
+			let textureRegistry = await this.textureManager.fromTileSetData(tileset)
+			for(let [GID, texture] of Object.entries(textureRegistry))
+				this.textureGIDRegistry.set(GID, texture)
+		}
+		console.log(this.textureGIDRegistry)
 	}
 
     async getPrepareIndicator() {
@@ -176,7 +208,13 @@ export class Renderer {
 			sprite.doAnimation(timeDelta)
 		}
 		for(const sprite of this.mainSpriteManager.animatedSprites){
-			sprite.doAnimation(timeDelta)
+			try {
+				sprite.doAnimation(timeDelta)
+			} catch (e) {
+				console.log(sprite)
+				throw e
+			}
+				
 		}
 		for(const sprite of this.foregroundSpriteManager.animatedSprites){
 			sprite.doAnimation(timeDelta)
@@ -389,14 +427,14 @@ export class Renderer {
 	 * @param {DRAW_GROUND_PLAN} role - role of sprite on scene. From enum DRAW_GROUND_PLAN.
 	 * @returns {Sprite} - created sprite.
 	 */
-	createSprite({texture, isAnimated=false}, role=DRAW_GROUND_PLAN.MAIN){
+	createSprite({texture, isAnimated=false, rotate_bits=0}, role=DRAW_GROUND_PLAN.MAIN){
 		switch (role) {
 			case DRAW_GROUND_PLAN.BACK:
-				return this.backgroundSpriteManager.createSprite({texture, isAnimated})
+				return this.backgroundSpriteManager.createSprite({texture, isAnimated, rotate_bits})
 			case DRAW_GROUND_PLAN.MAIN:
-				return this.mainSpriteManager.createSprite({texture, isAnimated})
+				return this.mainSpriteManager.createSprite({texture, isAnimated, rotate_bits})
 			case DRAW_GROUND_PLAN.FRONT:
-				return this.foregroundSpriteManager.createSprite({texture, isAnimated})
+				return this.foregroundSpriteManager.createSprite({texture, isAnimated, rotate_bits})
 			default:
 				throw 'Undefined render type of sprite'
 		}

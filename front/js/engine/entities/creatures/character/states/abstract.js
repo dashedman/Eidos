@@ -1,7 +1,7 @@
 "use strict"
 
-import { AbstractMethodError } from "../../../../exceptions";
-import Character from "../character";
+import { AbstractMethodError } from "../../../../exceptions.js";
+import Character from "../character.js";
 
 
 export class AbstractState {

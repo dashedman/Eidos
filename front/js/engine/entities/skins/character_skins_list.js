@@ -1,18 +1,16 @@
-import { BaseCharacterMode } from "../creatures/character/states/modes";
-import BaseSkinsList from "./base";
-import ModeSkinsList from './mode_skins_list';
+import { Storage } from "../../engine.js";
+import BaseSkinsList from "./base.js";
+import StateSkin, { AlignInfo, ChangeBoxData } from "./state_skin.js";
 
 export default class CharacterSkinsList extends BaseSkinsList {
-    constructor(state = null) {
-        super()
+    constructor(storage) {
+        super(storage)
         
-        /** @type {Map<typeof BaseCharacterMode, ModeSkinsList>} */
+        /** @type {Map<string, StateSkin>} */
         this.skinsMap = new Map()
-        this.state = state
     }
 
     set(key, val) {
-        val.bindState(this.state)
         return this.skinsMap.set(key, val)
     }
 
@@ -20,11 +18,25 @@ export default class CharacterSkinsList extends BaseSkinsList {
         return this.skinsMap.get(key)
     }
 
-    bindState(state) {
-        this.state = state
-        
-        for(let skin of this.skinsMap.values()) {
-            skin.bindState(this.state)
-        }
+    /**
+     * 
+     * @param {import("./base").stateSkinData} characterState 
+     */
+    addFromData(characterState) {
+        const [pw, ph] = characterState.pixel_box
+        const [w, h] = [pw / this.state.PIXELS_MEASURE, ph / this.state.PIXELS_MEASURE]
+        let box_data = new ChangeBoxData(
+            w, h, 0, 0, 
+            new AlignInfo(StateSkin.alignMode.CENTER, StateSkin.alignMode.BOTTOM)
+        )
+
+        this.set(
+            characterState.state_name, 
+            new StateSkin({
+                texture_name: characterState.texture_name, 
+                box: box_data,
+                sprite_meta: characterState.sprite_meta
+            }, this.storage)
+        )
     }
 }

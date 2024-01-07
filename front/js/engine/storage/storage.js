@@ -1,15 +1,19 @@
 'use strict'
 
-import Statement from './../statement';
+import GlobalSkinsList from "../entities/skins/global_skins_list.js";
+import Statement from "./../statement.js";
 
 
 export default class Storage {
-    constructor(debugMode=false) {
+    constructor(state, debugMode=false) {
         /**
          * @type {Statement}
          */
-        this._state = null
+        this._state = state
         this.debugMode = debugMode
+
+        /** @type {GlobalSkinsList} */
+        this.skinsList = new GlobalSkinsList(this)
     }
 
     async prepare() {

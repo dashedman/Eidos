@@ -3,8 +3,8 @@
 import { NotImplementedError } from "../exceptions.js";
 import Statement from "../statement.js";
 import PhBox from "./colliders/box.js";
-import PhPoint from './colliders/point.js';
-import PhInertiaBox from './colliders/inertia_box.js';
+import PhPoint from "./colliders/point.js";
+import PhInertiaBox from "./colliders/inertia_box.js";
 
 export default class Physics {
     constructor(debugMode=false) {

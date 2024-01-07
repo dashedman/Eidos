@@ -5,11 +5,10 @@ import Statement from "../engine/statement.js"
 import World from "../engine/entities/enviroment/world.js"
 import Physics from "./physic.js"
 import Logic from "./logic.js"
-import Renderer from './render.js'
+import Renderer from "./render.js"
 import Storage from "./storage.js"
-import { Player } from './../engine/entities/creatures/player';
-import { loadGame } from './data/init';
-let utils = engine.utils.autils
+import { Player } from "./../engine/entities/creatures/player.js";
+import Network from "./network.js"
 
 
 async function initGame(){
@@ -23,7 +22,7 @@ async function initGame(){
     let renderer = new Renderer(canvas, debugMode)
     let physics = new Physics(world, debugMode)
     let logic = new Logic(world, debugMode)
-    let network = new engine.Network(logic, world, debugMode)
+    let network = new Network(logic, world, debugMode)
     let storage = new Storage(debugMode)
     // let network = new Network(logic, world, debugMode)
     let entities = new engine.Entities()
@@ -37,12 +36,10 @@ async function initGame(){
     state.setLoopDelay(0.01)
     world.state = state
 
-    let mapConfig = await utils.loadJsonResources('resources/maps/polygon.json')
     await state.prepare({
         render_config: {
-            tilesets: mapConfig.tilesets,
             glyphInfo: {
-                resource: 'font.png',
+                resource: '/resources/font.png',
                 signWidth: 8,
                 signHeight: 8,
                 markdown: {
@@ -89,23 +86,20 @@ async function initGame(){
                 }
             }
         },
-        logic_config: {
-            layers: mapConfig.layers,
-        },
+        logic_config: {},
         network_config: {
             ws_host: document.domain,
-            ws_port: 8000
+            ws_port: 8001
         }
     })
 
-    state.storage.skinsList = loadGame(state)
-
-    let player = new Player(state, {}, {x: 0, y: 5, h: 1.5}, state.dispatcher)
-    state.logic.setPlayer(player)
-
     await debugInit(state)
+    await state.logic.waitForPlayer()
+    await state.logic.waitForWorld()
     state.run(true)
 }
+
+
 /**
  *
  * @param {Statement} state
@@ -118,5 +112,7 @@ async function debugInit(state) {
     let red_pixel = state.render.createColorTexture("red", [255, 0, 0, 255], 1, 1)
     console.debug('End debug init')
 }
+
+
 // start
 initGame()

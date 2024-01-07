@@ -1,5 +1,5 @@
 from server.engine.inputs import InputAction
-from server.engine.logic.states.base import BaseState
+from .base import BaseState
 
 
 class StayingState(BaseState):
@@ -82,7 +82,7 @@ class MovingState(BaseState):
 class WindupState(MovingState):
     def update_by_state(self, time_delta: float):
         # next state
-        if self.state_lifetime > self.user.WINDUP_DURATION:
+        if self.state_lifetime > self.user.windup_duration:
             return self.change_state(MovingState)
 
         if not (self.user.cf[InputAction.MoveLeft] ^ self.user.cf[InputAction.MoveRight]):
@@ -233,7 +233,7 @@ class LandingState(BaseState):
 
     def update_by_state(self, time_delta: float):
 
-        if self.state_lifetime > self.user.LANDING_DURATION:
+        if self.state_lifetime > self.user.landing_duration:
             return self.change_state(StayingState)
 
 
@@ -252,7 +252,7 @@ class LandingMoveState(LandingState):
     # TODO: same from WindupState, add DRY
     def update_by_state(self, time_delta: float):
         # next state
-        if self.state_lifetime > self.user.WINDUP_DURATION:
+        if self.state_lifetime > self.user.windup_duration:
             return self.change_state(MovingState)
 
         if not (self.user.cf[InputAction.MoveLeft] ^ self.user.cf[InputAction.MoveRight]):

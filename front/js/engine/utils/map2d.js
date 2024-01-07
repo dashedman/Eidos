@@ -113,7 +113,7 @@ export default class Map2D{
 
     /**
      * @param {[K1, K2]}
-     * @returns {V}
+     * @returns {V | undefined}
      */
     get(key1, key2){
         const minorMap = this._majorMap.get(key1)

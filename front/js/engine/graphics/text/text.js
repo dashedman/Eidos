@@ -1,9 +1,9 @@
 "use strict"
 
-import Sprite from '../sprites/base.js';
-import TextManager from './manager.js';
-import Texture from '../textures/base.js';
-import { DRAW_GROUND_PLAN } from '../constants.js';
+import Sprite from "../sprites/base.js";
+import TextManager from "./manager.js";
+import Texture from "../textures/base.js";
+import { DRAW_GROUND_PLAN } from "../constants.js";
 
 
 export default class TextBox{

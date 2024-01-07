@@ -1,8 +1,8 @@
 "use strict"
 
-import { AbstractState } from "./abstract";
-import Character from "../character";
-import Commander from './../commander/base';
+import { AbstractState } from "./abstract.js";
+import Character from "../character.js";
+import Commander from "./../commander/base.js";
 
 export class BaseCharacterState extends AbstractState {
     /**
@@ -22,10 +22,6 @@ export class BaseCharacterState extends AbstractState {
      */
     changeState(state_cls, direction=null, continueAnimation=false) {
         return this.character.changeState(state_cls, direction, continueAnimation)
-    }
-
-    changeMode(direction=null, continueAnimation=false) {
-        return this.character.changeMode(direction, continueAnimation)
     }
 
     onStart() {}
@@ -86,9 +82,6 @@ export class StayingState extends BaseCharacterState {
             }
             if (this.character.cf[Commander.cs.JUMP]) {
                 return this.changeState(JumpingState)
-            }
-            if (this.character.cf[Commander.cs.CHANGE_MODE]) {
-                // return this.changeMode()
             }
         }
     }

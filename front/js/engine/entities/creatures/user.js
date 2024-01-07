@@ -1,6 +1,6 @@
 "use strict"
 
-import Character from "./character/character"
+import Character from "./character/character.js"
 
 export default class User extends Character {
     /**

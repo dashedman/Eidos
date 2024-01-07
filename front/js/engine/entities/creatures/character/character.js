@@ -1,8 +1,8 @@
 "use strict"
 
 import Creature from "../base.js"
-import { AbstractState } from './states/abstract';
-import { BaseCharacterState } from './states/states';
+import { AbstractState } from "./states/abstract.js";
+import { BaseCharacterState } from "./states/states.js";
 
 /**
  * 

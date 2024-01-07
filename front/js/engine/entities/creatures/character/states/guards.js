@@ -1,7 +1,7 @@
 "use strict"
 
-import { AbstractState } from "./abstract";
-import { BaseCharacterState } from './states';
+import { AbstractState } from "./abstract.js";
+import { BaseCharacterState } from "./states.js";
 
 
 export class BaseGuard extends AbstractState {

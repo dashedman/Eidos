@@ -173,7 +173,6 @@ function generateTiling(textures, extrude=false){
                 if(level.rects[floorIndex].y + level.rects[floorIndex].h >= rect.y) continue;
                 
                 // if can to set in level
-                console.log('ceil', rect.name, rect.x, rect.y)
                 level.rects.push(rect)
                 newLevel = false;
                 break;

@@ -1,16 +1,16 @@
 "use strict"
 
-async function waitTick () {
+export async function waitTick () {
     return new Promise( (resolve) => setTimeout(resolve, 0) )
 }
 
-async function waitTicks (ticks = 1) {
+export async function waitTicks (ticks = 1) {
     for(let i=0; i<ticks; i++){
         await waitTick()
     }
 }
 
-async function loadRowResources(url){
+export async function loadRawResources(url){
     return new Promise(function(resolve, reject){
         const request = new XMLHttpRequest()
         request.open('GET', url, true)
@@ -25,11 +25,11 @@ async function loadRowResources(url){
     })
 }
 
-async function loadTextResources(url){
-    return (await loadRowResources(url)).responseText
+export async function loadTextResources(url){
+    return (await loadRawResources(url)).responseText
 }
 
-async function loadJsonResources(url){
+export async function loadJsonResources(url){
     return new Promise(function(resolve, reject){
         const request = new XMLHttpRequest()
 
@@ -45,7 +45,7 @@ async function loadJsonResources(url){
         request.send()
     })
 }
-async function loadScript(src, params){
+export async function loadScript(src, params){
     // load and insert script
     // After load you need wait setTimeout zero
     // to initialize js
@@ -70,28 +70,30 @@ async function loadScript(src, params){
     })
 }
 
-async function getImageLoadPromise(img){
+export async function getImageLoadPromise(img){
     return new Promise((resolve, reject) => {
         img.onload = resolve
         img.onerror = reject
     });
 }
 
-async function loadImage(url) {
+export async function loadImage(url) {
     let img = new Image()
     img.src = url
     await getImageLoadPromise(img)
     return img
 }
 
-async function initScript(src, params) {
+export async function initScript(src, params) {
     await loadScript(src, params)
     await waitTick()
 }
-async function waitAfter (target, tasks){
+
+export async function waitAfter (target, tasks){
     await target
     await Promise.all(tasks)
 }
+
 function supportCanvas (width, height){
     let canvas = document.createElement('canvas')
     canvas.width = width

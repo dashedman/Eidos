@@ -1,8 +1,12 @@
 "use strict"
 // Realize container for texture, with rect
-import Texture from '../textures/base.js';
-import SpriteManager from './managers/base.js';
-// import SortingSpriteManager from './managers/sorting.js';
+import Texture from "../textures/base.js";
+import SpriteManager from "./managers/base.js";
+// import SortingSpriteManager from "./managers/sorting.js";
+
+const HORIZONTAL_FLIP_BIT = 4
+const VERTICAL_FLIP_BIT = 2
+const AXIS_FLIP_BIT = 1
 
 export default class Sprite {
     /**
@@ -12,7 +16,7 @@ export default class Sprite {
      * @param { Texture } texture 
      * @param  {...any} mixins 
      */
-    constructor(manager, bufferIndexes, texture, reversed=false) {
+    constructor(manager, bufferIndexes, texture, rotate_bits) {
         this._bufferIndexes = bufferIndexes;
         /** @type { SpriteManager } */
         this._manager = manager;
@@ -20,34 +24,33 @@ export default class Sprite {
         this._spriteCoords = {x: 0, y:0, z:0, w:0, h:0}
         this._textureCoords = {x: 0, y:0, w:0, h:0}
         
+        /** @type { Texture } */
         this.texture = null
-        this.waitInit = this.setTexture(texture, reversed)
+        this.waitInit = this.setTexture(texture, rotate_bits)
 
         // z-sort
         //this._manager.requestZSorting()
     }
-    async setTexture(texture, reversed=null) {
+
+    /**
+     * 
+     * @param {Texture} texture
+     * @param {number} rotate_bits - 3 bit value: from 0 to 7
+     */
+    async setTexture(texture, rotate_bits=0) {
         if(this.texture) {
             this.texture.removeFromTrace()
         }
-        if(reversed !== null) this.reversed = reversed
+
+        this.rotate_bits = rotate_bits
 
         this.texture = texture;
         this.texture.addToTrace(this)
 
         await this.texture.loadState
+        
         // texture coords
-        if (reversed) {
-            this.tx = this.texture.image.naturalWidth
-            this.ty = 0
-            this.tw = -this.texture.image.naturalWidth
-            this.th = this.texture.image.naturalHeight
-        } else {
-            this.tx = 0
-            this.ty = 0
-            this.tw = this.texture.image.naturalWidth
-            this.th = this.texture.image.naturalHeight
-        }
+        this.setTextureCoords(0, 0, this.texture.image.naturalWidth, this.texture.image.naturalHeight)
     }
 
     forceUpdate(){
@@ -58,10 +61,7 @@ export default class Sprite {
 
     forceUpdateTexture(){
         // force update for verticles
-        this.tx = null
-        this.ty = null
-        this.tw = this.texture.frameOffset
-        this.th = this.texture.atlasCoords.h
+        this.setTextureCoords(null, null, this.texture.frameOffset, this.texture.atlasCoords.h)
     }
 
     forceUpdateSprite(){
@@ -157,60 +157,56 @@ export default class Sprite {
     }
 
     /**
-     * @param {number} value
+     * 
+     * @param {number?} x 
+     * @param {number?} y 
+     * @param {number?} w 
+     * @param {number?} h 
      */
-    set tw(value) {
-        if(this._textureCoords.w != value || value === null){
-            if(value !== null) this._textureCoords.w = value
+    setTextureCoords(x, y, w, h) {
+        if (x !== null) this._textureCoords.x = x
+        if (y !== null) this._textureCoords.y = y
+        if (w !== null) this._textureCoords.w = w
+        if (h !== null) this._textureCoords.h = h
 
-            const _t = this._manager.textureHandler.data
-            const idx = this._bufferIndexes.t
-            _t[idx]     = _t[idx + 2] = _t[idx + 6]  = this._textureCoords.x + this.texture.atlasCoords.x;
-            _t[idx + 4] = _t[idx + 8] = _t[idx + 10] = this._textureCoords.x + this.texture.atlasCoords.x + value;
-            this._manager.textureHandler.needUpdate = true
-        }
-    }
-    /**
-     * @param {number} value
-     */
-    set th(value) {
-        if(this._textureCoords.h != value || value === null){
-            if(value !== null) this._textureCoords.h = value
+        let minX = this._textureCoords.x + this.texture.atlasCoords.x
+        let minY = this._textureCoords.y + this.texture.atlasCoords.y
+        let maxX = this._textureCoords.x + this.texture.atlasCoords.x + this._textureCoords.w
+        let maxY = this._textureCoords.y + this.texture.atlasCoords.y + this._textureCoords.h
 
-            const _t = this._manager.textureHandler.data
-            const idx = this._bufferIndexes.t
-            _t[idx + 1] = _t[idx + 5] = _t[idx + 9]  = this._textureCoords.y + this.texture.atlasCoords.y;
-            _t[idx + 3] = _t[idx + 7] = _t[idx + 11] = this._textureCoords.y + this.texture.atlasCoords.y + value;
-            this._manager.textureHandler.needUpdate = true
-        }
-    }
-    /**
-     * @param {number} value
-     */
-    set tx(value) {
-        if(this._textureCoords.x != value || value === null){
-            if(value !== null) this._textureCoords.x = value
+        let lb_point = [minX, minY]
+        let rb_point = [maxX, minY]
+        let lu_point = [minX, maxY]
+        let ru_point = [maxX, maxY]
 
-            const _t = this._manager.textureHandler.data
-            const idx = this._bufferIndexes.t
-            _t[idx]     = _t[idx + 2] = _t[idx + 6]  = value + this.texture.atlasCoords.x;
-            _t[idx + 4] = _t[idx + 8] = _t[idx + 10] = value + this.texture.atlasCoords.x + this._textureCoords.w;
-            this._manager.textureHandler.needUpdate = true
+        if (AXIS_FLIP_BIT & this.rotate_bits) {
+            [lb_point, ru_point] = [ru_point, lb_point]
         }
-    }
-    /**
-     * @param {number} value
-     */
-    set ty(value) {
-        if(this._textureCoords.y != value || value === null){
-            if(value !== null) this._textureCoords.y = value
 
-            const _t = this._manager.textureHandler.data
-            const idx = this._bufferIndexes.t
-            _t[idx + 1] = _t[idx + 5] = _t[idx + 9]  = value + this.texture.atlasCoords.y;
-            _t[idx + 3] = _t[idx + 7] = _t[idx + 11] = value + this.texture.atlasCoords.y + this._textureCoords.h;
-            this._manager.textureHandler.needUpdate = true
+        if (HORIZONTAL_FLIP_BIT & this.rotate_bits) {
+            [lb_point, rb_point, lu_point, ru_point] = [rb_point, lb_point, ru_point, lu_point]
         }
+
+        if (VERTICAL_FLIP_BIT & this.rotate_bits) {
+            [lb_point, rb_point, lu_point, ru_point] = [lu_point, ru_point, lb_point, rb_point]
+        }
+
+        const _t = this._manager.textureHandler.data
+        const idx = this._bufferIndexes.t
+
+        _t[idx] = lb_point[0]
+        _t[idx + 1] = lb_point[1]
+
+        _t[idx + 2] = _t[idx + 6] = lu_point[0]
+        _t[idx + 3] = _t[idx + 7] = lu_point[1]
+
+        _t[idx + 4] = _t[idx + 8] = rb_point[0]
+        _t[idx + 5] = _t[idx + 9] = rb_point[1]
+
+        _t[idx + 10] = ru_point[0]
+        _t[idx + 11] = ru_point[1]
+
+        this._manager.textureHandler.needUpdate = true
     }
 
     get sx(){return this._spriteCoords.x}
@@ -218,9 +214,4 @@ export default class Sprite {
     get sz(){return this._spriteCoords.z}
     get sw(){return this._spriteCoords.w}
     get sh(){return this._spriteCoords.h}
-
-    get tx(){return this._textureCoords.x}
-    get ty(){return this._textureCoords.y}
-    get tw(){return this._textureCoords.w}
-    get th(){return this._textureCoords.h}
 }

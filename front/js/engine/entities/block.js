@@ -6,6 +6,7 @@ import Statement from "../statement.js";
 import { PrepareEntityError } from "../exceptions.js";
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
 
+
 export class BackgroundBlock extends Entity {
     /**
      * 
@@ -31,7 +32,7 @@ export class BackgroundBlock extends Entity {
      * @param { Statement } state 
      * @param {*} param1 
      */
-    prepare(state, {texture=null, textureData, role=DRAW_GROUND_PLAN.MAIN}) {
+    prepare(state, {texture=null, textureData, role=DRAW_GROUND_PLAN.MAIN, rotate_bits=0}) {
         if (!texture && textureData){
             texture = state.render.textureManager.getByName(textureData.name)
 
@@ -60,7 +61,8 @@ export class BackgroundBlock extends Entity {
 
         this.sprite = state.render.createSprite({
             texture: texture,
-            isAnimated: texture.frameNumber > 1 
+            isAnimated: texture.frameNumber > 1,
+            rotate_bits: rotate_bits,
         }, role)
     }
 

@@ -1,9 +1,13 @@
-import ctypes
-import multiprocessing
 from enum import IntEnum
+
+from server.engine.utils.shared_types import SharedBoolList
 
 
 class InputAction(IntEnum):
+    """
+    front\\js\\engine\\entities\\creatures\\character\\commander\\base.js commands nust be same
+    """
+    Stay = 0
     MoveLeft = 1
     MoveRight = 2
     MoveUp = 3
@@ -23,7 +27,7 @@ class InputType(IntEnum):
 
 class InputRegistry:
     def __init__(self):
-        self.command_flags: list[bool] = multiprocessing.Array(ctypes.c_bool, 16, lock=False)
+        self.command_flags: SharedBoolList = SharedBoolList.from_list([False] * 16)
 
     def register_input(self, action: InputAction, input_type: InputType):
         match input_type:
@@ -31,3 +35,6 @@ class InputRegistry:
                 self.command_flags[action.value] = False
             case InputType.Press:
                 self.command_flags[action.value] = True
+
+    def close(self):
+        self.command_flags.close()

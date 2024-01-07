@@ -1,14 +1,14 @@
 import math
 
-from . import InertiaBoxCollider, BoxCollider
-from ..game_app import GameBackend
+from .colliders import InertiaBoxCollider, BoxCollider
+from .. import game_app
 from ..utils.geometry import point_line_orientation
 
 
 class PhysicsEngine:
     G_FORCE = 30
 
-    def __init__(self, backend: GameBackend, debug_mode: bool = False):
+    def __init__(self, backend: 'game_app.GameBackend', debug_mode: bool = False):
         self.backend = backend
         self.debug_mode = debug_mode
 

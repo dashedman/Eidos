@@ -1,5 +1,6 @@
-from multiprocessing.sharedctypes import Value as SharedValue
 from abc import ABC
+
+from server.engine.user import SharedFloat
 
 
 class AbstractCollider(ABC):
@@ -71,39 +72,43 @@ class InertiaBoxColliderMultiprocess(InertiaBoxCollider):
 
     def __init__(
             self,
-            x: SharedValue,
-            y: SharedValue,
+            x: SharedFloat,
+            y: SharedFloat,
             width: float,
             height: float,
-            vx: SharedValue,
-            vy: SharedValue,
+            vx: SharedFloat,
+            vy: SharedFloat,
     ):
         self._x = x
         self._y = y
         self._vx = vx
         self._vy = vy
 
-        super().__init__(x.value, y.value, width, height)
-        self.vx = self._vx.value
-        self.vy = self._vy.value
+        super().__init__(x.read(), y.read(), width, height)
+        self.vx = self._vx.read()
+        self.vy = self._vy.read()
         self.ax = 0
         self.ay = 0
 
     def set_x(self, x: float):
-        self._x.value = self.x = x
+        self.x = x
+        self._x.write(x)
         self.left = self.x - self.half_width
         self.right = self.x + self.half_width
 
     def set_y(self, y: float):
-        self._y.value = self.y = y
+        self.y = y
+        self._y.write(y)
         self.bottom = self.y - self.half_height
         self.top = self.y + self.half_height
 
     def set_vx(self, vx: float):
-        self._vx.value = self.vx = vx
+        self.vx = vx
+        self._vx.write(vx)
 
     def set_vy(self, vy: float):
-        self._vy.value = self.vy = vy
+        self.vy = vy
+        self._vy.write(vy)
 
 
 class HasBoxCollider(ABC):

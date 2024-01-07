@@ -1,4 +1,6 @@
-path_to_front: '../front'
+path_to_front: '..\front'
+path_to_resources: '..\resources'
+
 connection:
   host: 127.0.0.1
   port: 8000
@@ -6,10 +8,11 @@ connection:
 
 logger:
   name: main
-  level: 20
+  level: 10
   dir: 'logs/'
   handlers: []
 
 game:
   name: test
   version: v0.0.1
+  sprites_meta: null

@@ -1,5 +1,5 @@
 "use strict"
-import LineManager from './manager';
+import LineManager from "./manager.js";
 
 export default class Line {
     /**

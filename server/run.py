@@ -17,7 +17,7 @@ def main():
 
     config = ServerConfig.from_dict(conf_source)
     server = Server(config)
-    asyncio.run(server.run())
+    asyncio.run(server.run(), debug=True)
 
 
 if __name__ == "__main__":

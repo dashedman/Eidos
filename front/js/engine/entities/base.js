@@ -1,6 +1,6 @@
 "use strict"
 
-import Statement from "../statement"
+import Statement from "../statement.js"
 
 
 export class Entity {

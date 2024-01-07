@@ -1,9 +1,12 @@
 "use strict"
 import { Layer } from "./layer.js";
-import { Decoration } from "../block.js";
+import { Block, Decoration } from "../block.js";
 
 import Statement from "../../statement.js";
 import { DRAW_GROUND_PLAN } from "../../graphics/graphics.js"
+import { Chunk } from "./chunk.js";
+import GMath from "../../utils/glsl_math.js";
+
 
 export default class World {
     /**
@@ -20,11 +23,76 @@ export default class World {
          */
         this.layers = []
         this.decorations = []
+        /** @type {Layer | null} */
         this.mainLayer = null
 
         this.settings = {
             /** @type {number} */
             chunkSize: null
+        }
+    }
+
+    /**
+     * 
+     * @param {{tid: string, x: number, y: number, rotate_bits: number}[]} cellsData 
+     */
+    updateMap(cellsData) {
+        for(let cellData of cellsData) {
+            this.updateCell(cellData)
+        }
+    }
+
+    /**
+     * 
+     * @param {{tid: string, x: number, y: number, rotate_bits: number}} cellData 
+     */
+    updateCell(cellData) {
+        if(this.mainLayer === null) {
+            // create main layer
+            // TODO: layer name from cellData
+            this.initLayer('main')
+        }
+
+        let chunkX = Math.floor(cellData.x / this.settings.chunkSize)
+        let chunkY = Math.floor(cellData.y / this.settings.chunkSize)
+        let chunk = this.mainLayer.chunks.get(chunkX, chunkY)
+        if (chunk === undefined) {
+            // create chunk
+            chunk = new Chunk(chunkX, chunkY, this.settings.chunkSize, this.settings.chunkSize)
+            this.mainLayer.chunks.set(chunkX, chunkY, chunk)
+        }
+
+        let cellX = GMath.mod(cellData.x, this.settings.chunkSize)
+        let cellY = GMath.mod(cellData.y, this.settings.chunkSize)
+
+        let texture = this.state.render.textureGIDRegistry.get(cellData.tid)
+        if(texture === undefined){
+            console.warn('Cannot find texture for cell:', cellData.tid, this.state.render.textureGIDRegistry)
+        }
+
+        chunk.grid[cellX][cellY] = this.state.entities.create(
+            Block,
+            texture,
+            this.mainLayer.groundPlan,
+            {
+                x: cellData.x, // global world coords
+                y: cellData.y, // global world coords
+            }, 
+            {rotate_bits: cellData.rotate_bits}
+        )
+    }
+
+    /**
+     * 
+     * @param {string} name 
+     * @param {DRAW_GROUND_PLAN} groundPlan
+     */
+    initLayer(name, groundPlan=DRAW_GROUND_PLAN.MAIN) {
+        const z = 1
+        let layer = new Layer(this, name, z, groundPlan)
+        this.layers.push(layer)
+        if(layer.isMain){
+            this.mainLayer = layer
         }
     }
 
@@ -50,9 +118,7 @@ export default class World {
                 groundPlan = DRAW_GROUND_PLAN.MAIN
                 mainIsWas = true
             } else {
-                if (mainIsWas)
-                groundPlan = DRAW_GROUND_PLAN.BACK
-                else groundPlan = DRAW_GROUND_PLAN.FRONT
+                groundPlan = mainIsWas ? DRAW_GROUND_PLAN.BACK : DRAW_GROUND_PLAN.FRONT
             }
 
             this.fromLayer(jsonLayer, groundPlan)

@@ -1,26 +1,28 @@
 import asyncio
-import ctypes
 import json
 import logging
+import queue
 import time
 import multiprocessing
 from enum import IntEnum
-from typing import Any
+from pathlib import Path
 
 import pytiled_parser
 import websockets
 from pytiled_parser import Tileset
+from tqdm import tqdm
 from websockets.server import WebSocketServerProtocol
 
 from .config import GameConfig
-from .entities.users import UsersManager, User
+from .entities import UsersManager, User
 from .logic import GameLogicEngine
 from .map import Map, Cell
 from .physics import PhysicsEngine, InertiaBoxColliderMultiprocess
-from .server import MessageCode
+from . import server
 from .session import SessionInfo
 from .tileset import TileSetRegistry
-from .user import UserSession, UserPosition
+from .user import UserSession, UserPosition, UserPositionKeys
+from .utils.shared_types import SharedFloat, SharedBoolList
 
 
 def session_id_gen(max_id: int = 10000):
@@ -48,6 +50,24 @@ class GameFrontend:
         self.logger = logging.getLogger('GameApp')
 
         self.tilesets = TileSetRegistry()
+
+        # TODO: maybe move to some character manager init func
+        self.logger.info('Start loading character animations from files')
+        anim_chars_folder = Path('../resources/animations')
+        for anim_data in tqdm(anim_chars_folder.glob('**/*.tsj')):
+            anim_tilesets = pytiled_parser.parse_tileset(anim_data)
+            self.tilesets.update_one(anim_tilesets, anim_data.parent)
+
+        player_meta = self.config.sprites_meta['player']
+
+        User.landing_duration = next(
+            p['sprite_meta']['animation_duration']
+            for p in player_meta if p['state_name'] == 'LandingState'
+        ) / 1000
+        User.windup_duration = next(
+            p['sprite_meta']['animation_duration']
+            for p in player_meta if p['state_name'] == 'WindupState'
+        ) / 1000
 
         self.queue_to_backend = queue_to_backend
         self.queue_from_backend = queue_from_backend
@@ -77,33 +97,41 @@ class GameFrontend:
         self.user_sessions[new_user.session.id] = new_user
 
         register_successful_data = {
-            'type': MessageCode.Init,
+            'type': server.MessageCode.Init,
             'data': {
                 'id': new_user.session.id,
-                'tilesets': self.tilesets.registry_data
+                'tilesets': self.tilesets.registry_data,
+                'chunk_size': Map.CHUNK_SIZE,
+                'skin_sets': self.config.sprites_meta,
             }
         }
         await websocket.send(json.dumps(register_successful_data))
         print(len(self.user_sessions), 'USERS!!!')
         return new_user
 
+    async def unregister_session(self, user_session: UserSession):
+        user_session.position.close()
+        user_session.input_registry.close()
+        del self.user_sessions[user_session.session.id]
+        print(len(self.user_sessions), 'u USERS!!!')
+
     async def run_loop(self):
         while True:
-            await asyncio.sleep(0)
+            await asyncio.sleep(1)
             async_tasks = self.check_backend_messages()
 
             # send positions to all users
             positions = [
                 {
                     'id': user.session.id,
-                    'x': user.position.x.value,
-                    'y': user.position.y.value,
-                    'vx': user.position.vx.value,
-                    'vy': user.position.vy.value,
+                    'x': user.position.x.read(),
+                    'y': user.position.y.read(),
+                    'vx': user.position.vx.read(),
+                    'vy': user.position.vy.read(),
                 } for user in self.user_sessions.values()
             ]
             position_data = {
-                'type': MessageCode.Positions,
+                'type': server.MessageCode.Positions,
                 'data': {
                     'positions': positions
                 }
@@ -114,12 +142,18 @@ class GameFrontend:
                 self.safe_send(user, data)
                 for user in self.user_sessions.values()
             )
-            await asyncio.wait(async_tasks)
+            if async_tasks:
+                await asyncio.gather(*async_tasks)
 
     def check_backend_messages(self):
         async_tasks = []
-        while self.queue_from_backend:
-            response_code, request_data = self.queue_from_backend.get_nowait()
+        while not self.queue_from_backend.empty():
+            try:
+                response_code, request_data = self.queue_from_backend.get_nowait()
+            except queue.Empty:
+                # it can't be, because we in the while loop
+                continue
+
             match response_code:
                 case QueueCode.TakeMap:
                     request_data: tuple[int, list[Cell]]
@@ -128,27 +162,28 @@ class GameFrontend:
 
                     async_tasks.append(
                         self.safe_send(user_session, json.dumps({
-                            'type': MessageCode.Map,
+                            'type': server.MessageCode.Map,
                             'data': [
                                 {
                                     'tid': cell.tile_id,
                                     'x': cell.ph_collider.x,
                                     'y': cell.ph_collider.y,
+                                    'rotate_bits': cell.rotate_bits
                                 }
                                 for cell in list_of_cell
                             ]
                         }))
                     )
                 case QueueCode.UpdateTileSet:
-                    request_data: dict[int, pytiled_parser.Tileset]
-                    self.tilesets.update(request_data)
+                    request_data: tuple[dict[int, pytiled_parser.Tileset], Path, bool]
+                    self.tilesets.update(*request_data)
         return async_tasks
 
     def spawn_user(self, user: UserSession):
-        x_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
-        y_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
-        vx_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
-        vy_coord_cell = multiprocessing.Value(ctypes.c_double, lock=False)
+        x_coord_cell = SharedFloat.from_float()
+        y_coord_cell = SharedFloat.from_float()
+        vx_coord_cell = SharedFloat.from_float()
+        vy_coord_cell = SharedFloat.from_float()
         position = UserPosition(
             x=x_coord_cell,
             y=y_coord_cell,
@@ -157,7 +192,11 @@ class GameFrontend:
         )
         self.queue_to_backend.put_nowait((
             QueueCode.NewUser,
-            (position, user.input_registry.command_flags)
+            (
+                user.session.id,
+                position.to_user_position_keys(),
+                user.input_registry.command_flags.name
+            )
         ))
         user.position = position
 
@@ -174,7 +213,7 @@ class GameBackend:
     def __init__(
             self,
             queue_to_frontend: multiprocessing.Queue,
-            queue_from_frontend: multiprocessing.Queue[tuple[QueueCode, Any]],
+            queue_from_frontend: multiprocessing.Queue,
     ):
         self.alive = False
         self.last_frame_time = 0
@@ -190,12 +229,21 @@ class GameBackend:
 
         self.users = UsersManager()
 
+    @classmethod
+    def init_n_run(
+            cls,
+            queue_to_frontend: multiprocessing.Queue,
+            queue_from_frontend: multiprocessing.Queue,
+    ):
+        backend = cls(queue_to_frontend, queue_from_frontend)
+        backend.run_loop()
+
     def run_loop(self):
         self.alive = True
         time_delta = self.TIME_FOR_FRAME
 
         while self.alive:
-            time.sleep(self.TIME_FOR_FRAME - time_delta)
+            time.sleep(max(0.0, self.TIME_FOR_FRAME - time_delta))
             frame_time = time.perf_counter()
             time_delta = frame_time - self.last_frame_time
             # check new messages in queue
@@ -207,13 +255,19 @@ class GameBackend:
             # calc logic
             self.logic.tick(time_delta)
 
+            self.last_frame_time = frame_time
+
     def check_frontend_messages(self):
-        while self.queue_from_frontend:
+        while not self.queue_from_frontend.empty():
             request_code, request_data = self.queue_from_frontend.get_nowait()
             match request_code:
                 case QueueCode.NewUser:
-                    request_data: tuple[int, tuple[UserPosition, list[bool]]]
-                    session_id, (user_position, command_flags) = request_data
+                    request_data: tuple[int, UserPositionKeys, str]
+                    session_id, user_position_keys, command_flags_name = request_data
+
+                    command_flags = SharedBoolList.from_name(command_flags_name)
+                    user_position = user_position_keys.to_user_position()
+
                     user_collider = InertiaBoxColliderMultiprocess(
                         x=user_position.x,
                         y=user_position.y,
@@ -222,7 +276,21 @@ class GameBackend:
                         vx=user_position.vx,
                         vy=user_position.vy,
                     )
-                    self.users.add(User(session_id, user_collider, command_flags))
+                    user = User(session_id, user_collider, command_flags)
+                    # resolve place for user in room
+                    fixed_x, fixed_y = self.map.find_place_for(user.ph_collider)
+                    user.ph_collider.set_x(fixed_x)
+                    user.ph_collider.set_y(fixed_y)
 
-    def update_tileset(self, tilesets: dict[int, Tileset]):
-        self.queue_to_frontend.put_nowait((QueueCode.UpdateTileSet, tilesets))
+                    self.users.add(user)
+
+    def update_tileset(
+            self,
+            tilesets: dict[int, Tileset],
+            tileset_path: Path = None,
+            ignore_class_none: bool = False,
+    ):
+        self.queue_to_frontend.put_nowait((
+            QueueCode.UpdateTileSet,
+            (tilesets, tileset_path, ignore_class_none)
+        ))

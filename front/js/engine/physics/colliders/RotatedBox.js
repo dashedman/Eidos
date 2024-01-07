@@ -1,7 +1,7 @@
 "use strict"
-import { NotImplementedError } from '../../exceptions.js';
-import PhBox from './box.js';
-import { COLLIDER_TYPES } from './constants.js';
+import { NotImplementedError } from "../../exceptions.js";
+import PhBox from "./box.js";
+import { COLLIDER_TYPES } from "./constants.js";
 
 export default class PhRotatedBox extends PhBox{
     colliderType = COLLIDER_TYPES.ROTATED_BOX

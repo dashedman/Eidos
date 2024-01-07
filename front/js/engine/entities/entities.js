@@ -1,11 +1,11 @@
 "use strict"
 import enviroment from "./enviroment/enviroment.js";
-import { Entity } from './base.js';
-import { BackgroundBlock, Block, Decoration } from './block.js';
-import { Location } from './location.js';
-import { Player } from './creatures/player';
+import { Entity } from "./base.js";
+import { BackgroundBlock, Block, Decoration } from "./block.js";
+import { Location } from "./location.js";
+import { Player } from "./creatures/player.js";
 import Statement from "../statement.js";
-import Texture from './../graphics/textures/base.js';
+import Texture from "./../graphics/textures/base.js";
 import { DRAW_GROUND_PLAN } from "../graphics/constants.js";
 import u from "../utils/async_utils.js"
 

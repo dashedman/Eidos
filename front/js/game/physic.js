@@ -5,7 +5,7 @@ import World from "../engine/entities/enviroment/world.js"
 import PhInertiaBox from "../engine/physics/colliders/inertia_box.js"
 import GeometryTools from "../engine/utils/geometry.js";
 import GMath from "../engine/utils/glsl_math.js";
-import PhBox from './../engine/physics/colliders/box.js';
+import PhBox from "./../engine/physics/colliders/box.js";
 
 export default class Physics extends EnginePhysics {
     static G_FORCE = 30

@@ -1,9 +1,10 @@
 "use strict"
 
-import PhInertiaBox from "../../physics/colliders/inertia_box";
+import PhInertiaBox from "../../physics/colliders/inertia_box.js";
 import Statement from "../../statement.js";
 import { Square } from "../block.js";
-import AnimatedSprite from './../../graphics/sprites/animated';
+import AnimatedSprite from "./../../graphics/sprites/animated.js";
+
 
 export default class Creature extends Square {
     /**

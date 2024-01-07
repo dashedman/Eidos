@@ -1,10 +1,12 @@
 "use strict"
+
 import Map2D from "../../utils/map2d.js";
 import { Chunk } from "./chunk.js";
 import { Block, BackgroundBlock } from "../block.js";
 
 import World from "./world.js";
 import { DRAW_GROUND_PLAN } from "../../graphics/constants.js";
+
 
 /** */
 export class Layer {
@@ -38,15 +40,15 @@ export class Layer {
      fromChunk(chunkJson){
         const state = this.world.state
         // create entities from chunk
-        const chunkCoordX = Math.floor(chunkJson.x/chunkJson.width)
-        const chunkCoordY = Math.floor(-1 - chunkJson.y/chunkJson.height) // inverted Y
+        const chunkCoordX = Math.floor(chunkJson.x / chunkJson.width)
+        const chunkCoordY = Math.floor(-1 - chunkJson.y / chunkJson.height) // inverted Y
         const chunk = new Chunk(chunkCoordX, chunkCoordY, chunkJson.width, chunkJson.height)
 
         const ClassOfTile = this.isMain ? Block : BackgroundBlock
 
         for(let tileY = 0; tileY < chunk.height; tileY++){
             for(let tileX = 0; tileX < chunk.width; tileX++){  
-                const tileIndex = tileY*chunk.width + tileX
+                const tileIndex = tileY * chunk.width + tileX
                 const invertedY = chunk.height - tileY - 1
                 const tileGID = chunkJson.data[tileIndex]
 

@@ -1,6 +1,6 @@
-import Dispatcher from './../../../../interactions/interactions';
-import Character from './../character';
-import Line from './../../../../graphics/shapes/line';
+import Dispatcher from "./../../../../interactions/interactions.js";
+import Character from "./../character.js";
+import Line from "./../../../../graphics/shapes/line.js";
 
 export default class Commander {
     /**
@@ -12,6 +12,7 @@ export default class Commander {
         this.character = character
         /** @type {Dispatcher} */
         this.dispatcher = dispatcher
+        this.network = dispatcher._state.network
         this.plugInDispatcher()
     }
 
@@ -21,15 +22,22 @@ export default class Commander {
             [Dispatcher.KEY.D, Commander.cs.MOVE_RIGHT],
             
             [Dispatcher.KEY.SPACE, Commander.cs.JUMP],
-            [Dispatcher.KEY.TAB,   Commander.cs.CHANGE_MODE],
         ]
 
         for(const [key, command] of command_relations){
             this.dispatcher.subscribe(key, Dispatcher.ACTION.KEY_DOWN, () => {
                 this.character.do(command)
+                this.network.send({
+                    input_type: Dispatcher.ACTION.KEY_DOWN,
+                    input_action: command,
+                })
             })
             this.dispatcher.subscribe(key, Dispatcher.ACTION.KEY_UP, () => {
                 this.character.undo(command)
+                this.network.send({
+                    input_type: Dispatcher.ACTION.KEY_UP,
+                    input_action: command,
+                })
             })
         }
 
@@ -87,6 +95,8 @@ export default class Commander {
 
     /**
      * Enum for common colors.
+     * server/engine/inputs.py InputAction must be same
+     * 
      * @readonly
      * @enum {Number}
      */
@@ -94,10 +104,14 @@ export default class Commander {
         STAY: 0,
         MOVE_LEFT: 1,
         MOVE_RIGHT: 2,
-        JUMP: 3,
-        CHANGE_MODE: 4,
-        ATTACK: 5,
-        CHANGE_GUARD: 8,
+        MOVE_UP: 3,
+        MOVE_DOWN: 4,
+        JUMP: 5,
+        DASH: 6,
+        ATTACK: 7,
+        ATTACK_2: 8,
+        ABILITY: 9,
+        ITEM: 10
     }
     static cs = Commander.commands   // alias
 }
