@@ -26,18 +26,22 @@ export default class Commander {
 
         for(const [key, command] of command_relations){
             this.dispatcher.subscribe(key, Dispatcher.ACTION.KEY_DOWN, () => {
+                if (!this.character.cf[command]) {
+                    this.network.send({
+                        input_type: Dispatcher.ACTION.KEY_DOWN,
+                        input_action: command,
+                    })
+                }
                 this.character.do(command)
-                this.network.send({
-                    input_type: Dispatcher.ACTION.KEY_DOWN,
-                    input_action: command,
-                })
             })
             this.dispatcher.subscribe(key, Dispatcher.ACTION.KEY_UP, () => {
-                this.character.undo(command)
-                this.network.send({
-                    input_type: Dispatcher.ACTION.KEY_UP,
-                    input_action: command,
-                })
+                if (this.character.cf[command]) {
+                    this.network.send({
+                        input_type: Dispatcher.ACTION.KEY_UP,
+                        input_action: command,
+                    })
+                }
+                this.character.undo(command)   
             })
         }
 

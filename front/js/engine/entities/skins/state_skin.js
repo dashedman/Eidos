@@ -36,7 +36,7 @@ export class ChangeBoxData {
 
 export default class StateSkin {
     /**
-     * @param {{texture_name: String, box: ChangeBoxData, sprite_meta: {reversed?: boolean, loop_mode: string, animation_duration?: number}}} data 
+     * @param {{texture_name: String, box: ChangeBoxData, sprite_meta: {rotate_bits?: number, loop_mode: string, animation_duration?: number}}} data 
      * @param {Storage} storage
      */
     constructor(data, storage) {

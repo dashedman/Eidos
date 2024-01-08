@@ -105,10 +105,10 @@ class JumpingState(BaseState):
         if vx:
             limit_func, sign = (max, 1) if vx > 0 else (min, -1)
 
-            self.user.ph_collider.set_vx = limit_func(
+            self.user.ph_collider.set_vx(limit_func(
                 0,
                 vx - sign * self.user.JUMP_ACCELERATION * time_delta
-            )
+            ))
 
     def update_by_physic(self, time_delta: float):
         if self.user.ph_collider.vy < 0:
@@ -157,10 +157,10 @@ class FallingState(BaseState):
         if vx:
             limit_func, sign = (max, 1) if vx > 0 else (min, -1)
 
-            self.user.ph_collider.set_vx = limit_func(
+            self.user.ph_collider.set_vx(limit_func(
                 0,
                 vx - sign * self.user.JUMP_ACCELERATION * time_delta
-            )
+            ))
 
     def update_by_physic(self, time_delta: float):
         if self.user.ph_collider.vy > 0:

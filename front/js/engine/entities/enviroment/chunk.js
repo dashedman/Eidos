@@ -16,6 +16,7 @@ export class Chunk {
         this.grid = new Array(width)
         for(let x = 0; x < width; x++){
             this.grid[x] = new Array(height)
+            this.grid[x].fill(null)
         }
     }
 }

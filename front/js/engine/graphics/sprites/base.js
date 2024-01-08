@@ -4,9 +4,9 @@ import Texture from "../textures/base.js";
 import SpriteManager from "./managers/base.js";
 // import SortingSpriteManager from "./managers/sorting.js";
 
-const HORIZONTAL_FLIP_BIT = 4
-const VERTICAL_FLIP_BIT = 2
-const AXIS_FLIP_BIT = 1
+export const HORIZONTAL_FLIP_BIT = 4
+export const VERTICAL_FLIP_BIT = 2
+export const AXIS_FLIP_BIT = 1
 
 export default class Sprite {
     /**

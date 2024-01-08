@@ -56,6 +56,9 @@ class UsersManager:
     def add(self, new_user: User):
         self.users.add(new_user)
 
+    def remove(self, user: User):
+        self.users.remove(user)
+
     def colliders(self):
         for user in self.users:
             yield user.ph_collider

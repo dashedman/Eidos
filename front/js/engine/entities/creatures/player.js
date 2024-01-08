@@ -7,6 +7,7 @@ import Statement from "../../statement.js";
 import { DRAW_GROUND_PLAN } from "../../graphics/constants.js";
 import { BaseCharacterState, StayingState } from "./character/states/states.js";
 import { EngineError } from "../../exceptions.js";
+import { HORIZONTAL_FLIP_BIT } from "../../graphics/sprites/base.js";
 
 
 export class Player extends User {
@@ -89,7 +90,7 @@ export class Player extends User {
 
             this.sprite.setTexture(
                 state_skin.getTexture(),
-                reversed
+                reversed ? HORIZONTAL_FLIP_BIT : 0
             ).then(() => {
                 const prevAnimFrame = this.sprite.currentFrame
                 this.sprite.initAnimation()

@@ -101,8 +101,9 @@ export default class Statement {
             //     this.physics.update(this.agregatedDelta)
             //     this.agregatedDelta = 0
             // }
-            // this.logic.update(timeDelta)
-            // this.physics.update(timeDelta)
+
+            this.logic.update(timeDelta)
+            this.physics.update(timeDelta)
 
             // camera control
                     

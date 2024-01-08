@@ -21,8 +21,8 @@ class InputAction(IntEnum):
 
 
 class InputType(IntEnum):
-    PressOut = 0
-    Press = 1
+    Press = 0
+    PressOut = 1
 
 
 class InputRegistry:
@@ -30,6 +30,8 @@ class InputRegistry:
         self.command_flags: SharedBoolList = SharedBoolList.from_list([False] * 16)
 
     def register_input(self, action: InputAction, input_type: InputType):
+
+        print(input_type.name, action.name)
         match input_type:
             case InputType.PressOut:
                 self.command_flags[action.value] = False

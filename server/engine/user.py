@@ -2,7 +2,7 @@ import json
 import logging
 from dataclasses import dataclass
 
-import websockets.connection
+import websockets
 
 from .inputs import InputRegistry, InputAction, InputType
 from .session import SessionInfo
@@ -35,9 +35,9 @@ class UserPosition:
     def to_user_position_keys(self):
         return UserPositionKeys(
             x=self.x.name,
-            y=self.x.name,
-            vx=self.x.name,
-            vy=self.x.name,
+            y=self.y.name,
+            vx=self.vx.name,
+            vy=self.vy.name,
         )
 
     def close(self):
@@ -45,6 +45,7 @@ class UserPosition:
         self.y.close()
         self.vx.close()
         self.vy.close()
+
 
 class UserSession:
     position: UserPosition

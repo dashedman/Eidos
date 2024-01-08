@@ -6,6 +6,7 @@ import time
 import multiprocessing
 from enum import IntEnum
 from pathlib import Path
+from typing import Any
 
 import pytiled_parser
 import websockets
@@ -30,13 +31,27 @@ def session_id_gen(max_id: int = 10000):
         yield from range(1, max_id)
 
 
+def init_player_meta(player_meta: list[dict[str, Any]]):
+    User.landing_duration = next(
+        p['sprite_meta']['animation_duration']
+        for p in player_meta if p['state_name'] == 'LandingState'
+    ) / 1000
+    User.windup_duration = next(
+        p['sprite_meta']['animation_duration']
+        for p in player_meta if p['state_name'] == 'WindupState'
+    ) / 1000
+
+
 class QueueCode(IntEnum):
     NewUser = 1
     TakeMap = 2
     UpdateTileSet = 3
+    DeleteUser = 4
+    InitMeta = 100
 
 
 class GameFrontend:
+    FRONTEND_FREQUENCY = 0.1
 
     def __init__(
             self,
@@ -59,15 +74,8 @@ class GameFrontend:
             self.tilesets.update_one(anim_tilesets, anim_data.parent)
 
         player_meta = self.config.sprites_meta['player']
-
-        User.landing_duration = next(
-            p['sprite_meta']['animation_duration']
-            for p in player_meta if p['state_name'] == 'LandingState'
-        ) / 1000
-        User.windup_duration = next(
-            p['sprite_meta']['animation_duration']
-            for p in player_meta if p['state_name'] == 'WindupState'
-        ) / 1000
+        init_player_meta(player_meta)
+        queue_to_backend.put_nowait((QueueCode.InitMeta, player_meta))
 
         self.queue_to_backend = queue_to_backend
         self.queue_from_backend = queue_from_backend
@@ -112,12 +120,13 @@ class GameFrontend:
     async def unregister_session(self, user_session: UserSession):
         user_session.position.close()
         user_session.input_registry.close()
+        self.queue_to_backend.put_nowait((QueueCode.DeleteUser, user_session.session.id))
         del self.user_sessions[user_session.session.id]
         print(len(self.user_sessions), 'u USERS!!!')
 
     async def run_loop(self):
         while True:
-            await asyncio.sleep(1)
+            await asyncio.sleep(self.FRONTEND_FREQUENCY)
             async_tasks = self.check_backend_messages()
 
             # send positions to all users
@@ -158,7 +167,11 @@ class GameFrontend:
                 case QueueCode.TakeMap:
                     request_data: tuple[int, list[Cell]]
                     session_id, list_of_cell = request_data
-                    user_session = self.user_sessions[session_id]
+
+                    user_session = self.user_sessions.get(session_id)
+                    if user_session is None:
+                        print('us empty for', session_id, list(self.user_sessions.keys()))
+                        continue
 
                     async_tasks.append(
                         self.safe_send(user_session, json.dumps({
@@ -190,11 +203,12 @@ class GameFrontend:
             vx=vx_coord_cell,
             vy=vy_coord_cell,
         )
+        pos_keys = position.to_user_position_keys()
         self.queue_to_backend.put_nowait((
             QueueCode.NewUser,
             (
                 user.session.id,
-                position.to_user_position_keys(),
+                pos_keys,
                 user.input_registry.command_flags.name
             )
         ))
@@ -283,6 +297,14 @@ class GameBackend:
                     user.ph_collider.set_y(fixed_y)
 
                     self.users.add(user)
+
+                case QueueCode.DeleteUser:
+                    request_data: int
+                    user = next(u for u in self.users if u.session_id == request_data)
+                    self.users.remove(user)
+                case QueueCode.InitMeta:
+                    request_data: list[dict[str, Any]]
+                    init_player_meta(request_data)
 
     def update_tileset(
             self,
