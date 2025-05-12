@@ -1,0 +1,221 @@
+{
+  "main": {
+    "id": "ff96abbb6719e6fc",
+    "type": "split",
+    "children": [
+      {
+        "id": "d4ab6e5d0510a5ba",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a56f50dc2df9981a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "механики/Боевка/Магия.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Магия"
+            }
+          },
+          {
+            "id": "ffa3fa1b5c1adf68",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "тех детали/Движок.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Движок"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "b83a2edbda4eea28",
+    "type": "split",
+    "children": [
+      {
+        "id": "d613e2c6ce2ea23b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9c250964f0f91f4a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "954ffc0f28e96364",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "26de02f4a0248827",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "65f3582adf4ec9e3",
+    "type": "split",
+    "children": [
+      {
+        "id": "ba44bf39ebdf473f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4506c9990c106df0",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "механики/Боевка/Боевые исскуства.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Боевые исскуства"
+            }
+          },
+          {
+            "id": "bf5510823be6dc51",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "механики/Боевка/Боевые исскуства.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Боевые исскуства"
+            }
+          },
+          {
+            "id": "7b06649c0e00b9d2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "1659bef8a5378881",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "механики/Боевка/Боевые исскуства.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Боевые исскуства"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "ffa3fa1b5c1adf68",
+  "lastOpenFiles": [
+    "тех детали/Стек.md",
+    "тех детали/Движок.md",
+    "механики/Боевка/Боевые исскуства.md",
+    "механики/Боевка/Магия.md",
+    "лор-сюжет/Разумные расы.md",
+    "механики/Локации/Погодные и климатические условия.md",
+    "механики/Локации/Якоря.md",
+    "механики/Боевка/Снаряжение.md",
+    "тех детали/Авторизация.md",
+    "тех детали/Античит.md",
+    "механики/Боевка/Ловцы душ.md",
+    "лор-сюжет/Эйдос.md",
+    "лор-сюжет/Лор.md",
+    "Welcome.md",
+    "лор-сюжет/Новый Мир.md",
+    "лор-сюжет/Старый Мир.md",
+    "механики/Экономика/Тайники.md",
+    "механики/Боевка/Основные показатели.md",
+    "механики/Экономика/Эйдосы и карма.md",
+    "механики/Экономика/Деньги и ценности расс.md",
+    "механики/Локации/Общая структура мира.md",
+    "механики/Локации/Биомы.md",
+    "механики/Локации/Генерируемые.md",
+    "механики/Локации/Стабильные.md",
+    "механики/Боевка/Зачарования.md",
+    "механики/Боевка/Комбинирование.md",
+    "механики/Локации",
+    "механики/Экономика",
+    "механики/Боевка",
+    "тех детали",
+    "лор-сюжет",
+    "механики"
+  ]
+}

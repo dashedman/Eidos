@@ -1,5 +1,5 @@
 .idea
 config.yaml
 venv
-server/logs
+old_project/server/logs
 **/__pycache__/
